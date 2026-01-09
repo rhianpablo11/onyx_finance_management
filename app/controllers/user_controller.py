@@ -53,6 +53,4 @@ def create_user(user: UserCreate, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    print('AAAAAAAAAAAAAA')
-    print(new_user.__str__)
     return new_user

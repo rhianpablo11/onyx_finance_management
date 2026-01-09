@@ -1,18 +1,16 @@
-import google.generativeai as genai
+from google import genai
 import json
 import os
 from datetime import date
+from app.core.security import GEMINI_API_KEY
 
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-def analyze_transaction_text(text: str, user_categories: list[str] = None):
+
+def analyze_transaction_text(text: str, user_categories: list[str] = None, charge_types: list[str] = None):
     """
     Recebe o texto do usuário e retorna um dicionário com os dados estruturados.
     """
-    
-    # 1. Configura o modelo (O Flash é mais rápido e barato)
-    model = genai.GenerativeModel('gemini-2.5-flash')
     
     # 2. Prepara a lista de categorias para ajudar a IA (opcional, mas recomendado)
     categorias_str = None
@@ -43,12 +41,17 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None):
     - "description": Resumo, com no maximo de 255 caracteres, tem que caber no banco de dados.
     - "first_payment_date": Data do PRIMEIRO pagamento (YYYY-MM-DD). Calcule baseado no contexto ("hoje", "mês que vem").
     - "payment_method": Se o usuario informar algo sobre o metodo de pagamento como credito, ou debito, ou dinheiro, ou pix, ou outros. Caso ele nao informe o padrão será dinheiro fisico.
-    - "last_payment_date": Data do ULTIMO pagamento (YYYY-MM-DD). Calcule baseado no contexto
+    - "last_payment_date": Data do ULTIMO pagamento (YYYY-MM-DD). Calcule baseado no contexto,
+    - "type_of_installment": Indica se o parcelamento é mensal, quinzenal, ou outro tipo. Por padrão se não for informado é mensal, já essa lista no banco de dados, [{charge_types}], veja se o que usuario digitou se encaixa em alguma delas.
+    - "name": Indica um nome curto para aquele gasto, ou entrada de dinheiro
     """
-
+    #tem um prob, categorias de pagamento tao se repetindo com nomes diferentes, mas sendo a mesma coisa
     try:
         # 4. Chama a IA
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+                                                model="gemini-2.5-flash",
+                                                contents=prompt
+                                            )
         
         # 5. Limpeza (Às vezes a IA manda ```json ... ```)
         cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
@@ -56,6 +59,19 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None):
         # 6. Converte texto para Dicionário Python
         transaction_data = json.loads(cleaned_text)
         
+        # transaction_data = {'amount': 45.0,
+        #                     'is_installment': False,
+        #                     'installments_count': 1,
+        #                     'is_recurrent': False,
+        #                     'type': False,
+        #                     'category': 'Transporte',
+        #                     'description': 'Gasto de R$45 no Uber para ir comer no trabalho.',
+        #                     'first_payment_date': '2026-01-05',
+        #                     'payment_method': 'dinheiro fisico',
+        #                     'last_payment_date': '2026-01-05'
+        #                     }
+        print('CCCCCCCCC')
+        print(transaction_data)
         return transaction_data
     
     except Exception as e:

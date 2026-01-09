@@ -14,3 +14,6 @@ class Expenses_fixed(Base):
     category_id = Column(Integer, ForeignKey('expenses_category.id'), nullable=False)
     payment_date = Column(Date, nullable=False)
     activated = Column(Boolean, default=True)
+    type_expense = Column(Boolean, nullable=False)
+    installments_count = Column(Integer, nullable=True)
+    description = Column(String(255), nullable=True)

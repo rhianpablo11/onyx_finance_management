@@ -1,9 +1,13 @@
 import bcrypt
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 SECRET_KEY = os.getenv('secret_key_password', 'CHAVE_ALEATORIA')
 SECRET_KEY_JWT = os.getenv('secret_key_password', 'CHAVE_ALEATORIA')
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 ALGORITHM = 'HS256'
 
 
