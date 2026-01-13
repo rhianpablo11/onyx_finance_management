@@ -43,7 +43,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     - "payment_method": Se o usuario informar algo sobre o metodo de pagamento como credito, ou debito, ou dinheiro, ou pix, ou outros. Caso ele nao informe o padrão será dinheiro fisico.
     - "last_payment_date": Data do ULTIMO pagamento (YYYY-MM-DD). Calcule baseado no contexto,
     - "type_of_installment": Indica se o parcelamento é mensal, quinzenal, ou outro tipo. Por padrão se não for informado é mensal, já essa lista no banco de dados, [{charge_types}], veja se o que usuario digitou se encaixa em alguma delas.
-    - "name": Indica um nome curto para aquele gasto, ou entrada de dinheiro
+    - "name": Indica um nome curto para aquele gasto, ou entrada de dinheiro, contendo no maximo 2 palavras
     """
     #tem um prob, categorias de pagamento tao se repetindo com nomes diferentes, mas sendo a mesma coisa
     try:

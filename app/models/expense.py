@@ -9,6 +9,7 @@ class Expense(Base):
     category = Column(Integer, ForeignKey('expenses_category.id'), nullable=False)
     value = Column(Numeric(10,2), nullable=False)
     type_expense = Column(Boolean, nullable=False)
+    name = Column(String(200), nullable=False)
     description = Column(String(255), nullable=False)
     date = Column(Date, nullable=False)
     payment_method = Column(String(200))

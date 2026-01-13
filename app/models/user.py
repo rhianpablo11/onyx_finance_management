@@ -12,3 +12,5 @@ class User(Base):
     telephone = Column(String(20), nullable=False, unique=True)
     created_date = Column(DateTime(timezone=True), server_default=func.now())
     subscriber = Column(Boolean, default=False)
+    otp_code = Column(Integer, nullable=True)
+    second_factor_auth = Column(Boolean, nullable=False, default=False)

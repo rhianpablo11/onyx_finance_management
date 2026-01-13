@@ -174,6 +174,7 @@ def get_total_received_on_the_date(db:Session, user_id: int):
     }
 
 
+#retorna o saudo do mes atual
 def get_monthly_balance_value(db: Session, user_id: int):
     total_expenses = get_total_spent_on_the_date(db=db,
                                                  user_id=user_id)
@@ -183,3 +184,23 @@ def get_monthly_balance_value(db: Session, user_id: int):
     return {
         'value': total_received['value'] - total_expenses['value']
     }
+
+
+#pegar as ultimas transações umas 10 no max
+def get_day_and_last_transactions():
+    pass
+
+
+#pegar as entradas/recebimentos do mes
+def get_monthly_receives():
+    pass
+
+
+#pegar o saldo em um periodo especifico
+def get_balance_in_period():
+    pass
+
+
+#pegar as movimentações dentro de um periodo
+def get_transactions_in_period():
+    pass
