@@ -1,2 +1,163 @@
-__pycache__
+# ===========================
+# BACKEND (PYTHON / FASTAPI)
+# ===========================
+
+# Byte-compiled / Optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ctypes
+*.so
+
+# Distribution / Packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff: (Caso use algo no futuro, já fica protegido)
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#   Pipfile.lock é geralmente commitado, mas se quiser ignorar:
+# Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# ===========================
+# AMBIENTES VIRTUAIS (VENV)
+# ===========================
+# Ignora pastas comuns de ambiente virtual
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===========================
+# SEGURANÇA & VARIAVEIS
+# ===========================
+# JAMAIS suba seu arquivo .env com senhas reais
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===========================
+# BANCO DE DADOS (SQLite)
+# ===========================
+# Caso crie bancos locais para teste
+*.sqlite
+*.sqlite3
+
+# ===========================
+# IDEs & EDITORES
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ===========================
+# FRONTEND (VITE / REACT / NODE)
+# ===========================
+
+# Dependências (Extremamente pesado, nunca suba isso)
+node_modules/
+.npm/
+.yarn/
+
+# Build de produção (Vite gera a pasta dist)
+dist/
+dist-ssr/
+
+# Logs de erro
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testes e cobertura do Front
+coverage/
+cypress/videos
+cypress/screenshots
+
+# Arquivos temporários
+*.local
+.eslintcache
