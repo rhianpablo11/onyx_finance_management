@@ -1,0 +1,1 @@
+// component for show monthly balance in initial page

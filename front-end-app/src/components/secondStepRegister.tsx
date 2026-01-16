@@ -1,0 +1,1 @@
+// component for get password in second step of register

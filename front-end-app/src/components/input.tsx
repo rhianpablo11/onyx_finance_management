@@ -1,0 +1,1 @@
+// component for input of chat page and login/sign up

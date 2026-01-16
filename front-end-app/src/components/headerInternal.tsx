@@ -1,0 +1,1 @@
+// component for header of internal pages -> say hello or indicate page

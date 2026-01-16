@@ -1,0 +1,1 @@
+// component for show response formated of IA 
