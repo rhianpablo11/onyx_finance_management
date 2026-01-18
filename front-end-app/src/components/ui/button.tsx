@@ -1,5 +1,5 @@
 // code for buttons login, create account, etc -> external interface
-import backgroundButtonSend from '../assets/bg-input-chat-ia.svg?url'
+import backgroundButtonSend from '../../assets/bg-input-chat-ia.svg?url'
 
 
 function Button(){

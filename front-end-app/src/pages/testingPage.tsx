@@ -1,13 +1,13 @@
 //page for test of component conduct
 
 import Balance from "../components/balance"
-import Button from "../components/button"
+import Button from "../components/ui/button"
 import ChatBubble from "../components/chatBubble"
-import HeaderInternal from "../components/headerInternal"
-import Input from "../components/input"
-import ListTransaction from "../components/listTransaction"
-import NavBar from "../components/navBar"
-import Wellcome from "../components/wellcome"
+import HeaderInternal from "../components/ui/headerInternal"
+import Input from "../components/ui/input"
+import ListTransaction from "../components/ui/listTransaction"
+import NavBar from "../components/ui/navBar"
+import Wellcome from "../components/ui/wellcome"
 
 
 function TestingPage(){

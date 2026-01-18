@@ -1,5 +1,5 @@
 // component of navbar down of app
-import backgroundNavBar from '../assets/bg-navbar.svg?url'
+import backgroundNavBar from '../../assets/bg-navbar.svg?url'
 
 function NavBar(){
 

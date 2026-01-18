@@ -1,5 +1,5 @@
 // component for input of chat page and login/sign up
-import backgroundInputChat from '../assets/bg-input-chat-ia.svg?url'
+import backgroundInputChat from '../../assets/bg-input-chat-ia.svg?url'
 
 
 function Input(){
