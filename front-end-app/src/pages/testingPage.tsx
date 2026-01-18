@@ -8,6 +8,7 @@ import Input from "../components/ui/input"
 import ListTransaction from "../components/ui/listTransaction"
 import NavBar from "../components/ui/navBar"
 import Wellcome from "../components/ui/wellcome"
+import Login from "../components/login"
 
 
 function TestingPage(){
@@ -23,9 +24,10 @@ function TestingPage(){
                 <ListTransaction />
                 <ListTransaction />
                 <NavBar /> */}
-                <Wellcome />
+                {/* <Wellcome />
                 <Input />
-                <Button />
+                <Button /> */}
+                <Login />
             </div>
         </>
     )
