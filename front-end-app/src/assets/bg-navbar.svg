@@ -1,0 +1,12 @@
+<svg width="281" height="56" viewBox="0 0 281 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_f_14_961)">
+<g clip-path="url(#paint0_angular_14_961_clip_path)" data-figma-skip-parse="true"><g transform="matrix(-0.27 0.1955 -0.0733206 -0.101261 282 28)"><foreignObject x="-1545.4" y="-1545.4" width="3090.8" height="3090.8"><div xmlns="http://www.w3.org/1999/xhtml" style="background:conic-gradient(from 90deg,rgba(50, 41, 96, 0.3539) 0deg,rgba(68, 56, 130, 0.1333) 40.0436deg,rgba(108, 85, 210, 1) 196.723deg,rgba(0, 0, 0, 1) 242.68deg,rgba(50, 41, 96, 0.3539) 360deg);height:100%;width:100%;opacity:1"></div></foreignObject></g></g><rect x="-5" y="-1" width="368" height="57" data-figma-gradient-fill="{&#34;type&#34;:&#34;GRADIENT_ANGULAR&#34;,&#34;stops&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.26666668057441711,&#34;g&#34;:0.21960784494876862,&#34;b&#34;:0.50980395078659058,&#34;a&#34;:0.13333334028720856},&#34;position&#34;:0.11123213171958923},{&#34;color&#34;:{&#34;r&#34;:0.42352941632270813,&#34;g&#34;:0.33333334326744080,&#34;b&#34;:0.82352942228317261,&#34;a&#34;:1.0},&#34;position&#34;:0.54645401239395142},{&#34;color&#34;:{&#34;r&#34;:0.0,&#34;g&#34;:0.0,&#34;b&#34;:0.0,&#34;a&#34;:1.0},&#34;position&#34;:0.67411184310913086}],&#34;stopsVar&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.26666668057441711,&#34;g&#34;:0.21960784494876862,&#34;b&#34;:0.50980395078659058,&#34;a&#34;:0.13333334028720856},&#34;position&#34;:0.11123213171958923},{&#34;color&#34;:{&#34;r&#34;:0.42352941632270813,&#34;g&#34;:0.33333334326744080,&#34;b&#34;:0.82352942228317261,&#34;a&#34;:1.0},&#34;position&#34;:0.54645401239395142},{&#34;color&#34;:{&#34;r&#34;:0.0,&#34;g&#34;:0.0,&#34;b&#34;:0.0,&#34;a&#34;:1.0},&#34;position&#34;:0.67411184310913086}],&#34;transform&#34;:{&#34;m00&#34;:-540.0,&#34;m01&#34;:-146.64114379882812,&#34;m02&#34;:625.3205566406250,&#34;m10&#34;:391.00003051757812,&#34;m11&#34;:-202.52224731445312,&#34;m12&#34;:-66.238883972167969},&#34;opacity&#34;:1.0,&#34;blendMode&#34;:&#34;NORMAL&#34;,&#34;visible&#34;:true}"/>
+</g>
+<defs>
+<filter id="filter0_f_14_961" x="-45" y="-41" width="448" height="137" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="20" result="effect1_foregroundBlur_14_961"/>
+</filter>
+<clipPath id="paint0_angular_14_961_clip_path"><rect x="-5" y="-1" width="368" height="57"/></clipPath></defs>
+</svg>
