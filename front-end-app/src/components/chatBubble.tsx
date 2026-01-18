@@ -11,9 +11,9 @@ function ChatBubble(){
                         ChatBot - by Gemini
                     </h1>
                 </div>
-                <div className="relative group">
+                <div className="relative group ">
 
-                    <div className="bg-[#151515] text-white p-3.5 rounded-4xl rounded-bl-none shadow-sm">
+                    <div className="bg-[#151515] shadow-white/20 shadow-md  text-white p-3.5 rounded-4xl rounded-bl-none ">
                         <div className="space-y-1">
                             <p className="pl-2 font-light text-base leading-tight mb-2">
                                 Dados coletados sobre seu gasto e como serão adicionados:<br></br>

@@ -15,7 +15,6 @@ function TestingPage(){
         <>
             <div className="w-full m-0 px-4 flex-col bg-black justify-center items-center">
                 <HeaderInternal />
-                <HeaderInternal />
                 <Balance />
                 <Input />
                 <ChatBubble />
