@@ -1,0 +1,12 @@
+<svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_f_12_292)">
+<g clip-path="url(#paint0_angular_12_292_clip_path)" data-figma-skip-parse="true"><g transform="matrix(0.08 -0.067 0.00771739 0.0092148 59.5 11)"><foreignObject x="-5455.46" y="-5455.46" width="10910.9" height="10910.9"><div xmlns="http://www.w3.org/1999/xhtml" style="background:conic-gradient(from 90deg,rgba(68, 56, 136, 1) 0deg,rgba(0, 0, 0, 1) 183.939deg,rgba(68, 56, 136, 1) 360deg);height:100%;width:100%;opacity:1"></div></foreignObject></g></g><rect x="-7" y="-17" width="86" height="95" data-figma-gradient-fill="{&#34;type&#34;:&#34;GRADIENT_ANGULAR&#34;,&#34;stops&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.0,&#34;g&#34;:0.0,&#34;b&#34;:0.0,&#34;a&#34;:1.0},&#34;position&#34;:0.51094192266464233},{&#34;color&#34;:{&#34;r&#34;:0.26666668057441711,&#34;g&#34;:0.21960784494876862,&#34;b&#34;:0.53333336114883423,&#34;a&#34;:1.0},&#34;position&#34;:1.0}],&#34;stopsVar&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.0,&#34;g&#34;:0.0,&#34;b&#34;:0.0,&#34;a&#34;:1.0},&#34;position&#34;:0.51094192266464233},{&#34;color&#34;:{&#34;r&#34;:0.26666668057441711,&#34;g&#34;:0.21960784494876862,&#34;b&#34;:0.53333336114883423,&#34;a&#34;:1.0},&#34;position&#34;:1.0}],&#34;transform&#34;:{&#34;m00&#34;:159.99998474121094,&#34;m01&#34;:15.434784889221191,&#34;m02&#34;:-28.217386245727539,&#34;m10&#34;:-134.0,&#34;m11&#34;:18.429594039916992,&#34;m12&#34;:68.785202026367188},&#34;opacity&#34;:1.0,&#34;blendMode&#34;:&#34;NORMAL&#34;,&#34;visible&#34;:true}"/>
+</g>
+<defs>
+<filter id="filter0_f_12_292" x="-57" y="-67" width="186" height="195" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_12_292"/>
+</filter>
+<clipPath id="paint0_angular_12_292_clip_path"><rect x="-7" y="-17" width="86" height="95"/></clipPath></defs>
+</svg>
