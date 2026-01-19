@@ -21,8 +21,8 @@ function Login(){
 
     return(
         <>
-            <div className="flex flex-col justify-center items-center rounded-[40px] bg-purple-950">
-                <h1 className="text-white font-medium text-[32px] mt-9">
+            <div className="flex flex-col justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
+                <h1 className="text-white font-medium text-[32px] mt-7">
                     Login
                 </h1>
                 <div className="flex-col w-full flex justify-start mr-auto mt-7 px-3">

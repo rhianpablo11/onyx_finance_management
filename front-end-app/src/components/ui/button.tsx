@@ -16,6 +16,27 @@ function Button(props: ButtonProps){
                 </button>
             </>
         )
+    } else if(type == 'create account'){
+        return(
+            <>
+                <button onClick={() => onClickButtonChildren('')}
+                        className="bg-[#D9D9D9] flex justify-center items-center rounded-[40px] h-16 w-full">
+                    <h1 className="font-medium text-xl text-black">
+                        Criar Conta
+                    </h1>
+                </button>
+            </>
+        )
+    } else if(type == 'sign in'){
+        return(
+            <>
+                <button className="bg-[#35333F]/65 flex justify-center items-center rounded-[40px] h-16 w-full">
+                    <h1 className="font-medium text-xl text-white">
+                        Login
+                    </h1>
+                </button>
+            </>
+        )
     } else{
         return(
                 <>
@@ -28,26 +49,10 @@ function Button(props: ButtonProps){
             )
     }
 
-    // return(
-    //     <>
-    //         <button className="bg-[#D9D9D9] flex justify-center items-center rounded-[40px] h-16 w-full">
-    //             <h1 className="font-medium text-xl text-black">
-    //                 Criar Conta
-    //             </h1>
-    //         </button>
-    //     </>
-    // )
+    
 
 
-    // return(
-    //     <>
-    //         <button className="bg-[#35333F]/65 flex justify-center items-center rounded-[40px] h-16 w-full">
-    //             <h1 className="font-medium text-xl text-white">
-    //                 Criar Conta
-    //             </h1>
-    //         </button>
-    //     </>
-    // )
+    
 
 
     
