@@ -1,22 +1,36 @@
 // component for login feature
 
+import { useState } from "react"
 import Button from "./ui/button"
 import Input from "./ui/input"
+import { useLogin } from "../hooks/useAuth"
+
 
 
 
 function Login(){
-    
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const {login, loading, error} = useLogin()
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
+        setEmail(value)
     }
 
     const onChangeInputFatherPassword = (value: string) => {
         console.log(value)
+        setPassword(value)
     }
     
-    const onClickFather = (buttonClicked:string) =>{
+    const onClickFather = async (buttonClicked:string) =>{
         console.log(buttonClicked)
+        try{
+            await login({email, password})
+            console.log('deu bom')
+        } catch(err){
+            console.log('deu erro')
+            console.error('falha')
+        }
     }
 
     return(

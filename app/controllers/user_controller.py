@@ -47,7 +47,9 @@ def create_user(user: UserCreate, db: Session):
         password=hash_password(user.password),
         email=user.email,
         telephone=user.telephone,
-        subscriber=False
+        subscriber=False,
+        otp_code = None,
+        second_factor_auth = False
     )
 
     db.add(new_user)
