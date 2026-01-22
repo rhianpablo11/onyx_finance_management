@@ -30,7 +30,8 @@ function Button(props: ButtonProps){
     } else if(type == 'sign in'){
         return(
             <>
-                <button className="bg-[#35333F]/65 flex justify-center items-center rounded-[40px] h-16 w-full">
+                <button onClick={() => onClickButtonChildren('')}
+                        className="bg-[#35333F]/65 flex justify-center items-center rounded-[40px] h-16 w-full">
                     <h1 className="font-medium text-xl text-white">
                         Login
                     </h1>

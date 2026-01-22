@@ -1,12 +1,19 @@
+import { useNavigate } from 'react-router-dom'
 import backgroundInitialPage  from '../assets/bg-initial-Page.svg?url'
 import Button from '../components/ui/button'
 import Wellcome from '../components/ui/wellcome'
 
 
 function InitialPage(){
+    const navigate = useNavigate()
+    const onClickFatherCreateAccount = (buttonClicked:string) =>{
+        console.log(buttonClicked)
+        navigate('/sign-up')    
+    }
 
-    const onClickFather = (buttonClicked:string) =>{
-            console.log(buttonClicked)
+    const onClickFatherLogin = (buttonClicked:string) =>{
+        console.log(buttonClicked)
+        navigate('/login')    
     }
 
     return(
@@ -20,10 +27,10 @@ function InitialPage(){
                     <div className='w-full px-6 flex flex-col mt-auto mb-8'>
                         <div className='mb-4'>
                             <Button type='create account'
-                                    onClickButtonChildren={onClickFather}/>
+                                    onClickButtonChildren={onClickFatherCreateAccount}/>
                         </div>
                         <Button type='sign in'
-                                onClickButtonChildren={onClickFather}/>
+                                onClickButtonChildren={onClickFatherLogin}/>
                     </div>
                     
                 </div>
