@@ -11,7 +11,7 @@ class Expenses_fixed(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
     charge = Column(Integer, ForeignKey('charge_type.id'), nullable=False)
-    category_id = Column(Integer, ForeignKey('expenses_category.id'), nullable=False)
+    category = Column(Integer, ForeignKey('expenses_category.id'), nullable=False)
     payment_date = Column(Date, nullable=False)
     activated = Column(Boolean, default=True)
     type_expense = Column(Boolean, nullable=False)

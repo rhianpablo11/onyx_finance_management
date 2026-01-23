@@ -1,4 +1,4 @@
-from sqlalchemy import or_, select
+from sqlalchemy import desc, or_, select
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import date
@@ -10,7 +10,7 @@ from app.controllers.expense_category_controller import expense_category_analysi
 from app.controllers.charge_type_controller import get_charge_type_id
 from app.models.charge_type import Charge_type
 from app.controllers.chat_logs_controller import create_new_chat_log
-
+from app.utils.utils import get_month_range
 
 def create_new_expense(user_id: int, text_typed: str, db: Session):
     stmt_categories = select(Expense_category.name).where(Expense_category.user_id == user_id)
@@ -45,7 +45,8 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
             description=ia_response['description'],
             date=ia_response['first_payment_date'],
             payment_method=ia_response['payment_method'],
-            is_activated=True
+            is_activated=True,
+            name=ia_response['name']
         )
         db.add(new_expense)
         db.commit()
@@ -86,19 +87,17 @@ def get_all_expenses_in_date(db: Session, user_id: int):
     return list_expenses
 
 
-def get_total_spent_on_the_date(db:Session, user_id: int):
-    start_date = date(2026, 1, 1)
-    end_date = date(2026, 1, 31)
-    stmt_expenses = select(Expense.value).where(Expense.user_id == user_id).where(Expense.date.between(start_date, end_date)).where(Expense.is_activated == True).where(Expense.type_expense == False)
+def get_total_spent_on_the_date(db:Session, user_id: int, start_date: date, end_date: date):
+    
+    stmt_expenses = (select(Expense.value)
+                     .where(Expense.user_id == user_id)
+                     .where(Expense.date.between(start_date, end_date))
+                     .where(Expense.is_activated == True)
+                     .where(Expense.type_expense == False))
     list_expenses = db.execute(stmt_expenses).scalars().all()
     
-    print(list_expenses)
-    list_with_values_as_float = [float(v) for v in list_expenses]
-    amount = 0
-
-    for expense in list_with_values_as_float:
-        amount += expense
-
+    amount = sum([float(v) for v in list_expenses])
+    
 
     stmt_expenses_fixed = (
         select(Expenses_fixed.value)
@@ -117,12 +116,8 @@ def get_total_spent_on_the_date(db:Session, user_id: int):
     )
 
     list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
-    print(list_expenses_fixed)
-    list2_with_values_as_float = [float(v) for v in list_expenses_fixed]
-    print(list2_with_values_as_float)
-    for expense_fixed in list2_with_values_as_float:
-        amount += expense_fixed
 
+    amount += sum([float(v) for v in list_expenses_fixed])
     print(amount)
 
     return {
@@ -130,20 +125,18 @@ def get_total_spent_on_the_date(db:Session, user_id: int):
     }
 
 
-def get_total_received_on_the_date(db:Session, user_id: int):
-    start_date = date(2026, 1, 1)
-    end_date = date(2026, 1, 31)
-    stmt_expenses = select(Expense.value).where(Expense.user_id == user_id).where(Expense.date.between(start_date, end_date)).where(Expense.is_activated == True).where(Expense.type_expense == True)
+def get_total_received_on_the_date(db:Session, user_id: int, start_date: date, end_date: date):
+
+    stmt_expenses = (select(Expense.value)
+                     .where(Expense.user_id == user_id)
+                     .where(Expense.date.between(start_date, end_date))
+                     .where(Expense.is_activated == True)
+                     .where(Expense.type_expense == True))
     list_expenses = db.execute(stmt_expenses).scalars().all()
     
     print(list_expenses)
-    list_with_values_as_float = [float(v) for v in list_expenses]
-    amount = 0
-
-    for expense in list_with_values_as_float:
-        amount += expense
-
-
+    amount = sum([float(v) for v in list_expenses])
+    
     stmt_expenses_fixed = (
         select(Expenses_fixed.value)
         .where(
@@ -161,12 +154,8 @@ def get_total_received_on_the_date(db:Session, user_id: int):
     )
 
     list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
-    print(list_expenses_fixed)
-    list2_with_values_as_float = [float(v) for v in list_expenses_fixed]
-    print(list2_with_values_as_float)
-    for expense_fixed in list2_with_values_as_float:
-        amount += expense_fixed
 
+    amount += sum([float(v) for v in list_expenses_fixed])
     print(amount)
 
     return {
@@ -175,29 +164,120 @@ def get_total_received_on_the_date(db:Session, user_id: int):
 
 
 #retorna o saudo do mes atual
-def get_monthly_balance_value(db: Session, user_id: int):
+def get_monthly_balance_value(db: Session, user_id: int, month: int = None, year: int = None):
+    today = date.today()
+    target_month = month if month else today.month
+    target_year = year if year else today.year
+
+    start_date, end_date = get_month_range(target_month, target_year)
     total_expenses = get_total_spent_on_the_date(db=db,
-                                                 user_id=user_id)
+                                                 user_id=user_id,
+                                                 start_date=start_date,
+                                                 end_date=end_date)
     total_received = get_total_received_on_the_date(db=db,
-                                                    user_id=user_id)
+                                                    user_id=user_id,
+                                                    start_date=start_date,
+                                                    end_date=end_date)
     
     return {
-        'value': total_received['value'] - total_expenses['value']
+        'value': total_received['value'] - total_expenses['value'],
+        'period': f"{target_month}/{target_year}"
     }
 
 
 #pegar as ultimas transações umas 10 no max
-def get_day_and_last_transactions():
-    pass
+def get_day_and_last_transactions(db: Session, user_id: int):
+    # pegar o dia de hoje
+    # pegar as transações feitas no dia de hoje - fixas ou não
+    # transações so de gasto
+    # preciso: nome, valor, categoria
+
+    today = date.today()
+
+    stmt_get = (select(Expense.value, Expense.name, Expense.category)
+                .where(Expense.user_id == user_id)
+                .where(Expense.date == today)
+                .where(Expense.type_expense == False)
+                .order_by(desc(Expense.id)))
+    list_expenses = db.execute(stmt_get).all()
+
+
+    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category)
+                      .where(Expenses_fixed.user_id == user_id)
+                      .where(Expenses_fixed.start_date == today)
+                      .where(Expenses_fixed.type_expense == False)
+                      .order_by(desc(Expenses_fixed.id)))
+    list_expenses_fixed = db.execute(stmt_get_fixed).all()
+    
+    formatted_list = []
+    for item in list_expenses:
+        formatted_list.append({
+            "name": item.name,
+            "value": item.value,
+            "category": item.category,
+            "type": "variable"
+        })
+
+    for item in list_expenses_fixed:
+        formatted_list.append({
+            "name": item.name,
+            "value": item.value,
+            "category": item.category,
+            "type": "fixed"
+        })
+
+    return formatted_list
+    
 
 
 #pegar as entradas/recebimentos do mes
-def get_monthly_receives():
+def get_monthly_receives(db: Session, user_id: int):
+    today = date.today()
+    target_month = today.month
+    target_year = today.year
+    start_date, end_date = get_month_range(target_month, target_year)
+
+    stmt_get = (select(Expense.value, Expense.name, Expense.category)
+                .where(Expense.user_id == user_id)
+                .where(Expense.date.between(start_date, end_date))
+                .where(Expense.type_expense == True))
+    list_received = db.execute(stmt_get).all()
+
+
+    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category)
+                      .where(Expenses_fixed.user_id == user_id)
+                      .where(Expense.date.between(start_date, end_date))
+                      .where(Expenses_fixed.type_expense == True))
+    list_receiveds_fixed = db.execute(stmt_get_fixed).all()
+    
+    formatted_list = []
+
+    for item in list_received:
+        formatted_list.append({
+            'value': item.value,
+            'name': item.name,
+            'category' : item.category
+        })
+
+    for item in list_receiveds_fixed:
+        formatted_list.append({
+            'value': item.value,
+            'name': item.name,
+            'category' : item.category
+        })
+
+    return formatted_list
+
+
+#pegar os proximos pagamentos a ser feitos
+def get_next_payments(db: Session, user_id: int):
     pass
 
 
 #pegar o saldo em um periodo especifico
-def get_balance_in_period():
+def get_balance_in_period(db: Session, user_id: int):
+
+
     pass
 
 

@@ -12,7 +12,7 @@ from app.core.security import SECRET_KEY_JWT
 
 SECRET_KEY = SECRET_KEY_JWT
 ALGORITHM = 'HS256'
-ACCESS_TOKEN_DURATION_TIME = 30
+ACCESS_TOKEN_DURATION_TIME = 300
 
 
 def create_access_token(data:dict, expires_delta: Optional[timedelta] = None):

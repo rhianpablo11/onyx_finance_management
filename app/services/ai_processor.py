@@ -49,7 +49,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     try:
         # 4. Chama a IA
         response = client.models.generate_content(
-                                                model="gemini-2.5-flash",
+                                                model="gemini-3-flash-preview",
                                                 contents=prompt
                                             )
         

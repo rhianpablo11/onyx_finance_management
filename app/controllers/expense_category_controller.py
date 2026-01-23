@@ -31,6 +31,6 @@ def expense_category_analysis(categorys_of_user, user_id: int, db: Session, cate
 
 def get_expense_category_by_id(id: int, user_id: int, db: Session):
     stmt = select(Expense_category.name).where(Expense_category.user_id == user_id).where(Expense_category.id == id)
-    expense_name = db.execute(stmt).first()
+    expense_name = db.execute(stmt).scalars().first()
     #colocar verificação caso n tenha nenhuma categoria
     return expense_name
