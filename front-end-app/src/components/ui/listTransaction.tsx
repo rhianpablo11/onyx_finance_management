@@ -19,7 +19,7 @@ function ListTransaction(props: ListTransactionProps){
         setIconShow(alimentationIcon)
     }
 
-    if(type == 'expenseOfDay'){
+    if(type == 'expenseOfDay' || type == 'receivesMonth'){
         return (
             <>
                 <div className="flex-col mt-2 w-full h-16 border-white">

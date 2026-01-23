@@ -1,0 +1,58 @@
+import { useEffect, useState } from "react"
+import Balance from "../components/balance"
+import TransactionsRecents from "../components/transactionsRecents"
+import HeaderInternal from "../components/ui/headerInternal"
+import NavBar from "../components/ui/navBar"
+import { useDashboard } from "../hooks/useDashboard"
+import type { ListTransactionProps } from "../interfaces/interfacesComponents"
+
+
+function InternalPage(){
+    const {getMetrics, loading, error} = useDashboard()
+    const [balanceMonth, setBalanceMonth] = useState<number>(0)
+    const [listOfTransactionsOut, setListOfTransactionsOut] = useState<ListTransactionProps[]>([])
+    const [listOfTransactionsIn, setListOfTransactionsIn] = useState<ListTransactionProps[]>([])
+    
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const data = await getMetrics();
+                setBalanceMonth(data['month_balance'])
+                setListOfTransactionsOut(data['expenses_out'])
+                setListOfTransactionsIn(data['expenses_in_on_month'])
+            } catch (error) {
+                console.error("Erro ao buscar métricas:", error);
+            }
+        }
+
+        fetchDashboardData();
+        
+    }, [])
+
+
+    return(
+        
+        <>
+            <div className="w-full max-w-full h-dvh m-0 px-4 bg-black">
+                <div className="w-full h-dvh max-h-dvh flex flex-col">
+                    <div className="shrink-0 mt-5">
+                        <HeaderInternal type='wellcome'/>
+                    </div>
+                    
+                    <Balance value={balanceMonth}
+                             legend="10% a mais que o mês anterior"
+                             incoming={true} />
+                    <TransactionsRecents dayExpenses={listOfTransactionsOut}
+                                         monthReceives={listOfTransactionsIn}/>
+                    <div className="w-full max-w-full  fixed bottom-0 z-50 shrink-0">
+                        <NavBar />
+                    </div>
+                </div>
+            </div>
+        </>
+        
+    )
+}
+
+export default InternalPage

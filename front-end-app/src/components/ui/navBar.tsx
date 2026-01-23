@@ -6,7 +6,7 @@ function NavBar(){
 
     return (
         <>
-            <div className="flex justify-between mt-4">
+            <div className="w-full flex justify-between mt-4">
                 <div className="rounded-[21px] w-5/6 bg-linear-to-b from-white/5 to-transparent p-px">
                     <div className="h-14 flex  px-3  rounded-[20px] justify-between bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundNavBar}")`}}>
                         <button className="text-white">

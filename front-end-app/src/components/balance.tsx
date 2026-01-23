@@ -1,11 +1,13 @@
 // component for show monthly balance in initial page
 import backgroundBalance from '../assets/bg-balance.svg?url'
+import type { BalanceProps } from '../interfaces/interfacesComponents'
 
-function Balance(){
-    
+function Balance(props: BalanceProps){
+    const {value, legend, incoming} = props
+
     return(
         <>
-            <div className='rounded-[29px] mt-6 bg-linear-to-b from-white/30 to-transparent p-px'>
+            <div className='rounded-[29px] mt-6 mb-6  bg-linear-to-b from-white/30 to-transparent p-px'>
                 <div className="flex-col  px-4 pt-4 rounded-[28px] h-48 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundBalance}")`}}>
                     <div className=" flex-col rounded-4xl">
                         <h1 className="text-white font-extralight text-xl">
@@ -13,10 +15,10 @@ function Balance(){
                         </h1>
                         <div className="flex-col justify-end pt-1">
                             <h1 className="text-white text-end font-extralight text-5xl">
-                                R$ 50.000,00
+                                R$ {value}
                             </h1>
                             <h1 className="text-white text-end font-extralight text-xs pt-2">
-                                10% em relação ao mês anterior
+                                {incoming ? '/>' : '>'} {legend}
                             </h1>
                         </div>
 

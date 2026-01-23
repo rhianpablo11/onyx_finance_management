@@ -1,16 +1,76 @@
 // component for show in initial page the last transactions of day, and next
 // payments and receives in monthly
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ListTransaction from "./ui/listTransaction"
+import type { ListTransactionProps, TransactionsRecentsProps } from "../interfaces/interfacesComponents"
 
 
-function TransactionsRecents(){
+interface TransactionItem {
+    id?: number; // Se vier do banco, geralmente tem ID
+    name: string;
+    value: number; 
+    category: string;
+    type?: boolean; // Para saber se é fixo ou variavel
+}
+
+function TransactionsRecents(props: TransactionsRecentsProps){
+    const {dayExpenses, monthReceives} = props
     const [activeTab, setActiveTab] = useState(0)
+    const [typeList, setTypeList] = useState('expenseOfDay')
+    const [dayExpensesList, setDayExpensesList] = useState<ListTransactionProps[]>([]);
+    const [monthReceivesList, setMonthReceives] = useState<ListTransactionProps[]>([]);
+    const [listToShow, setListToShow] = useState<ListTransactionProps[]>([])
+    //const [nextPaymentsList, setNextPaymentsList] = useState<ListTransactionProps[]>([]);
+
+    useEffect(()=>{
+        setListToShow(dayExpenses)
+        setListToShow(monthReceives)
+    },[])
+
+    useEffect(()=>{
+        if(activeTab == 0){
+            setTypeList('expenseOfDay')
+            setListToShow(dayExpenses)
+        } else if(activeTab == 1){
+            setTypeList('nextPayments')
+        } else if(activeTab == 2){
+            setTypeList('receivesMonth')
+            setListToShow(monthReceives)
+        }
+    }, [activeTab])
+
+
+    const renderList = () => {
+        console.log(monthReceives)
+        console.log(listToShow)
+        if(listToShow.length == 0){
+            return(
+                <>
+                    <div className="text-white/50 text-center mt-4 text-sm">
+                        Nenhuma transação.
+                    </div>
+                </>
+            )
+        } else{
+            return(
+                listToShow.map((item, index) => (
+                    <ListTransaction 
+                        key={item.id} 
+                        type={typeList}
+                        category={item.category}
+                        nameExpense={item.nameExpense}
+                        value={item.value} 
+                        id={item.id}
+                    />
+                ))
+            )
+        }
+    }
 
     return(
         <>
-            <div className="rounded-[28px] px-3 pt-6 h-full flex flex-col bg-[#0a0a0a]">
+            <div className="rounded-[28px] px-3 pt-6  flex flex-col bg-[#0a0a0a]">
                 <div className="flex justify-between text-white font-extralight text-sm relative pb-2">
                     <button onClick={() => setActiveTab(0)}
                             className={`pb-2 transition-colors duration-300 ${activeTab === 0 ? "text-white font-normal" : "text-white/50 font-extralight"}`}>
@@ -43,23 +103,8 @@ function TransactionsRecents(){
                     </div>
                 </div>
                 
-                <div >
-                    <ListTransaction type="expenseOfDay"
-                                     category="alimentation"
-                                     nameExpense="Alimentação"
-                                     value="10,00"/>
-                    <ListTransaction type="expenseOfDay"
-                                     category="alimentation"
-                                     nameExpense="Alimentação"
-                                     value="10,00"/>
-                    <ListTransaction type="expenseOfDay"
-                                     category="alimentation"
-                                     nameExpense="Alimentação"
-                                     value="10,00"/>
-                    <ListTransaction type="expenseOfDay"
-                                     category="alimentation"
-                                     nameExpense="Alimentação"
-                                     value="10,00"/>
+                <div className="flex flex-col pb-3 pt-3">
+                    {renderList()}
                 </div>
 
             </div>

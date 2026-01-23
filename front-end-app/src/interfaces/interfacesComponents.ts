@@ -11,6 +11,23 @@ export interface ButtonProps {
 export interface ListTransactionProps {
     type: string
     nameExpense: string
-    value: string
+    value: number
     category: string
+    id: number
+}
+
+export interface HeaderInternalProps {
+    type: string
+}
+
+export interface BalanceProps {
+    value: number
+    legend: string
+    incoming: boolean  //true for incoming or false for exit
+}
+
+export interface TransactionsRecentsProps{
+    dayExpenses: ListTransactionProps[]
+    //next payments
+    monthReceives: ListTransactionProps[]
 }

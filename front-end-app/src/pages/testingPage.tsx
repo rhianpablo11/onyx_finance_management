@@ -19,7 +19,7 @@ function TestingPage(){
     return (
         <>
             <div className="w-full m-0 px-4 flex-col bg-black justify-center items-center">
-                <HeaderInternal />
+                <HeaderInternal type='wellcome' />
                 <Balance />
                 <TransactionsRecents />
                 <NavBar />
