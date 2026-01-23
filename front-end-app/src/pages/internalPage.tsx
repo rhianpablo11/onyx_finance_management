@@ -5,6 +5,7 @@ import HeaderInternal from "../components/ui/headerInternal"
 import NavBar from "../components/ui/navBar"
 import { useDashboard } from "../hooks/useDashboard"
 import type { ListTransactionProps } from "../interfaces/interfacesComponents"
+import DashMetricsPage from "./dashMetricsPage"
 
 
 function InternalPage(){
@@ -39,13 +40,13 @@ function InternalPage(){
                     <div className="shrink-0 mt-5">
                         <HeaderInternal type='wellcome'/>
                     </div>
-                    
-                    <Balance value={balanceMonth}
-                             legend="10% a mais que o mês anterior"
-                             incoming={true} />
-                    <TransactionsRecents dayExpenses={listOfTransactionsOut}
-                                         monthReceives={listOfTransactionsIn}/>
-                    <div className="w-full max-w-full  fixed bottom-0 z-50 shrink-0">
+                    <DashMetricsPage value={balanceMonth}
+                                     legend='10% a mais que o mês anterior'
+                                     incoming={true}
+                                     dayExpenses={listOfTransactionsOut}
+                                     monthReceives={listOfTransactionsIn}
+                                        />
+                    <div className="w-full max-w-full fixed bottom-0 left-0 px-4 z-50 shrink-0">
                         <NavBar />
                     </div>
                 </div>

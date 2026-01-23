@@ -6,9 +6,9 @@ function NavBar(){
 
     return (
         <>
-            <div className="w-full flex justify-between mt-4">
-                <div className="rounded-[21px] w-5/6 bg-linear-to-b from-white/5 to-transparent p-px">
-                    <div className="h-14 flex  px-3  rounded-[20px] justify-between bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundNavBar}")`}}>
+            <div className="w-full flex justify-center items-center mb-4 mt-4 ">
+                <div className="rounded-[21px] flex-1 bg-linear-to-b from-white/5 to-transparent p-px">
+                    <div className="w-full h-14 flex  px-3  rounded-[20px] justify-between bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundNavBar}")`}}>
                         <button className="text-white">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-8">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -35,12 +35,11 @@ function NavBar(){
                         </button>
                     </div>
                 </div>
-                <div className="h-16 w-16 ml-4 text-white rounded-4xl border-2 flex items-center justify-center border-white">
+                <div className="h-16 w-16 ml-4 shrink-0 text-white rounded-4xl border-2 flex items-center justify-center border-white">
                     <svg width="40" height="40" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M21.9956 12.0175C16.6323 12.3419 12.3399 16.6343 12.0156 21.9975H11.9756C11.6556 16.6343 7.36325 12.3419 2 12.0175V11.9775C7.36325 11.6576 11.6556 7.36521 11.98 2.00195H12.02C12.3444 7.36521 16.6367 11.6576 22 11.982V12.0175H21.9956Z" 
                               fill="#ffffff"/>
                     </svg>
-
                 </div>
             </div>
         </>

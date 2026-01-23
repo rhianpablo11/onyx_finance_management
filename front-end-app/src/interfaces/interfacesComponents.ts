@@ -31,3 +31,11 @@ export interface TransactionsRecentsProps{
     //next payments
     monthReceives: ListTransactionProps[]
 }
+
+export interface DashMetricsPageProps{
+    value: number
+    legend: string
+    incoming: boolean
+    dayExpenses: ListTransactionProps[]
+    monthReceives: ListTransactionProps[]
+}
