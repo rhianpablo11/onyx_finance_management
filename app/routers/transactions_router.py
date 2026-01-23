@@ -62,7 +62,7 @@ def get_monthly_balance(current_user: dict = Depends(get_current_user), db: Sess
                                        db=db)
 
 
-@router.get('/dashboard-data')
+@router.get('/metrics-dashboard')
 def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     data_return = {}
     data_return['month_balance'] = get_monthly_balance_value(db=db,

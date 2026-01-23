@@ -194,7 +194,7 @@ def get_day_and_last_transactions(db: Session, user_id: int):
 
     today = date.today()
 
-    stmt_get = (select(Expense.value, Expense.name, Expense.category)
+    stmt_get = (select(Expense.value, Expense.name, Expense.category, Expense.id)
                 .where(Expense.user_id == user_id)
                 .where(Expense.date == today)
                 .where(Expense.type_expense == False)
@@ -202,7 +202,7 @@ def get_day_and_last_transactions(db: Session, user_id: int):
     list_expenses = db.execute(stmt_get).all()
 
 
-    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category)
+    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id)
                       .where(Expenses_fixed.user_id == user_id)
                       .where(Expenses_fixed.start_date == today)
                       .where(Expenses_fixed.type_expense == False)
@@ -212,18 +212,20 @@ def get_day_and_last_transactions(db: Session, user_id: int):
     formatted_list = []
     for item in list_expenses:
         formatted_list.append({
-            "name": item.name,
+            "nameExpense": item.name,
             "value": item.value,
             "category": item.category,
-            "type": "variable"
+            "id": item.id,
+            "type": False
         })
 
     for item in list_expenses_fixed:
         formatted_list.append({
-            "name": item.name,
+            "nameExpense": item.name,
             "value": item.value,
             "category": item.category,
-            "type": "fixed"
+            "id": item.id,
+            "type": False
         })
 
     return formatted_list
@@ -237,14 +239,14 @@ def get_monthly_receives(db: Session, user_id: int):
     target_year = today.year
     start_date, end_date = get_month_range(target_month, target_year)
 
-    stmt_get = (select(Expense.value, Expense.name, Expense.category)
+    stmt_get = (select(Expense.value, Expense.name, Expense.category, Expense.id)
                 .where(Expense.user_id == user_id)
                 .where(Expense.date.between(start_date, end_date))
                 .where(Expense.type_expense == True))
     list_received = db.execute(stmt_get).all()
 
 
-    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category)
+    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id)
                       .where(Expenses_fixed.user_id == user_id)
                       .where(Expense.date.between(start_date, end_date))
                       .where(Expenses_fixed.type_expense == True))
@@ -255,15 +257,19 @@ def get_monthly_receives(db: Session, user_id: int):
     for item in list_received:
         formatted_list.append({
             'value': item.value,
-            'name': item.name,
-            'category' : item.category
+            'nameExpense': item.name,
+            'category' : item.category,
+            'type': True,
+            'id': item.id
         })
 
     for item in list_receiveds_fixed:
         formatted_list.append({
             'value': item.value,
-            'name': item.name,
-            'category' : item.category
+            'nameExpense': item.name,
+            'category' : item.category,
+            'type': True,
+            'id': item.id
         })
 
     return formatted_list
