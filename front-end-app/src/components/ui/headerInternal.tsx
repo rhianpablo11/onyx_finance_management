@@ -2,7 +2,7 @@
 import type { HeaderInternalProps } from "../../interfaces/interfacesComponents"
 
 function HeaderInternal(props: HeaderInternalProps){
-    const {type} = props
+    const {type, legend, title, name} = props
 
     if(type == 'wellcome'){
         return(
@@ -14,12 +14,12 @@ function HeaderInternal(props: HeaderInternalProps){
                                     Olá, 
                                 </h1>
                                 <h2 className="text-white font-normal text-[32px] ">
-                                    Rhian Pablo
+                                    {name}
                                 </h2>
                             </div>
                             <div>
                                 <h1 className=" pl-1 text-white font-extralight text-xs leading-none">
-                                    Tenha uma ótima tarde
+                                    {legend}
                                 </h1>
                             </div>
                         </div>
@@ -44,24 +44,27 @@ function HeaderInternal(props: HeaderInternalProps){
                         </div>
                         <div className="flex-col">
                             <div className="flex items-baseline">
-                                <h2 className="text-white font-normal text-[32px] leading-none">
-                                    ChatBot
+                                <h2 className="text-white font-light text-[32px] leading-none">
+                                    {title}
                                 </h2>
                             </div>
                             <div>
                                 <h1 className="pl-1 text-white/75 font-extralight text-xs ">
-                                    Facilitador de adição de gastos
+                                    {legend}
                                 </h1>
                             </div>
                         </div>
-                        <div className="flex text-white items-center py-4 ml-auto">
-                            <button>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                                </svg>
+                        {title == 'ChatBot' ? (
+                            <div className="flex text-white items-center py-4 ml-auto">
+                                <button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                    </svg>
 
-                            </button>
-                        </div>
+                                </button>
+                            </div>
+                        ) : null}
+                        
                 </div>
             </>
         )

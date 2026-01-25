@@ -18,6 +18,9 @@ export interface ListTransactionProps {
 
 export interface HeaderInternalProps {
     type: string
+    name?: string
+    legend: string
+    title?: string
 }
 
 export interface BalanceProps {
@@ -38,4 +41,9 @@ export interface DashMetricsPageProps{
     incoming: boolean
     dayExpenses: ListTransactionProps[]
     monthReceives: ListTransactionProps[]
+}
+
+export interface NavBarProps {
+    onClickButtonChildren: (id: string) => void
+    buttonSelected: string
 }
