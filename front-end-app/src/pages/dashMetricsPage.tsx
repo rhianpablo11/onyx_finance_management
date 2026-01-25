@@ -6,6 +6,7 @@ import type { DashMetricsPageProps } from "../interfaces/interfacesComponents"
 function DashMetricsPage(props: DashMetricsPageProps){
     const {value, legend, incoming, dayExpenses, monthReceives} = props
 
+    // trazer para ca toda a logica da requisição
     return(
         <>
             <Balance value={value}

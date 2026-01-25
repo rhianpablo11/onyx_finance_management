@@ -47,3 +47,13 @@ export interface NavBarProps {
     onClickButtonChildren: (id: string) => void
     buttonSelected: string
 }
+
+export interface ChatBubbleProps {
+    isSentMessage: boolean //true for user sent message or false for response of API
+    name: string
+    text: string
+}
+
+export interface ChatPageProps {
+    name: string
+}

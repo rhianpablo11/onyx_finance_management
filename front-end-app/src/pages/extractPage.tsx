@@ -1,12 +1,33 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ListTransaction from "../components/ui/listTransaction"
 import type { ListTransactionProps } from "../interfaces/interfacesComponents"
+import { useExtract } from "../hooks/useExtract"
 
 
 function ExtractPage(){
+    const [balanceValueInPeriod, setBalanceValueInPeriod] = useState<number>(0)
+    const [valueReceivedInPeriod, setValueReceivedInPeriod] = useState<number>(0)
+    const [valueSpentInPeriod, setValueSpentInPeriod] = useState<number>(0)
+    const [listOfTransaction, setListOfTransaction] = useState<ListTransactionProps[]>([])
+    const {getExtract, loading} = useExtract()
 
-    const [listTransaction, setListTransaction] = useState<ListTransactionProps[]>([])
+    useEffect(()=>{
+        const fetchExtractData = async () =>{
+            try{
+                const data = await getExtract()
+                setBalanceValueInPeriod(data['balance_value_in_period'])
+                setListOfTransaction(data['transactions'])
+                setValueReceivedInPeriod(data['value_received'])
+                setValueSpentInPeriod(data['value_spent'])
+            } catch(error){
+                console.error('erro ao buscar o extrato', error)
+            }
+        }
 
+        fetchExtractData()
+    }, [])
+
+    
     return(
         <>
         <div className="w-full h-full px-2.5 flex flex-col border border-white rounded-[28px] overflow-hidden">
@@ -17,7 +38,7 @@ function ExtractPage(){
                             Saldo no perído:
                         </h1>
                         <h1 className="font-normal text-white text-2xl">
-                            R$ 15.000,00
+                            R$ {balanceValueInPeriod}
                         </h1>
                     </div>
                     <div className="flex justify-start pl-2.5 items-center border border-white/15 h-10 w-3/8 rounded-2xl">
@@ -33,7 +54,7 @@ function ExtractPage(){
                             Recebido:
                         </h1>
                         <h1 className="font-normal text-lg text-white">
-                            R$ 40.000,00
+                            R$ {valueReceivedInPeriod}
                         </h1>
                     </div>
                     <div className="flex flex-col">
@@ -41,7 +62,7 @@ function ExtractPage(){
                             Saídas:
                         </h1>
                         <h1 className="font-normal text-lg text-white">
-                            R$ 25.000,00
+                            R$ {valueSpentInPeriod}
                         </h1>
                     </div>
                 </div>
@@ -62,7 +83,7 @@ function ExtractPage(){
                 </div>
             </div>
                 <div className="w-full flex-1 overflow-y-auto min-h-0 ">
-                    {/* {listTransaction.map((item, index) => (
+                    {/* {listOfTransaction.map((item, index) => (
                         <ListTransaction 
                             key={item.id} 
                             type={typeList}

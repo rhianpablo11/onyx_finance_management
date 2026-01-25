@@ -60,7 +60,7 @@ function InternalPage(){
             )
         } else if(pageSelected == 'chat'){
             return(
-                <ChatPage />
+                <ChatPage name="Rhian Pablo"/>
             )
         }
     }
