@@ -2,7 +2,7 @@
 import type { HeaderInternalProps } from "../../interfaces/interfacesComponents"
 
 function HeaderInternal(props: HeaderInternalProps){
-    const {type, legend, title, name} = props
+    const {type, legend, title, name, onClickChildren} = props
 
     if(type == 'wellcome'){
         return(
@@ -38,9 +38,11 @@ function HeaderInternal(props: HeaderInternalProps){
             <>
                 <div className="w-full h-full flex rounded-xl pt-4 items-center">
                         <div className="text-white pr-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-7">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                            </svg>
+                            <button onClick={onClickChildren}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-7">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                                </svg>
+                            </button>
                         </div>
                         <div className="flex-col">
                             <div className="flex items-baseline">

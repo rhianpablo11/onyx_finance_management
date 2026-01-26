@@ -5,10 +5,10 @@ import { api } from "../services/apiService";
 export function useExtract(){
     const [loading, setLoading] = useState(false)
 
-    const getExtract = async () => {
+    const getExtract = async (startDate: string, endDate: string) => {
         setLoading(true)
         try{
-            const response = await api.get('/transactions')
+            const response = await api.get(`/transactions/extract?start_date=${startDate}&end_date=${endDate}`)
             return response.data
         } catch(err: any) {
             throw err

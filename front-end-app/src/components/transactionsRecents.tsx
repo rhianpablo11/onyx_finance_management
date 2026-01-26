@@ -6,20 +6,12 @@ import ListTransaction from "./ui/listTransaction"
 import type { ListTransactionProps, TransactionsRecentsProps } from "../interfaces/interfacesComponents"
 
 
-interface TransactionItem {
-    id?: number; // Se vier do banco, geralmente tem ID
-    name: string;
-    value: number; 
-    category: string;
-    type?: boolean; // Para saber se é fixo ou variavel
-}
+
 
 function TransactionsRecents(props: TransactionsRecentsProps){
     const {dayExpenses, monthReceives} = props
     const [activeTab, setActiveTab] = useState(0)
     const [typeList, setTypeList] = useState('expenseOfDay')
-    const [dayExpensesList, setDayExpensesList] = useState<ListTransactionProps[]>([]);
-    const [monthReceivesList, setMonthReceives] = useState<ListTransactionProps[]>([]);
     const [listToShow, setListToShow] = useState<ListTransactionProps[]>([])
     //const [nextPaymentsList, setNextPaymentsList] = useState<ListTransactionProps[]>([]);
 
@@ -53,8 +45,23 @@ function TransactionsRecents(props: TransactionsRecentsProps){
                 </>
             )
         } else{
+            if(activeTab == 2){
+                return(
+                    listToShow.map((item) => (
+                    <ListTransaction 
+                        key={item.id} 
+                        type={typeList}
+                        category={item.category}
+                        nameExpense={item.nameExpense}
+                        value={item.value} 
+                        id={item.id}
+                        date={item.date}
+                    />
+                    )
+                ))
+            }
             return(
-                listToShow.map((item, index) => (
+                listToShow.map((item) => (
                     <ListTransaction 
                         key={item.id} 
                         type={typeList}

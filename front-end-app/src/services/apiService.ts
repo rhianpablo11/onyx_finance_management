@@ -4,7 +4,7 @@ import { getToken, removeToken } from './tokenService';
 
 export const api = axios.create({
     baseURL: 'http://localhost:8000', 
-    timeout: 10000, 
+    timeout: 1000000, 
 });
 
 api.interceptors.request.use((config) => {

@@ -13,7 +13,8 @@ function Login(){
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const {login, loading, error} = useLogin()
+    //const {login, loading, error} = useLogin()
+    const {login} = useLogin()
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
         setEmail(value)

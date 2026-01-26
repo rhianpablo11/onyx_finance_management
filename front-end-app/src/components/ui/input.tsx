@@ -5,7 +5,7 @@ import type { InputProps } from "../../interfaces/interfacesComponents"
 
 
 function Input(props: InputProps){
-    const {type, onChangeInputChildren} = props
+    const {type, onChangeInputChildren, cleanText} = props
     const [valueInputTyped, setValueInputTyped] = useState('')
 
     const handleInputChange = (event: any) =>{
@@ -13,6 +13,12 @@ function Input(props: InputProps){
         setValueInputTyped(value)
         onChangeInputChildren(value)
     }
+
+    useEffect(()=>{
+        if(cleanText){
+            setValueInputTyped('')
+        } 
+    }, [cleanText])
 
     if(type == 'email'){
         return(
@@ -109,18 +115,20 @@ function Input(props: InputProps){
                 </div>
             </>
         )
-    } else {
+    } else if(type == 'chatpage'){
         return(
             <>
-                <div className="w-full flex h-24 rounded-[28px] bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundInputChat}")`}}>
-                    <textarea 
-                        placeholder='Descreva aqui o seu gasto, ou recebimento, para poder ser adicionado!'
-                        className='text-white rounded-[28px] p-3 w-full h-full backdrop-blur-2xl text-left font-extralight text-sm focus:outline-none resize-none  placeholder:text-white/50 '
-                        
-                          onChange={handleInputChange}
-                           value={valueInputTyped}>
-                    </textarea>
+                <div className='rounded-[29px] bg-linear-to-tl from-white/20 via-black to-white/30 p-px'>
+                    <div className="w-full flex h-24 rounded-[28px] bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundInputChat}")`}}>
+                        <textarea 
+                            placeholder='Descreva aqui o seu gasto, ou recebimento, para poder ser adicionado!'
+                            className='text-white rounded-[28px] p-3 w-full h-full backdrop-blur-2xl text-left font-extralight text-sm focus:outline-none resize-none  placeholder:text-white/50 '
+                            onChange={handleInputChange}
+                            value={valueInputTyped}>
+                        </textarea>
+                    </div>
                 </div>
+                
             </>
         )
     }

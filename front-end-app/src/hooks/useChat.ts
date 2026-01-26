@@ -13,7 +13,8 @@ export function useChat(){
             message: text
         }
         try{
-            const response = await api.post('/transactions', payload)
+            const response = await api.post('/transactions/create', payload)
+            console.log(response.data)
             return response.data
         } catch (err:any){
             const errorMsg = err.response?.data?.detail || 'Erro ao processar mensagem';

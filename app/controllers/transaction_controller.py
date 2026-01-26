@@ -1,7 +1,7 @@
 from sqlalchemy import desc, or_, select
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import date
+from datetime import date, timedelta
 from app.models.expense import Expense
 from app.models.expense_category import Expense_category
 from app.models.expenses_fixed import Expenses_fixed
@@ -63,7 +63,7 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
             start_date=ia_response['first_payment_date'],
             end_date=ia_response['last_payment_date'],
             charge=charge_id,
-            category_id=category_id,
+            category=category_id,
             payment_date=ia_response['first_payment_date'],
             activated=True,
             type_expense=ia_response['type'],
@@ -239,14 +239,14 @@ def get_monthly_receives(db: Session, user_id: int):
     target_year = today.year
     start_date, end_date = get_month_range(target_month, target_year)
 
-    stmt_get = (select(Expense.value, Expense.name, Expense.category, Expense.id)
+    stmt_get = (select(Expense.value,Expense.date, Expense.name, Expense.category, Expense.id)
                 .where(Expense.user_id == user_id)
                 .where(Expense.date.between(start_date, end_date))
                 .where(Expense.type_expense == True))
     list_received = db.execute(stmt_get).all()
 
 
-    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id)
+    stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.start_date, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id)
                       .where(Expenses_fixed.user_id == user_id)
                       .where(Expense.date.between(start_date, end_date))
                       .where(Expenses_fixed.type_expense == True))
@@ -260,7 +260,8 @@ def get_monthly_receives(db: Session, user_id: int):
             'nameExpense': item.name,
             'category' : item.category,
             'type': True,
-            'id': item.id
+            'id': item.id,
+            'date':item.date
         })
 
     for item in list_receiveds_fixed:
@@ -269,7 +270,8 @@ def get_monthly_receives(db: Session, user_id: int):
             'nameExpense': item.name,
             'category' : item.category,
             'type': True,
-            'id': item.id
+            'id': item.id,
+            'date': item.start_date
         })
 
     return formatted_list
@@ -281,12 +283,135 @@ def get_next_payments(db: Session, user_id: int):
 
 
 #pegar o saldo em um periodo especifico
-def get_balance_in_period(db: Session, user_id: int):
+def get_balance_in_period(db: Session, user_id: int,start_date: date, end_date: date):
+    # 1. Pega o total de ENTRADAS no período (já somando fixas + variáveis)
+    total_received = get_total_received_on_the_date(
+        db=db, 
+        user_id=user_id, 
+        start_date=start_date, 
+        end_date=end_date
+    )
+    
+    # 2. Pega o total de SAÍDAS no período
+    total_spent = get_total_spent_on_the_date(
+        db=db, 
+        user_id=user_id, 
+        start_date=start_date, 
+        end_date=end_date
+    )
+
+    # 3. Calcula o saldo (Recebido - Gasto)
+    balance = total_received['value'] - total_spent['value']
+
+    return {
+        'value': balance
+    }
+
+    
 
 
-    pass
+
+def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date, end_date: date):
+    # 1. Busca todas as fixas ativas do usuário que começaram ANTES do fim da busca
+    stmt = (select(Expenses_fixed, Charge_type.name.label('charge_name'))
+            .join(Charge_type, Expenses_fixed.charge == Charge_type.id)
+            .where(Expenses_fixed.user_id == user_id)
+            .where(Expenses_fixed.activated == True)
+            .where(Expenses_fixed.start_date <= end_date) # Começou antes do fim do filtro
+            .where(or_(Expenses_fixed.end_date == None, Expenses_fixed.end_date >= start_date)) # Não acabou antes do inicio
+           )
+    
+    # Retorna tuplas (Expenses_fixed, NomeDoTipo)
+    results = db.execute(stmt).all() 
+    
+    projected_transactions = []
+
+    for expense, charge_name in results:
+        # A lógica aqui depende do tipo. Vou fazer MENSAL que é 99% dos casos.
+        # Você pode expandir para Semanal depois.
+        
+        current_check_date = start_date
+        
+        # Vamos varrer dia a dia do período selecionado (ex: os 7 dias)
+        # Se for um intervalo grande, existem formas matematicas mais rapidas, 
+        # mas para extratos curtos, loop while é seguro e facil de entender.
+        
+        while current_check_date <= end_date:
+            
+            should_add = False
+            
+            # --- LÓGICA MENSAL ---
+            if charge_name.lower() == 'mensal':
+                # Se o dia da despesa (ex: dia 15) for igual ao dia que estamos checando no loop
+                # E cuidado com fevereiro (dia 30 não existe, python trata isso)
+                try:
+                    # Verifica se no mes/ano do loop, o dia de pagamento bate
+                    if current_check_date.day == expense.payment_date.day:
+                        should_add = True
+                except ValueError:
+                    # Caso tente dia 30 em fevereiro, ignora ou ajusta pro dia 28
+                    pass
+
+            # --- LÓGICA SEMANAL ---
+            elif charge_name.lower() == 'semanal':
+                # Calcula a diferença de dias desde o inicio da despesa
+                delta = current_check_date - expense.start_date
+                # Se a diferença for multiplo de 7 (0, 7, 14, 21...)
+                if delta.days >= 0 and delta.days % 7 == 0:
+                    should_add = True
+
+            # --- ADICIONA NA LISTA SE BATEU ---
+            if should_add:
+                projected_transactions.append({
+                    "id": f"fixed_{expense.id}_{current_check_date}", # ID único falso pra frontend não bugar key
+                    "real_id": expense.id,
+                    "nameExpense": expense.name,
+                    "value": expense.value,
+                    "category": expense.category, # Ou pegar o nome da categoria com join
+                    "typeExpense": expense.type_expense, # True/False
+                    "date": current_check_date, # A data CALCULADA que caiu no periodo
+                    "is_fixed": True
+                })
+
+            # Avança um dia no loop
+            current_check_date += timedelta(days=1)
+
+    return projected_transactions
 
 
 #pegar as movimentações dentro de um periodo
-def get_transactions_in_period():
-    pass
+def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_date: date = None):
+    if(end_date):
+        stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category)
+                    .where(Expense.user_id == user_id)
+                    .where(Expense.date.between(start_date, end_date)))
+    # else:
+    #     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category)
+    #             .where(Expense.user_id == user_id)
+    #             .where(Expense.date > start_date))
+    stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category)
+                    .where(Expense.user_id == user_id)
+                    .where(Expense.date.between(start_date, end_date)))
+    list_transactions = db.execute(stmt_get).all()
+
+    formatted_list = []
+    
+    for item in list_transactions:
+        formatted_list.append({
+            'typeExpense': item.type_expense,
+            'category': item.category,
+            'nameExpense': item.name,
+            'value': item.value,
+            'id': item.id,
+            'date': item.date,
+            'is_fixed': False
+        })
+    
+    list_fixed = process_fixed_expenses_in_period(db=db,
+                                                  user_id=user_id, 
+                                                  start_date=start_date,
+                                                  end_date=end_date)
+    full_extract = formatted_list + list_fixed
+    full_extract.sort(key=lambda x: x['date'], reverse=True)
+
+    return full_extract

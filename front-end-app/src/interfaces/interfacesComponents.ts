@@ -1,6 +1,7 @@
 export interface InputProps {
     type: string;
     onChangeInputChildren: (value: string) => void
+    cleanText?: boolean
 }
 
 export interface ButtonProps {
@@ -14,6 +15,17 @@ export interface ListTransactionProps {
     value: number
     category: string
     id: number
+    typeExpense?: boolean
+    date?: string
+}
+
+export interface ListTransactionForExtractProps {
+    type: string
+    nameExpense: string
+    value: number
+    category: string
+    id: number
+    
 }
 
 export interface HeaderInternalProps {
@@ -21,6 +33,7 @@ export interface HeaderInternalProps {
     name?: string
     legend: string
     title?: string
+    onClickChildren?: ()=> void
 }
 
 export interface BalanceProps {
@@ -35,13 +48,6 @@ export interface TransactionsRecentsProps{
     monthReceives: ListTransactionProps[]
 }
 
-export interface DashMetricsPageProps{
-    value: number
-    legend: string
-    incoming: boolean
-    dayExpenses: ListTransactionProps[]
-    monthReceives: ListTransactionProps[]
-}
 
 export interface NavBarProps {
     onClickButtonChildren: (id: string) => void
@@ -56,4 +62,16 @@ export interface ChatBubbleProps {
 
 export interface ChatPageProps {
     name: string
+}
+
+export interface SelectionProps {
+    options: SelectionOptionProps[]
+    placeholder: string
+    onChange: (value: string) => void
+    initialValue: string
+}
+
+export interface SelectionOptionProps {
+    label: string
+    value: string
 }

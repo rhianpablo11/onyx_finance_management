@@ -1,58 +1,32 @@
 import { useEffect, useState } from "react"
-import Balance from "../components/balance"
-import TransactionsRecents from "../components/transactionsRecents"
 import HeaderInternal from "../components/ui/headerInternal"
 import NavBar from "../components/ui/navBar"
-import { useDashboard } from "../hooks/useDashboard"
-import type { ListTransactionProps } from "../interfaces/interfacesComponents"
 import DashMetricsPage from "./dashMetricsPage"
 import ExtractPage from "./extractPage"
 import ChatPage from "./chatPage"
+import backgroundInternalPage from '../assets/bg-internalPage.svg?url'
 
 
 function InternalPage(){
-    const {getMetrics, loading, error} = useDashboard()
-    const [balanceMonth, setBalanceMonth] = useState<number>(0)
-    const [listOfTransactionsOut, setListOfTransactionsOut] = useState<ListTransactionProps[]>([])
-    const [listOfTransactionsIn, setListOfTransactionsIn] = useState<ListTransactionProps[]>([])
     const [pageSelected, setPageSelected] = useState<string>('home')
     const [typeToShowHeader, setTypeToShowHeader] = useState<string>('wellcome')
     const [legendHeader, setLegendHeader] = useState<string>('')
     const [titleHeader, setTitleHeader] = useState<string>('')
 
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const data = await getMetrics();
-                setBalanceMonth(data['month_balance'])
-                setListOfTransactionsOut(data['expenses_out'])
-                setListOfTransactionsIn(data['expenses_in_on_month'])
-            } catch (error) {
-                console.error("Erro ao buscar métricas:", error);
-            }
-        }
-
-        fetchDashboardData();
-        
-    }, [])
-
-
     const handlePageSelected = (pageClicked: string) => {
         setPageSelected(pageClicked)
     }
 
+    const returnPage = () => {
+        setPageSelected('home')
+    }
 
     const renderInternal = () => {
         
         if(pageSelected == 'home'){
             return(
-                <DashMetricsPage value={balanceMonth}
-                                legend='10% a mais que o mês anterior'
-                                incoming={true}
-                                dayExpenses={listOfTransactionsOut}
-                                monthReceives={listOfTransactionsIn}
-                                    />
+                <DashMetricsPage />
             )
         } else if(pageSelected == 'extract'){
             return(
@@ -83,13 +57,15 @@ function InternalPage(){
     return(
         
         <>
-            <div className="w-full max-w-full h-dvh m-0 px-4 bg-black">
+            <div className="w-full max-w-full h-dvh m-0 px-4 bg-no-repeat bg-cover bg-center " 
+                     style={{backgroundImage: `url("${backgroundInternalPage}")`}}>
                 <div className="w-full h-dvh max-h-dvh flex flex-col">
                     <div className="shrink-0 mt-5">
                         <HeaderInternal name="Rhian Pablo"
                                         legend={legendHeader}
                                         title={titleHeader}
-                                        type={typeToShowHeader}/>
+                                        type={typeToShowHeader}
+                                        onClickChildren={returnPage}/>
                     </div>
                     <div className="flex-1 overflow-hidden pb-24 pt-4">
                         {renderInternal()}

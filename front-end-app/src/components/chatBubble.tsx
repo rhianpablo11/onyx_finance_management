@@ -42,11 +42,7 @@ function ChatBubble(props: ChatBubbleProps){
                         <div className="bg-[#151515] shadow-white/20 shadow-md  text-white p-3.5 rounded-4xl rounded-bl-none ">
                             <div className="space-y-1">
                                 <p className="pl-2 font-light text-base leading-tight mb-2">
-                                    Dados coletados sobre seu gasto e como serão adicionados:<br></br>
-                                        1. Valor: R$200,00<br></br>
-                                        2. Tipo: recebimento<br></br>
-                                        3. Categoria: Juros<br></br>
-
+                                    {text}
                                 </p>
                                 
                             </div>

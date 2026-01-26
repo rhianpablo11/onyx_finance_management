@@ -1,5 +1,5 @@
 // component for show monthly balance in initial page
-import backgroundBalance from '../assets/bg-balance.svg?url'
+import backgroundBalance from '../assets/bg-balance2.svg?url'
 import type { BalanceProps } from '../interfaces/interfacesComponents'
 
 function Balance(props: BalanceProps){
@@ -7,7 +7,7 @@ function Balance(props: BalanceProps){
 
     return(
         <>
-            <div className='rounded-[29px]  mb-6  bg-linear-to-b from-white/30 to-transparent p-px'>
+            <div className='rounded-[29px] mb-6 bg-linear-to-tl from-white/30 via-black to-white/70 p-px'>
                 <div className="flex-col  px-4 pt-4 rounded-[28px] h-48 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundBalance}")`}}>
                     <div className=" flex-col rounded-4xl">
                         <h1 className="text-white font-extralight text-xl">

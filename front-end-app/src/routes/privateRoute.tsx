@@ -5,7 +5,7 @@ import { getToken } from '../services/tokenService'
 function PrivateRoute(){
     const isTokenExists = getToken()
 
-    if(!isTokenExists){
+    if(isTokenExists){
         return <Outlet />
     } else{
         return <Navigate to='/login' replace />
