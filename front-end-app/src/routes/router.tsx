@@ -4,6 +4,7 @@ import { PrivateRoute } from "./privateRoute";
 import { DashboardLayout } from "../layouts/dashboardLayout";
 import LoginPage from "../pages/loginPage";
 import InternalPage from "../pages/internalPage";
+import CreateAccountPage from "../pages/createAccountPage";
 
 
 export const router = createBrowserRouter([
@@ -15,6 +16,9 @@ export const router = createBrowserRouter([
     {
         path:'/login',
         element: <LoginPage />
+    },{
+        path:'/sign-up',
+        element: <CreateAccountPage />
     },
 
     // private routes

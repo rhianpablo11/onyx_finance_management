@@ -75,3 +75,14 @@ export interface SelectionOptionProps {
     label: string
     value: string
 }
+
+export interface FirstStepRegisterProps {
+    changeStatus: (status: boolean) => void
+    sendInfoInitialUser: (info: SecondStepRegisterProps) => void
+}
+
+export interface SecondStepRegisterProps {
+    name: string | undefined
+    email: string | undefined
+    telephone: string | undefined
+}

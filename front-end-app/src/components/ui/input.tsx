@@ -35,6 +35,21 @@ function Input(props: InputProps){
                     </div>
                 </>
             )
+    } else if(type == 'name'){
+        return(
+            <>
+                <div className='flex h-10 rounded-[14px] bg-[#37363E] justify-center items-center w-full'>
+                    <input className='w-full h-full p-2.5 flex items-center font-normal text-base text-white placeholder:text-white/75 focus:outline-none'
+                            type='name'
+                            placeholder='Ana Beatriz Costa Silva'
+                            required
+                            onChange={handleInputChange}
+                            value={valueInputTyped}
+                            >
+                    </input>
+                </div>
+            </>
+        )
     } else if(type == 'telephone'){
 
             return(

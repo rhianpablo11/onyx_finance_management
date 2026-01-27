@@ -16,6 +16,28 @@ function Button(props: ButtonProps){
                 </button>
             </>
         )
+    } else if(type == 'next_create'){
+        return(
+            <>
+                <button onClick={() => onClickButtonChildren('')}
+                        className="bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-13 w-full">
+                    <h1 className="font-medium text-xl text-black">
+                        Avançar
+                    </h1>
+                </button>
+            </>
+        )
+    } else if(type == 'create'){
+        return(
+            <>
+                <button onClick={() => onClickButtonChildren('')}
+                        className="bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-13 w-full">
+                    <h1 className="font-medium text-xl text-black">
+                        Criar Conta
+                    </h1>
+                </button>
+            </>
+        )
     } else if(type == 'create account'){
         return(
             <>
