@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from app.core.auth import create_access_token, ACCESS_TOKEN_DURATION_TIME
 from datetime import timedelta
 from sqlalchemy.orm import Session
@@ -55,4 +56,31 @@ def create_user(user: UserCreate, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    data_user = {'id': new_user.id}
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+    access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+    
+    return {
+        'access_token': access_token,
+        'token_type': 'bearer',
+        'user_data': new_user
+    }
+
+
+def verify_user_exist(db: Session, email: str, telephone: str):
+    stmt = (select(User.id)
+            .where(User.email == email))
+    
+    list_user = db.execute(stmt).all()
+
+    stmt = (select(User.id)
+            .where(User.telephone == telephone))
+    
+    list_user2 = db.execute(stmt).all()
+    if(len(list_user) > 0):
+        raise HTTPException(status_code=400, detail='Email already in database')
+    
+    if(len(list_user2) > 0):
+        raise HTTPException(status_code=400, detail='telephone alredy in database')
+    
+    return {'message': 'user not in database'}

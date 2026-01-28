@@ -8,15 +8,18 @@ import { useCreateAccount } from "../hooks/useCreateAccount"
 
 
 function FirstStepRegister(props: FirstStepRegisterProps){
-    const {changeStatus} = props
-    const {loading, verifyEmail} = useCreateAccount()
+    const {changeStatus, sendInfoInitialUser} = props
+    const {loading, verifyUser, error} = useCreateAccount()
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
     const [telephone, setTelephone] = useState('')
+    const [emailIsValid, setEmailIsValid] = useState(true)
+    const [telephoneIsValid, setTelephoneIsValid] = useState(true)
 
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
         setEmail(value)
+        setEmailIsValid(true)
     }
 
     const onChangeInputFatherName = (value: string) => {
@@ -27,18 +30,22 @@ function FirstStepRegister(props: FirstStepRegisterProps){
     const onChangeInputFatherTelephone = (value: string) => {
         console.log(value)
         setTelephone(value)
+        setTelephoneIsValid(true)
     }
 
     const onClickFather = async (buttonClicked:string) =>{
         console.log(buttonClicked)
-        changeStatus(true)
         try{
-            await verifyEmail(email)
-            console.log('deu bom')
+            await verifyUser(email, telephone)
+            sendInfoInitialUser({email, name, telephone})
             changeStatus(true)
         } catch(err){
-            console.log('deu erro')
-            console.error('falha')
+            console.log('oi ' + error)
+            if(error == 'Email already in database'){
+                setEmailIsValid(false)
+            } else if(error == 'telephone alredy in database'){
+                setTelephoneIsValid(false)
+            }
             changeStatus(false)
         }
     }
@@ -57,6 +64,9 @@ function FirstStepRegister(props: FirstStepRegisterProps){
                         </h1>
                         <Input onChangeInputChildren={onChangeInputFatherEmail} 
                                type="email"/>
+                        {!emailIsValid && (
+                            <p className="text-red-400 text-xs mt-1 pl-2">E-mail ja presente no sistema!</p>
+                        )}
                     </div>
                     <div>
                         <h1 className="text-white font-light text-sm pt-2 pb-1">
@@ -71,6 +81,9 @@ function FirstStepRegister(props: FirstStepRegisterProps){
                         </h1>
                         <Input  onChangeInputChildren={onChangeInputFatherTelephone} 
                                 type="telephone"/>
+                        {!telephoneIsValid && (
+                            <p className="text-red-400 text-xs mt-1 pl-2">Telefone ja presente no sistema!</p>
+                        )}
                     </div>
                 </div>
                 <div className="w-44 mt-8 mb-9">

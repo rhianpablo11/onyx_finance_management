@@ -5,6 +5,7 @@ import DashMetricsPage from "./dashMetricsPage"
 import ExtractPage from "./extractPage"
 import ChatPage from "./chatPage"
 import backgroundInternalPage from '../assets/bg-internalPage.svg?url'
+import { getCookie } from "../services/cookiesService"
 
 
 function InternalPage(){
@@ -12,7 +13,7 @@ function InternalPage(){
     const [typeToShowHeader, setTypeToShowHeader] = useState<string>('wellcome')
     const [legendHeader, setLegendHeader] = useState<string>('')
     const [titleHeader, setTitleHeader] = useState<string>('')
-
+    const [userName, setUserName] = useState('')
 
     const handlePageSelected = (pageClicked: string) => {
         setPageSelected(pageClicked)
@@ -34,10 +35,17 @@ function InternalPage(){
             )
         } else if(pageSelected == 'chat'){
             return(
-                <ChatPage name="Rhian Pablo"/>
+                <ChatPage name={userName}/>
             )
         }
     }
+
+    useEffect(()=>{
+        const name = getCookie('user_name')
+        if(name){
+            setUserName(name)
+        }
+    }, [])
 
     useEffect(()=>{
         if(pageSelected == 'home'){
@@ -61,7 +69,7 @@ function InternalPage(){
                      style={{backgroundImage: `url("${backgroundInternalPage}")`}}>
                 <div className="w-full h-dvh max-h-dvh flex flex-col">
                     <div className="shrink-0 mt-5">
-                        <HeaderInternal name="Rhian Pablo"
+                        <HeaderInternal name={userName}
                                         legend={legendHeader}
                                         title={titleHeader}
                                         type={typeToShowHeader}

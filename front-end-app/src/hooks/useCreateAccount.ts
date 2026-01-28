@@ -5,13 +5,18 @@ import { setToken } from "../services/tokenService";
 
 export function useCreateAccount(){
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>('')
 
-    const verifyEmail = async (email: string) => {
+    const verifyUser = async (email: string, telephone: string) => {
         setLoading(true)
+        setError(null)
         try{
-            const response = await api.get(`/user/verify-email?email=${email}`)
+            const response = await api.get(`/user/verify-user?email=${email}&telephone=${telephone}`)
+            console.log(response.data)
             return response.data
         } catch(err: any){
+            console.log(err.response.data.detail)
+            setError(err.response.data.detail)
             throw err
         } finally{
             setLoading(false)
@@ -27,7 +32,7 @@ export function useCreateAccount(){
                 "password": password
             }
         try{
-            const response = await api.post('user/create', payload)
+            const response = await api.post('user/register', payload)
             const {access_token} = response.data
             setToken(access_token)
             return response.data
@@ -38,5 +43,5 @@ export function useCreateAccount(){
         }
     }
 
-    return {loading, verifyEmail, createAccount}
+    return {loading, verifyUser, createAccount, error}
 }

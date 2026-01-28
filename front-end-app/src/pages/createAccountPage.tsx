@@ -6,6 +6,7 @@ import FirstStepRegister from "../components/firstStepRegister"
 import { useState } from "react"
 import SecondStepRegister from "../components/secondStepRegister"
 import type { SecondStepRegisterProps } from "../interfaces/interfacesComponents"
+import { useCreateAccount } from "../hooks/useCreateAccount"
 
 
 function CreateAccountPage(){
