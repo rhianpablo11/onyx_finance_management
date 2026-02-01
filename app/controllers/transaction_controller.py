@@ -12,69 +12,80 @@ from app.models.charge_type import Charge_type
 from app.controllers.chat_logs_controller import create_new_chat_log
 from app.utils.utils import get_month_range
 
+
 def create_new_expense(user_id: int, text_typed: str, db: Session):
-    stmt_categories = select(Expense_category.name).where(Expense_category.user_id == user_id)
-    categorys_of_user = db.execute(stmt_categories).scalars().all()
     
+    try:
+        stmt_categories = select(Expense_category.name).where(Expense_category.user_id == user_id)
+        categorys_of_user = db.execute(stmt_categories).scalars().all()
+        print(categorys_of_user)
 
-    # 2. Seleciona todos os nomes de tipos de cobrança
-    stmt_charges = select(Charge_type.name)
-    charge_types_existing = db.execute(stmt_charges).scalars().all()
-    
-    ia_response = analyze_transaction_text(text=text_typed, user_categories=categorys_of_user, charge_types=charge_types_existing)
-    
-    category_id = expense_category_analysis(categorys_of_user=categorys_of_user,
-                                                user_id=user_id,
-                                                db=db,
-                                                category_for_verification=ia_response['category'],
-                                                )
+        # 2. Seleciona todos os nomes de tipos de cobrança
+        stmt_charges = select(Charge_type.name)
+        charge_types_existing = db.execute(stmt_charges).scalars().all()
+        print(charge_types_existing)
 
-    create_new_chat_log(text_typed=text_typed,
-                        db=db,
-                        user_id=user_id,
-                        ai_json_response=ia_response)
+        ia_response = analyze_transaction_text(text=text_typed, user_categories=categorys_of_user, charge_types=charge_types_existing)
+        if(ia_response == None):
+            raise HTTPException(status_code=400, detail='IA fora de operação')
+        
+        print('aquiiii')
+        category_id = expense_category_analysis(categorys_of_user=categorys_of_user,
+                                                    user_id=user_id,
+                                                    db=db,
+                                                    category_for_verification=ia_response['category'],
+                                                    )
 
-    if(ia_response['is_recurrent'] == False):
-        #work with table of Expense
+        create_new_chat_log(text_typed=text_typed,
+                            db=db,
+                            user_id=user_id,
+                            ai_json_response=ia_response)
 
-        new_expense = Expense(
-            user_id=user_id,
-            category=category_id,
-            value=ia_response['amount'],
-            type_expense=ia_response['type'],
-            description=ia_response['description'],
-            date=ia_response['first_payment_date'],
-            payment_method=ia_response['payment_method'],
-            is_activated=True,
-            name=ia_response['name']
-        )
-        db.add(new_expense)
-        db.commit()
-        db.refresh(new_expense)
-        return {'type': 'simple',
-                'data': new_expense}
-    else:
-        #work with table of Expense_fixed
-        charge_id = get_charge_type_id(ia_response['type_of_installment'], charge_types_existing, db)
-        new_expense_fixed = Expenses_fixed(
-            user_id=user_id,
-            name=ia_response['name'],
-            value=ia_response['amount'],
-            start_date=ia_response['first_payment_date'],
-            end_date=ia_response['last_payment_date'],
-            charge=charge_id,
-            category=category_id,
-            payment_date=ia_response['first_payment_date'],
-            activated=True,
-            type_expense=ia_response['type'],
-            installments_count=ia_response['installments_count']
-        )
+        if(ia_response['is_recurrent'] == False):
+            #work with table of Expense
 
-        db.add(new_expense_fixed)
-        db.commit()
-        db.refresh(new_expense_fixed)
-        return {'type': 'fixed',
-                'data':new_expense_fixed}
+            new_expense = Expense(
+                user_id=user_id,
+                category=category_id,
+                value=ia_response['amount'],
+                type_expense=ia_response['type'],
+                description=ia_response['description'],
+                date=ia_response['first_payment_date'],
+                payment_method=ia_response['payment_method'],
+                is_activated=True,
+                name=ia_response['name']
+            )
+            db.add(new_expense)
+            db.commit()
+            db.refresh(new_expense)
+            return {'type': 'simple',
+                    'data': new_expense}
+        else:
+            #work with table of Expense_fixed
+            charge_id = get_charge_type_id(ia_response['type_of_installment'], charge_types_existing, db)
+            print(charge_id)
+            new_expense_fixed = Expenses_fixed(
+                user_id=user_id,
+                name=ia_response['name'],
+                value=ia_response['amount'],
+                start_date=ia_response['first_payment_date'],
+                end_date=ia_response['last_payment_date'],
+                charge=charge_id,
+                category=category_id,
+                payment_date=ia_response['first_payment_date'],
+                activated=True,
+                type_expense=ia_response['type'],
+                installments_count=ia_response['installments_count']
+            )
+
+            db.add(new_expense_fixed)
+            db.commit()
+            db.refresh(new_expense_fixed)
+            return {'type': 'fixed',
+                    'data':new_expense_fixed}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail='Error in create new transaction')
         
 
 

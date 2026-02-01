@@ -7,6 +7,38 @@ from app.core.security import GEMINI_API_KEY
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
+def validate_and_fix_json(data: dict):
+    today_iso = date.today().isoformat()
+    defaults = {
+        "amount": 0.0,
+        "is_installment": False,
+        "installments_count": 1,
+        "is_recurrent": False,
+        "type": False, # False = Saída (gasto) por segurança
+        "category": "Outros", # Categoria genérica
+        "description": "Movimentação sem descrição",
+        "first_payment_date": today_iso,
+        "payment_method": "dinheiro fisico",
+        "last_payment_date": today_iso,
+        "type_of_installment": "mensal",
+        "name": "Gasto Geral"
+    }
+
+    for key, default_value in defaults.items():
+        if key not in data or data[key] is None:
+            if (isinstance(default_value, str) and data.get(key) == '' or data.get(key) == 'null'):
+                data[key] = default_value
+            else:
+                data[key] = default_value
+
+    try:
+        data['installments_count'] == int(data["installments_count"])
+    except:
+        data["installments_count"] = 1
+
+    return data
+
+
 def analyze_transaction_text(text: str, user_categories: list[str] = None, charge_types: list[str] = None):
     """
     Recebe o texto do usuário e retorna um dicionário com os dados estruturados.
@@ -17,7 +49,13 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     if user_categories:
         categorias_str = ", ".join(user_categories)
     else :
-        categorias_str = "Nenhuma pré-definida"
+        categorias_str = "Outros, Alimentação, Transporte"
+        
+    if charge_types:
+        charge_types_str = ", ".join(charge_types)
+    else:
+        charge_types_str = "mensal, quinzenal"
+
     today_date = date.today().isoformat()
 
     # 3. O Prompt (A instrução mestre)
@@ -25,11 +63,16 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     Você é um assistente financeiro. Hoje é {today_date}.
     Analise a frase: "{text}"
     
+    Categorias disponíveis: [{categorias_str}]
+    Tipos de recorrência disponíveis: [{charge_types_str}]
+
     Regras de Ouro:
     1. Se for uma compra parcelada (ex: "3x", "3 parcelas"), identifique o número de parcelas.
     2. Se o usuário disser "começa mês que vem", ajuste a data inicial.
     3. Se for assinatura mensal (Netflix, Spotify), é recorrente sem fim.
     4. Se o usuario não disser o tipo de parcelamento ele será mensal, mas pode ser quinzenal, ou em outro intervalo, extraia isso
+    5. JAMAIS retorne null ou None. Use valores padrão (0 para numeros, false para booleanos, string vazia para textos)
+    6. Se não souber a categoria, use "Outros".
     
     Retorne JSON com estes campos:
     - "amount": valor TOTAL da compra (se ele disser "3x de 100", o total é 300. Se disser "300 em 3x", total é 300), utilizando as casas decimais, se precisar aproximar algum valor aproxime para mais.
@@ -50,7 +93,10 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
         # 4. Chama a IA
         response = client.models.generate_content(
                                                 model="gemini-2.5-flash-lite",
-                                                contents=prompt
+                                                contents=prompt,
+                                                config={
+                                                    'response_mime_type': 'application/json'
+                                                }
                                             )
         
         # 5. Limpeza (Às vezes a IA manda ```json ... ```)
@@ -58,21 +104,10 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
         
         # 6. Converte texto para Dicionário Python
         transaction_data = json.loads(cleaned_text)
-        
-        # transaction_data = {'amount': 45.0,
-        #                     'is_installment': False,
-        #                     'installments_count': 1,
-        #                     'is_recurrent': False,
-        #                     'type': False,
-        #                     'category': 'Transporte',
-        #                     'description': 'Gasto de R$45 no Uber para ir comer no trabalho.',
-        #                     'first_payment_date': '2026-01-05',
-        #                     'payment_method': 'dinheiro fisico',
-        #                     'last_payment_date': '2026-01-05'
-        #                     }
-        print('CCCCCCCCC')
-        print(transaction_data)
-        return transaction_data
+        final_data = validate_and_fix_json(transaction_data)
+       
+        print(final_data)
+        return final_data
     
     except Exception as e:
         print(f"Erro na IA: {e}")

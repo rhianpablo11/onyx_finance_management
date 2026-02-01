@@ -4,7 +4,13 @@ from app.models.charge_type import Charge_type
 
 
 def get_charge_type_id(charge_type_in:str, charges_types_existing, db: Session):
-    if(charges_types_existing == None):
+    print('charge types existing')
+    print(charges_types_existing)
+
+    print('conferindo segundo if')
+    print((charge_type_in not in charges_types_existing))
+
+    if(len(charges_types_existing) == 0):
         new_charge = Charge_type(
             name=charge_type_in
         )
@@ -12,7 +18,7 @@ def get_charge_type_id(charge_type_in:str, charges_types_existing, db: Session):
         db.commit()
         db.refresh(new_charge)
         print(new_charge)
-    elif(charge_type_in not in charges_types_existing or charge_type_in != charges_types_existing):
+    elif(charge_type_in not in charges_types_existing):
         new_charge = Charge_type(
             name=charge_type_in
         )
@@ -29,6 +35,6 @@ def get_charge_type_id(charge_type_in:str, charges_types_existing, db: Session):
 
 def get_charge_type_by_id(id: int, db: Session):
     stmt = select(Charge_type.name).where(Charge_type.id == id)
-    charge_name = db.execute(stmt).first()
+    charge_name = db.execute(stmt).scalars().first()
     #colocar verificação caso n tenha nenhuma categoria
     return charge_name

@@ -5,6 +5,7 @@ from app.models.expense_category import Expense_category
 from app.services.ai_processor import analyze_transaction_text
 
 
+# verify if categorys conected with user exists, if not new category is created
 def expense_category_analysis(categorys_of_user, user_id: int, db: Session, category_for_verification: str):
     if(categorys_of_user == None):
         new_category = Expense_category(
