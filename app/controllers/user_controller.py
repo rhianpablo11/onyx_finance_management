@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from app.core.auth import create_access_token, ACCESS_TOKEN_DURATION_TIME
 from datetime import timedelta
 from sqlalchemy.orm import Session
@@ -52,14 +52,16 @@ def create_user(user: UserCreate, db: Session):
         otp_code = None,
         second_factor_auth = False
     )
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        data_user = {'id': new_user.id}
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+        access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+    except:
+        raise HTTPException(status_code=400, detail='error in database')
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    data_user = {'id': new_user.id}
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
-    access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
-    
     return {
         'access_token': access_token,
         'token_type': 'bearer',
@@ -68,15 +70,19 @@ def create_user(user: UserCreate, db: Session):
 
 
 def verify_user_exist(db: Session, email: str, telephone: str):
-    stmt = (select(User.id)
-            .where(User.email == email))
-    
-    list_user = db.execute(stmt).all()
+    try:
+        stmt = (select(User.id)
+                .where(User.email == email))
+        
+        list_user = db.execute(stmt).all()
 
-    stmt = (select(User.id)
-            .where(User.telephone == telephone))
+        stmt = (select(User.id)
+                .where(User.telephone == telephone))
+        
+        list_user2 = db.execute(stmt).all()
+    except:
+        raise HTTPException(status_code=400, detail='error in database')
     
-    list_user2 = db.execute(stmt).all()
     if(len(list_user) > 0):
         raise HTTPException(status_code=400, detail='Email already in database')
     
@@ -84,3 +90,34 @@ def verify_user_exist(db: Session, email: str, telephone: str):
         raise HTTPException(status_code=400, detail='telephone alredy in database')
     
     return {'message': 'user not in database'}
+
+
+def get_balance_user(db: Session, user_id: int):
+    try:
+        stmt = (select(User.balance)
+                .where(User.id == user_id))
+        balance_user = db.execute(stmt).scalars().first()
+    except:
+        raise HTTPException(status_code=400, detail='error in database')
+    return balance_user
+
+
+def update_balance(db: Session, user_id: int, value: float, type: bool):
+    try:
+        now_balance = float(get_balance_user(db=db, user_id=user_id))
+        new_value = 0
+        
+        if(type):
+            new_value = now_balance + value
+        else:
+            new_value = now_balance - value
+
+        stmt = (update(User)
+                .where(User.id == user_id)
+                .values(balance=new_value))
+        result = db.execute(stmt)
+        db.commit()
+    except:
+        raise HTTPException(status_code=400, detail='error in database')
+    if result.rowcount == 0:
+        raise HTTPException(status_code=400, detail='error in update balance')

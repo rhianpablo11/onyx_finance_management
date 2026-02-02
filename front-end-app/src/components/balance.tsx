@@ -3,7 +3,7 @@ import backgroundBalance from '../assets/bg-balance2.svg?url'
 import type { BalanceProps } from '../interfaces/interfacesComponents'
 
 function Balance(props: BalanceProps){
-    const {value, legend, incoming} = props
+    const {value, legend, incoming, balanceGeral} = props
 
     return(
         <>
@@ -21,7 +21,16 @@ function Balance(props: BalanceProps){
                                 {incoming ? '/>' : '>'} {legend}
                             </h1>
                         </div>
-
+                    </div>
+                    <div className='flex-col flex'>
+                        <h1 className="text-white font-extralight text-base">
+                            Saldo geral:
+                        </h1>
+                        <div className='justify-end pt-1'>
+                            <h1 className="text-white text-end font-extralight text-2xl">
+                                R$ {balanceGeral}
+                            </h1>
+                        </div>
                     </div>
                 </div>
             </div>

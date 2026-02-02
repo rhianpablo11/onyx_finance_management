@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
+from app.controllers.user_controller import get_balance_user
 from app.core.auth import get_current_user
 from app.controllers.transaction_controller import create_new_expense, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_monthly_receives, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from app.core.database import get_db
 from app.controllers.expense_category_controller import get_expense_category_by_id
 from app.controllers.charge_type_controller import get_charge_type_by_id
 from app.schemas.expense_schema import Expense_response_base, Expense_create, Expense_response_extended
+from app.services.sync_service import sync_user_finances
 
 router = APIRouter()
 
@@ -65,6 +67,8 @@ def get_monthly_balance(current_user: dict = Depends(get_current_user), db: Sess
 
 @router.get('/metrics-dashboard')
 def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    sync_user_finances(db, current_user['user_id'])
+    
     data_return = {}
     data_return['month_balance'] = get_monthly_balance_value(db=db,
                                                              user_id=current_user['user_id'])['value']
@@ -75,6 +79,7 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
     data_return['expenses_in_on_month'] = get_monthly_receives(db=db,
                                                                user_id=current_user['user_id'])
 
+    data_return['balance_geral'] = get_balance_user(db=db, user_id=current_user['user_id'])
     return data_return    
 
 

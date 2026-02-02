@@ -1,10 +1,12 @@
-from sqlalchemy import desc, or_, select
+from sqlalchemy import desc, func, or_, select, update
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import date, timedelta
+from app.controllers.user_controller import update_balance
 from app.models.expense import Expense
 from app.models.expense_category import Expense_category
 from app.models.expenses_fixed import Expenses_fixed
+from app.models.user import User
 from app.services.ai_processor import analyze_transaction_text
 from app.controllers.expense_category_controller import expense_category_analysis
 from app.controllers.charge_type_controller import get_charge_type_id
@@ -29,7 +31,7 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
         if(ia_response == None):
             raise HTTPException(status_code=400, detail='IA fora de operação')
         
-        print('aquiiii')
+        
         category_id = expense_category_analysis(categorys_of_user=categorys_of_user,
                                                     user_id=user_id,
                                                     db=db,
@@ -41,8 +43,13 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
                             user_id=user_id,
                             ai_json_response=ia_response)
 
-        if(ia_response['is_recurrent'] == False):
+        if(ia_response['is_recurrent'] == False and ia_response['is_installment'] == False):
             #work with table of Expense
+
+            update_balance(db=db,
+                           user_id=user_id,
+                           value=ia_response['amount'],
+                           type=ia_response['type'])
 
             new_expense = Expense(
                 user_id=user_id,
@@ -81,6 +88,36 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
             db.add(new_expense_fixed)
             db.commit()
             db.refresh(new_expense_fixed)
+
+            today = date.today()
+            # Converte string pra date se necessário, ou usa direto se já for date
+            first_payment = date.fromisoformat(str(ia_response['first_payment_date'])) 
+
+            if first_payment == today:
+                print(f"Despesa fixa começa hoje! Realizando débito imediato...")
+                
+                # 1. Atualiza Saldo
+                value_to_add = ia_response['amount'] / ia_response['installments_count']
+                update_balance(db=db, user_id=user_id, value=value_to_add, type=ia_response['type'])
+
+                # 2. Cria o registro na tabela Expense (Fato) vinculando o ID da Fixa
+                new_expense_realized = Expense(
+                    user_id=user_id,
+                    category=category_id,
+                    value=value_to_add,
+                    type_expense=ia_response['type'],
+                    description=f"Recorrência (Inicial): {ia_response['description']}",
+                    date=today,
+                    payment_method=ia_response['payment_method'],
+                    is_activated=True,
+                    name=ia_response['name'],
+                    fixed_expense_id=new_expense_fixed.id  # <--- VÍNCULO IMPORTANTE
+                )
+                db.add(new_expense_realized)
+                db.commit()
+
+
+
             return {'type': 'fixed',
                     'data':new_expense_fixed}
     except Exception as e:
@@ -98,43 +135,28 @@ def get_all_expenses_in_date(db: Session, user_id: int):
     return list_expenses
 
 
-def get_total_spent_on_the_date(db:Session, user_id: int, start_date: date, end_date: date):
-    
-    stmt_expenses = (select(Expense.value)
+def get_total_spent_on_the_date(db: Session, user_id: int, start_date: date, end_date: date):
+    # 1. Soma o que está na tabela Expense (Realizado)
+    # Isso já inclui as fixas que viraram Expense (via sync ou criação)
+    stmt_realized = (select(func.sum(Expense.value))
                      .where(Expense.user_id == user_id)
                      .where(Expense.date.between(start_date, end_date))
                      .where(Expense.is_activated == True)
-                     .where(Expense.type_expense == False))
-    list_expenses = db.execute(stmt_expenses).scalars().all()
+                     .where(Expense.type_expense == False)) # False = Gasto
     
-    amount = sum([float(v) for v in list_expenses])
+    db_result = db.execute(stmt_realized).scalar()
+    total_realized = float(db_result) if db_result else 0.0
+
+    # # 2. Soma o Projetado (Futuro ou não sincronizado)
+    # # Usamos a função que acabamos de criar, que já remove os duplicados!
+    # projected_list = process_fixed_expenses_in_period(db, user_id, start_date, end_date)
     
-
-    stmt_expenses_fixed = (
-        select(Expenses_fixed.value)
-        .where(
-            Expenses_fixed.user_id == user_id,
-            Expenses_fixed.activated == True,
-            # Regra 1: Começou antes do fim do mês pesquisado
-            Expenses_fixed.start_date <= end_date,
-            # Regra 2: Não terminou, ou terminou depois que o mês começou
-            or_(
-                Expenses_fixed.end_date == None,
-                Expenses_fixed.end_date >= start_date
-            )
-        )
-        .where(Expenses_fixed.type_expense == False)
-    )
-
-    list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
-
-    amount += sum([float(v) for v in list_expenses_fixed])
-    print(amount)
-
+    # # Filtra só o que é gasto (typeExpense == False) na lista projetada e soma
+    # total_projected = sum([item['value'] for item in projected_list if item['typeExpense'] == False])
+    total_projected = 0
     return {
-        'value': amount
+        'value': total_realized + float(total_projected)
     }
-
 
 def get_total_received_on_the_date(db:Session, user_id: int, start_date: date, end_date: date):
 
@@ -148,25 +170,27 @@ def get_total_received_on_the_date(db:Session, user_id: int, start_date: date, e
     print(list_expenses)
     amount = sum([float(v) for v in list_expenses])
     
-    stmt_expenses_fixed = (
-        select(Expenses_fixed.value)
-        .where(
-            Expenses_fixed.user_id == user_id,
-            Expenses_fixed.activated == True,
-            # Regra 1: Começou antes do fim do mês pesquisado
-            Expenses_fixed.start_date <= end_date,
-            # Regra 2: Não terminou, ou terminou depois que o mês começou
-            or_(
-                Expenses_fixed.end_date == None,
-                Expenses_fixed.end_date >= start_date
-            )
-        )
-        .where(Expenses_fixed.type_expense == True)
-    )
 
-    list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
+    #verify necessity of this
+    # stmt_expenses_fixed = (
+    #     select(Expenses_fixed.value)
+    #     .where(
+    #         Expenses_fixed.user_id == user_id,
+    #         Expenses_fixed.activated == True,
+    #         # Regra 1: Começou antes do fim do mês pesquisado
+    #         Expenses_fixed.start_date <= end_date,
+    #         # Regra 2: Não terminou, ou terminou depois que o mês começou
+    #         or_(
+    #             Expenses_fixed.end_date == None,
+    #             Expenses_fixed.end_date >= start_date
+    #         )
+    #     )
+    #     .where(Expenses_fixed.type_expense == True)
+    # )
 
-    amount += sum([float(v) for v in list_expenses_fixed])
+    # list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
+
+    # amount += sum([float(v) for v in list_expenses_fixed])
     print(amount)
 
     return {
@@ -334,57 +358,62 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
     
     # Retorna tuplas (Expenses_fixed, NomeDoTipo)
     results = db.execute(stmt).all() 
+
+    # 2. BUSCA INTELIGENTE: Pega os IDs das fixas que JÁ foram pagas neste período
+    # Isso evita ir no banco dentro do loop (Performance)
+    stmt_paid = (select(Expense.fixed_expense_id, Expense.date)
+                 .where(Expense.user_id == user_id)
+                 .where(Expense.date.between(start_date, end_date))
+                 .where(Expense.fixed_expense_id != None))
+    
+    # Cria um conjunto de assinaturas "ID_DA_FIXA + DATA" para checagem rápida
+    # Ex: {'15_2026-02-15', '18_2026-02-10'}
+    paid_map = {f"{row.fixed_expense_id}_{row.date}" for row in db.execute(stmt_paid).all()}
     
     projected_transactions = []
 
     for expense, charge_name in results:
-        # A lógica aqui depende do tipo. Vou fazer MENSAL que é 99% dos casos.
-        # Você pode expandir para Semanal depois.
-        
         current_check_date = start_date
         
-        # Vamos varrer dia a dia do período selecionado (ex: os 7 dias)
-        # Se for um intervalo grande, existem formas matematicas mais rapidas, 
-        # mas para extratos curtos, loop while é seguro e facil de entender.
-        
         while current_check_date <= end_date:
-            
             should_add = False
             
-            # --- LÓGICA MENSAL ---
+            # --- Lógica de Data (Mensal) ---
             if charge_name.lower() == 'mensal':
-                # Se o dia da despesa (ex: dia 15) for igual ao dia que estamos checando no loop
-                # E cuidado com fevereiro (dia 30 não existe, python trata isso)
                 try:
-                    # Verifica se no mes/ano do loop, o dia de pagamento bate
-                    if current_check_date.day == expense.payment_date.day:
+                    # Ajuste fino para datas como dia 31
+                    target_day = expense.payment_date.day
+                    last_day_of_month = (date(current_check_date.year, current_check_date.month, 1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+                    
+                    check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
+                    
+                    if current_check_date.day == check_day:
                         should_add = True
                 except ValueError:
-                    # Caso tente dia 30 em fevereiro, ignora ou ajusta pro dia 28
                     pass
 
-            # --- LÓGICA SEMANAL ---
+            # --- Lógica Semanal, etc... ---
             elif charge_name.lower() == 'semanal':
-                # Calcula a diferença de dias desde o inicio da despesa
-                delta = current_check_date - expense.start_date
-                # Se a diferença for multiplo de 7 (0, 7, 14, 21...)
-                if delta.days >= 0 and delta.days % 7 == 0:
+                 delta = current_check_date - expense.start_date
+                 if delta.days >= 0 and delta.days % 7 == 0:
                     should_add = True
 
-            # --- ADICIONA NA LISTA SE BATEU ---
             if should_add:
-                projected_transactions.append({
-                    "id": f"fixed_{expense.id}_{current_check_date}", # ID único falso pra frontend não bugar key
-                    "real_id": expense.id,
-                    "nameExpense": expense.name,
-                    "value": expense.value,
-                    "category": expense.category, # Ou pegar o nome da categoria com join
-                    "typeExpense": expense.type_expense, # True/False
-                    "date": current_check_date, # A data CALCULADA que caiu no periodo
-                    "is_fixed": True
-                })
+                # 3. VERIFICAÇÃO DE DUPLICIDADE
+                # Se já existe um pagamento registrado para essa fixa nesta data, NÃO PROJETA
+                key = f"{expense.id}_{current_check_date}"
+                
+                if key not in paid_map:
+                    projected_transactions.append({
+                        "id": f"fixed_{expense.id}_{current_check_date}", 
+                        "nameExpense": expense.name,
+                        "value": expense.value,
+                        "category": expense.category, 
+                        "typeExpense": expense.type_expense,
+                        "date": current_check_date,
+                        "is_fixed": True
+                    })
 
-            # Avança um dia no loop
             current_check_date += timedelta(days=1)
 
     return projected_transactions
@@ -418,11 +447,15 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
             'is_fixed': False
         })
     
-    list_fixed = process_fixed_expenses_in_period(db=db,
-                                                  user_id=user_id, 
-                                                  start_date=start_date,
-                                                  end_date=end_date)
-    full_extract = formatted_list + list_fixed
+    # list_fixed = process_fixed_expenses_in_period(db=db,
+    #                                               user_id=user_id, 
+    #                                               start_date=start_date,
+    #                                               end_date=end_date)
+    #full_extract = formatted_list + list_fixed
+    full_extract = formatted_list
     full_extract.sort(key=lambda x: x['date'], reverse=True)
 
     return full_extract
+
+
+

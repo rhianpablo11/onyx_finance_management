@@ -40,6 +40,7 @@ export interface BalanceProps {
     value: number
     legend: string
     incoming: boolean  //true for incoming or false for exit
+    balanceGeral: number
 }
 
 export interface TransactionsRecentsProps{
