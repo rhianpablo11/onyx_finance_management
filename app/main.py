@@ -12,14 +12,14 @@ app = FastAPI(
 )
 
 origins = [
-    "http://localhost:5173",      # A porta padrão do Vite (Frontend)
-    "http://127.0.0.1:5173",      # O IP local padrão
-    "http://localhost:3000",      # (Opcional) Caso mude a porta do front
+    "http://localhost:5173",     
+    "http://127.0.0.1:5173",      
+    "http://localhost:3000",      
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # Lista de quem pode chamar a API
+    allow_origins=["*"],        # Lista de quem pode chamar a API
     allow_credentials=True,       # Permite enviar Cookies/Tokens de Autenticação
     allow_methods=["*"],          # Permite GET, POST, PUT, DELETE (Tudo)
     allow_headers=["*"],          # Permite qualquer cabeçalho (Authorization, etc)
