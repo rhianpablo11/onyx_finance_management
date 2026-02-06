@@ -11,6 +11,9 @@ function DashMetricsPage(){
     const [listOfTransactionsOut, setListOfTransactionsOut] = useState<ListTransactionProps[]>([])
     const [listOfTransactionsIn, setListOfTransactionsIn] = useState<ListTransactionProps[]>([])
     const [balanceGeral, setBalanceGeral] = useState(0)
+    const [legendBalance, setBalance] = useState('')
+    const [isIncoming, setIsIncoming] = useState(false)
+    const [listOfNextPayments, setListOfNextPayments] = useState<ListTransactionProps[]>([])
 
     useEffect(() => {
             const fetchDashboardData = async () => {
@@ -20,6 +23,10 @@ function DashMetricsPage(){
                     setListOfTransactionsOut(data['expenses_out'])
                     setListOfTransactionsIn(data['expenses_in_on_month'])
                     setBalanceGeral(data['balance_geral'])
+                    setListOfNextPayments(data['next_payments'])
+                    setBalance(data['legend_balance'])
+                    setIsIncoming(data['is_incoming_legend'])
+                    console.log(data['expenses_out'])
                 } catch (error) {
                     console.error("Erro ao buscar métricas:", error);
                 }
@@ -33,11 +40,12 @@ function DashMetricsPage(){
     return(
         <>
             <Balance value={balanceMonth}
-                             legend='10% a mais que o mês anterior'
-                             incoming={true}
+                             legend={legendBalance}
+                             incoming={isIncoming}
                              balanceGeral={balanceGeral} />
             <TransactionsRecents dayExpenses={listOfTransactionsOut}
-                                monthReceives={listOfTransactionsIn}/>
+                                monthReceives={listOfTransactionsIn}
+                                nextPayments={listOfNextPayments}/>
         </>
     )
 }

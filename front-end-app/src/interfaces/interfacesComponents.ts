@@ -17,6 +17,9 @@ export interface ListTransactionProps {
     id: number
     typeExpense?: boolean
     date?: string
+    installments_count?: number | null
+    start_date?: string
+    end_date?: string
 }
 
 export interface ListTransactionForExtractProps {
@@ -45,7 +48,7 @@ export interface BalanceProps {
 
 export interface TransactionsRecentsProps{
     dayExpenses: ListTransactionProps[]
-    //next payments
+    nextPayments: ListTransactionProps[]
     monthReceives: ListTransactionProps[]
 }
 

@@ -5,7 +5,7 @@ import type { ListTransactionProps } from "../../interfaces/interfacesComponents
 
 
 function ListTransaction(props: ListTransactionProps){
-    const {type, nameExpense, value, category, typeExpense, date} = props
+    const {type, nameExpense, value, category, typeExpense, date, end_date, installments_count} = props
     const alimentationIcon = (
         <>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -129,6 +129,61 @@ function ListTransaction(props: ListTransactionProps){
                             </h1>
                         </div>
                         <div className="text-white ml-auto pr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div className="border-b border-white/25"></div>
+            </>
+        )
+    } else if(type == 'nextPayments'){
+        return (
+            <>
+                <div className="flex-col mt-2 w-full h-16 border-white">
+                    <div className="flex items-center w-full">
+                        <div className="w-6/10 flex items-center">
+                            <div className="bg-white/8 w-12 h-12 rounded-4xl flex justify-center items-center text-white">
+                                {iconShow}
+                            </div>
+                            <div className="flex-col pl-2.5">
+                                <h1 className="text-white font-extralight text-sm">
+                                    {nameExpense}
+                                </h1>
+                                <h3 className="text-white font-normal text-xl">
+                                    R$ {value}
+                                </h3>
+                            </div>
+                        </div>
+                        <div className="flex flex-col w-28 justify-center">
+                            <div className="flex items-baseline">
+                                <h1 className="text-white font-extralight text-xs">
+                                    Venc.:
+                                </h1>
+                                <h1 className="pl-1 text-white text-sm font-normal">
+                                   {end_date?.replaceAll('-','/')}
+                                </h1>
+                            </div>
+                            <div className="flex items-baseline">
+                                <h1 className="text-white font-extralight text-xs">
+                                    Parc.:
+                                </h1>
+                                <h1 className="pl-1 text-white font-normal text-sm">
+                                    {installments_count != null ? installments_count : (
+                                    <>
+                                        <div className="pl-1">
+                                            <svg width="16px" height="16px" viewBox="0 0 24 12" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" color="#ffffff">
+                                                <path d="M14 9L13.75 9.375M10 9C9.08779 7.78565 7.63574 7 6 7C3.23858 7 1 9.23858 1 12C1 14.7614 3.23858 17 6 17C7.63582 17 9.08816 16.2144 10.0004 15L10.3337 14.5" stroke="#ffffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                <path d="M10 9L13.9996 15C14.9118 16.2144 16.3642 17 18 17C20.7614 17 23 14.7614 23 12C23 9.23858 20.7614 7 18 7C16.3642 7 14.9118 7.78555 13.9996 9" stroke="#ffffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </svg>
+                                        </div>
+                                    </>)}
+                                </h1>
+                            </div>
+                        </div>
+                        <div className="text-white ml-auto pr-4 pl-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>

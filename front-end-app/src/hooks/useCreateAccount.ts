@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
+import { setCookie } from "../services/cookiesService";
 
 
 export function useCreateAccount(){
@@ -35,6 +36,7 @@ export function useCreateAccount(){
             const response = await api.post('user/register', payload)
             const {access_token} = response.data
             setToken(access_token)
+            setCookie('user_name', response.data.user_data.name)
             return response.data
         } catch (err: any) {
             throw err

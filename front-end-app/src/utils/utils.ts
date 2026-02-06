@@ -1,3 +1,4 @@
+import { endOfMonth, format } from 'date-fns';
 
 
 export const formatDate = (date: Date): string => {
@@ -6,13 +7,15 @@ export const formatDate = (date: Date): string => {
 
 export const getDateRangeByOption = (optionValue: string) => {
     const today = new Date();
-    const endDate = new Date(today); // Por padrão, o fim é hoje
+    let endDate = new Date(today); // Por padrão, o fim é hoje
     let startDate = new Date(today);
 
     switch (optionValue) {
         case "1": // Este mês
             // Do dia 1º até hoje
             startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = endOfMonth(today); 
+            
             break;
 
         case "6": // Últimos 7 dias

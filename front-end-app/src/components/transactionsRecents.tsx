@@ -9,15 +9,14 @@ import type { ListTransactionProps, TransactionsRecentsProps } from "../interfac
 
 
 function TransactionsRecents(props: TransactionsRecentsProps){
-    const {dayExpenses, monthReceives} = props
+    const {dayExpenses, monthReceives, nextPayments} = props
     const [activeTab, setActiveTab] = useState(0)
     const [typeList, setTypeList] = useState('expenseOfDay')
-    const [listToShow, setListToShow] = useState<ListTransactionProps[]>([])
+    const [listToShow, setListToShow] = useState<ListTransactionProps[]>(dayExpenses)
     //const [nextPaymentsList, setNextPaymentsList] = useState<ListTransactionProps[]>([]);
 
     useEffect(()=>{
         setListToShow(dayExpenses)
-        setListToShow(monthReceives)
     },[])
 
     useEffect(()=>{
@@ -26,6 +25,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
             setListToShow(dayExpenses)
         } else if(activeTab == 1){
             setTypeList('nextPayments')
+            setListToShow(nextPayments)
         } else if(activeTab == 2){
             setTypeList('receivesMonth')
             setListToShow(monthReceives)
@@ -56,6 +56,21 @@ function TransactionsRecents(props: TransactionsRecentsProps){
                         value={item.value} 
                         id={item.id}
                         date={item.date}
+                    />
+                    )
+                ))
+            }else if(activeTab == 1){
+                return(
+                    listToShow.map((item) => (
+                    <ListTransaction 
+                        key={item.id} 
+                        type={typeList}
+                        category={item.category}
+                        nameExpense={item.nameExpense}
+                        value={item.value} 
+                        id={item.id}
+                        end_date={item.end_date}
+                        installments_count={item.installments_count}
                     />
                     )
                 ))

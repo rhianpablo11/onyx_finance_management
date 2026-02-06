@@ -7,7 +7,7 @@ import { removeToken } from "../../services/tokenService"
 function HeaderInternal(props: HeaderInternalProps){
     const {type, legend, title, name, onClickChildren} = props
     const navigate = useNavigate()
-
+    console.log(name)
     //function temporary for logout
     const onClickLogout = () => {
         removeCookie('user_name')
