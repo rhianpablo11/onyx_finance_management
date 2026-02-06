@@ -92,7 +92,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     try:
         # 4. Chama a IA
         response = client.models.generate_content(
-                                                model="gemini-2.5-flash-lite",
+                                                model="gemini-3-flash-preview",
                                                 contents=prompt,
                                                 config={
                                                     'response_mime_type': 'application/json'
@@ -106,7 +106,6 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
         transaction_data = json.loads(cleaned_text)
         final_data = validate_and_fix_json(transaction_data)
        
-        print(final_data)
         return final_data
     
     except Exception as e:

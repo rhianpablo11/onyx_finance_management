@@ -1,10 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from app.core.security import DB_NAME, DB_URL, DB_PASSWORD, DB_USER
 
-SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:159835@localhost/financial_management'
+SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:159835@localhost/financial_management'
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+S2QLALCHEMY_DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_URL}/{DB_NAME}'
+
+engine = create_engine(DB_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

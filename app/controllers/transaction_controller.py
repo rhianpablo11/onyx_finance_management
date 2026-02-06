@@ -20,12 +20,10 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
     try:
         stmt_categories = select(Expense_category.name).where(Expense_category.user_id == user_id)
         categorys_of_user = db.execute(stmt_categories).scalars().all()
-        print(categorys_of_user)
 
         # 2. Seleciona todos os nomes de tipos de cobrança
         stmt_charges = select(Charge_type.name)
         charge_types_existing = db.execute(stmt_charges).scalars().all()
-        print(charge_types_existing)
 
         ia_response = analyze_transaction_text(text=text_typed, user_categories=categorys_of_user, charge_types=charge_types_existing)
         if(ia_response == None):
@@ -70,7 +68,6 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
         else:
             #work with table of Expense_fixed
             charge_id = get_charge_type_id(ia_response['type_of_installment'], charge_types_existing, db)
-            print(charge_id)
             new_expense_fixed = Expenses_fixed(
                 user_id=user_id,
                 name=ia_response['name'],
@@ -134,68 +131,75 @@ def get_all_expenses_in_date(db: Session, user_id: int):
 
     return list_expenses
 
-
+# returns the total spent on interval of dates, the sum between installments and expenses
 def get_total_spent_on_the_date(db: Session, user_id: int, start_date: date, end_date: date):
     # 1. Soma o que está na tabela Expense (Realizado)
-    # Isso já inclui as fixas que viraram Expense (via sync ou criação)
-    stmt_realized = (select(func.sum(Expense.value))
-                     .where(Expense.user_id == user_id)
-                     .where(Expense.date.between(start_date, end_date))
-                     .where(Expense.is_activated == True)
-                     .where(Expense.type_expense == False)) # False = Gasto
-    
-    db_result = db.execute(stmt_realized).scalar()
-    total_realized = float(db_result) if db_result else 0.0
+    # Isso ja busca as transações que foram provenientes de transações fixas e foram cobradas a parcela
+    try:
+        stmt_realized = (select(func.sum(Expense.value))
+                        .where(Expense.user_id == user_id)
+                        .where(Expense.date.between(start_date, end_date))
+                        .where(Expense.is_activated == True)
+                        .where(Expense.type_expense == False)) # False = Gasto
+        
+        db_result = db.execute(stmt_realized).scalar()
+        total_realized = float(db_result) if db_result else 0.0
 
-    # # 2. Soma o Projetado (Futuro ou não sincronizado)
-    # # Usamos a função que acabamos de criar, que já remove os duplicados!
-    # projected_list = process_fixed_expenses_in_period(db, user_id, start_date, end_date)
-    
-    # # Filtra só o que é gasto (typeExpense == False) na lista projetada e soma
-    # total_projected = sum([item['value'] for item in projected_list if item['typeExpense'] == False])
-    total_projected = 0
-    return {
-        'value': total_realized + float(total_projected)
-    }
+        
+        # # 2. Soma o Projetado (Futuro ou não sincronizado)
+        # # Usamos a função que acabamos de criar, que já remove os duplicados!
+        # projected_list = process_fixed_expenses_in_period(db, user_id, start_date, end_date)
+        
+        # # Filtra só o que é gasto (typeExpense == False) na lista projetada e soma
+        # total_projected = sum([item['value'] for item in projected_list if item['typeExpense'] == False])
 
+
+        total_projected = 0
+        return {
+            'value': total_realized + float(total_projected)
+        }
+    except:
+        raise HTTPException(status_code=400, detail='error in request info in database')
+
+
+# returns the total received on interval of dates, the sum between installments and expenses
 def get_total_received_on_the_date(db:Session, user_id: int, start_date: date, end_date: date):
+    try:
+        stmt_expenses = (select(Expense.value)
+                            .where(Expense.user_id == user_id)
+                            .where(Expense.date.between(start_date, end_date))
+                            .where(Expense.is_activated == True)
+                            .where(Expense.type_expense == True))
+        list_expenses = db.execute(stmt_expenses).scalars().all()
 
-    stmt_expenses = (select(Expense.value)
-                     .where(Expense.user_id == user_id)
-                     .where(Expense.date.between(start_date, end_date))
-                     .where(Expense.is_activated == True)
-                     .where(Expense.type_expense == True))
-    list_expenses = db.execute(stmt_expenses).scalars().all()
-    
-    print(list_expenses)
-    amount = sum([float(v) for v in list_expenses])
-    
+        amount = sum([float(v) for v in list_expenses])
 
-    #verify necessity of this
-    # stmt_expenses_fixed = (
-    #     select(Expenses_fixed.value)
-    #     .where(
-    #         Expenses_fixed.user_id == user_id,
-    #         Expenses_fixed.activated == True,
-    #         # Regra 1: Começou antes do fim do mês pesquisado
-    #         Expenses_fixed.start_date <= end_date,
-    #         # Regra 2: Não terminou, ou terminou depois que o mês começou
-    #         or_(
-    #             Expenses_fixed.end_date == None,
-    #             Expenses_fixed.end_date >= start_date
-    #         )
-    #     )
-    #     .where(Expenses_fixed.type_expense == True)
-    # )
 
-    # list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
+        #verify necessity of this
+        # stmt_expenses_fixed = (
+        #     select(Expenses_fixed.value)
+        #     .where(
+        #         Expenses_fixed.user_id == user_id,
+        #         Expenses_fixed.activated == True,
+        #         # Regra 1: Começou antes do fim do mês pesquisado
+        #         Expenses_fixed.start_date <= end_date,
+        #         # Regra 2: Não terminou, ou terminou depois que o mês começou
+        #         or_(
+        #             Expenses_fixed.end_date == None,
+        #             Expenses_fixed.end_date >= start_date
+        #         )
+        #     )
+        #     .where(Expenses_fixed.type_expense == True)
+        # )
 
-    # amount += sum([float(v) for v in list_expenses_fixed])
-    print(amount)
+        # list_expenses_fixed = db.execute(stmt_expenses_fixed).scalars().all()
 
-    return {
-        'value': amount
-    }
+        # amount += sum([float(v) for v in list_expenses_fixed])
+        return {
+            'value': amount
+        }
+    except:
+        raise HTTPException(status_code=400, detail='error in request data in database')
 
 
 #retorna o saudo do mes atual
@@ -314,7 +318,29 @@ def get_monthly_receives(db: Session, user_id: int):
 
 #pegar os proximos pagamentos a ser feitos
 def get_next_payments(db: Session, user_id: int):
-    pass
+    #pegar as depesas fixas que estão para proxima data
+    today = date.today()
+    stmt = (select(Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.value, Expenses_fixed.type_expense, Expenses_fixed.installments_count, Expenses_fixed.start_date, Expenses_fixed.end_date)
+            .where(Expenses_fixed.user_id == user_id)
+            .where(Expenses_fixed.start_date > today))
+    
+    list_next_payments = db.execute(stmt).all()
+    list_formatted = []
+
+
+    for expense in list_next_payments:
+        list_formatted.append({
+            'value': expense.value,
+            'nameExpense': expense.name,
+            'typeExpense': expense.type_expense,
+            'installments_count': expense.installments_count,
+            'start_date': expense.start_date,
+            'end_date': expense.end_date,
+            'category': expense.category
+        })
+
+    return list_formatted
+
 
 
 #pegar o saldo em um periodo especifico

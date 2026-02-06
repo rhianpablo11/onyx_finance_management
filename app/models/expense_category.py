@@ -7,4 +7,4 @@ class Expense_category(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
-    name = Column(String(200), unique=True, nullable=False)
+    name = Column(String(200), nullable=False)

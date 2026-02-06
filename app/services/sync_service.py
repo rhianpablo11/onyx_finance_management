@@ -16,10 +16,10 @@ def sync_user_finances(db: Session, user_id: int):
     
     fixed_expenses = db.execute(stmt).all()
     updates_count = 0
-
+    
     for fixed, charge_name in fixed_expenses:
         current_check_date = fixed.start_date
-        print(fixed)
+        
         limit_date = today
         if fixed.end_date and fixed.end_date < today:
             limit_date = fixed.end_date
@@ -47,7 +47,7 @@ def sync_user_finances(db: Session, user_id: int):
                  delta = current_check_date - fixed.start_date
                  if delta.days >= 0 and delta.days % 7 == 0:
                     should_charge = True
-
+            
             if should_charge:
                 # VERIFICA SE JÁ FOI PAGO
                 # A chave agora é verificar se existe alguma Expense com esse fixed_expense_id nessa data
@@ -60,14 +60,11 @@ def sync_user_finances(db: Session, user_id: int):
                 ).first()
 
                 if not existing_expense:
-                    print(f"Sync: Cobrando {fixed.name} data {current_check_date}")
                     
                     # tem erro nessa parte dq
-
                     value_to_add = fixed.value / fixed.installments_count
                     # 1. Atualiza Saldo
-                    update_balance(db, user_id, value_to_add, fixed.type_expense)
-
+                    update_balance(db, user_id, float(value_to_add), fixed.type_expense)
                     # 2. Cria registro no Extrato COM O VÍNCULO
                     new_expense = Expense(
                         user_id=user_id,
@@ -81,11 +78,12 @@ def sync_user_finances(db: Session, user_id: int):
                         payment_method="automatico",
                         fixed_expense_id=fixed.id # <--- ISSO EVITA A DUPLICIDADE NA PROJEÇÃO
                     )
+                    
                     db.add(new_expense)
                     updates_count += 1
 
             current_check_date += timedelta(days=1)
-
+            
     if updates_count > 0:
         db.commit()
-        print(f"Sync finalizado. {updates_count} lançamentos criados.")
+        

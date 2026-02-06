@@ -115,9 +115,13 @@ def update_balance(db: Session, user_id: int, value: float, type: bool):
         stmt = (update(User)
                 .where(User.id == user_id)
                 .values(balance=new_value))
+
         result = db.execute(stmt)
+
         db.commit()
-    except:
+
+        
+    except Exception as e:
         raise HTTPException(status_code=400, detail='error in database')
     if result.rowcount == 0:
         raise HTTPException(status_code=400, detail='error in update balance')

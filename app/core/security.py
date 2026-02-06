@@ -3,12 +3,27 @@ from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+
+from pathlib import Path
+current_file_path = Path(__file__).resolve()
+
+# 2. Navega até a raiz do projeto. 
+# Se este arquivo está em app/main.py, precisa voltar 1 nível (.parent) ou 2 (.parent.parent)
+# Ajuste os .parent até chegar na pasta onde o .env está
+env_path = current_file_path.parent.parent / '.env'
+(f"Tentando carregar .env de: {env_path}")
+load_dotenv(dotenv_path=env_path)
+
 
 SECRET_KEY = os.getenv('secret_key_password', 'CHAVE_ALEATORIA')
 SECRET_KEY_JWT = os.getenv('secret_key_password', 'CHAVE_ALEATORIA')
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ALGORITHM = 'HS256'
+DB_URL = os.getenv('DATABASE_URL')
+DB_USER = os.getenv('DATABASE_USER')
+DB_PASSWORD = os.getenv('DATABASE_PASSWORD')
+DB_NAME = os.getenv('DATABASE_NAME')
+
 
 
 def hash_password(password: str):

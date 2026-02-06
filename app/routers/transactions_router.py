@@ -3,19 +3,20 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from app.controllers.user_controller import get_balance_user
 from app.core.auth import get_current_user
-from app.controllers.transaction_controller import create_new_expense, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_monthly_receives, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
+from app.controllers.transaction_controller import create_new_expense, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_monthly_receives, get_next_payments, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.controllers.expense_category_controller import get_expense_category_by_id
 from app.controllers.charge_type_controller import get_charge_type_by_id
 from app.schemas.expense_schema import Expense_response_base, Expense_create, Expense_response_extended
 from app.services.sync_service import sync_user_finances
+from app.utils.utils import get_previous_month_data
 
 router = APIRouter()
 
 @router.post("/create")
 def create_expense(message:Expense_create, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
-    print(f"O usuário {current_user['user_id']} está criando uma despesa.")
+    
     new_expense_created = create_new_expense(user_id=current_user['user_id'], text_typed=message.message, db=db)
     category_name = get_expense_category_by_id(id=new_expense_created['data'].category,
                                                user_id=current_user['user_id'],
@@ -72,7 +73,25 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
     data_return = {}
     data_return['month_balance'] = get_monthly_balance_value(db=db,
                                                              user_id=current_user['user_id'])['value']
-    
+    before_month, before_year = get_previous_month_data()
+
+    print(before_month, before_year)
+    balance_previous_month = get_monthly_balance_value(db=db,
+                                                       user_id=current_user['user_id'],
+                                                       month=before_month,
+                                                       year=before_year)
+    print(balance_previous_month)
+    comp_with_months = data_return['month_balance'] / balance_previous_month['value']
+    text = ''
+    is_incoming = False
+    if(comp_with_months < 0):
+        text = 'a menos'
+        is_incoming = False
+    else:
+        text = 'a mais'
+        is_incoming = True
+    data_return['legend_balance'] = f'{comp_with_months:.2f}% {text} que o mês anterior'
+    data_return['is_incoming_legend'] = is_incoming
     data_return['expenses_out'] = get_day_and_last_transactions(db=db,
                                                                 user_id=current_user['user_id'])
     
@@ -80,6 +99,8 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
                                                                user_id=current_user['user_id'])
 
     data_return['balance_geral'] = get_balance_user(db=db, user_id=current_user['user_id'])
+
+    data_return['next_payments'] = get_next_payments(db=db, user_id=current_user['user_id'])
     return data_return    
 
 
@@ -127,6 +148,7 @@ def get_extract(current_user: dict = Depends(get_current_user),
                                                     user_id=current_user['user_id'],
                                                     start_date=start_date_search,
                                                     end_date=end_date_search)
+    
     
     data_return = {
         'balance_value_in_period': balance_data_period['value'],
