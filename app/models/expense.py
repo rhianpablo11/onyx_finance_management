@@ -5,7 +5,7 @@ class Expense(Base):
     __tablename__ = 'expense'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     category = Column(Integer, ForeignKey('expenses_category.id'), nullable=False)
     value = Column(Numeric(10,2), nullable=False)
     type_expense = Column(Boolean, nullable=False)

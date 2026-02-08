@@ -5,7 +5,7 @@ class Expenses_fixed(Base):
     __tablename__ = 'expenses_fixed'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(255), nullable=False)
     value = Column(Numeric(10,2), nullable=False)
     start_date = Column(Date, nullable=False)
