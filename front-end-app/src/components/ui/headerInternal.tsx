@@ -66,7 +66,7 @@ function HeaderInternal(props: HeaderInternalProps){
                                 </h2>
                             </div>
                             <div>
-                                <h1 className="pl-1 text-white/75 font-extralight text-xs ">
+                                <h1 className="pl-1 pt-1 text-white/75 font-extralight text-xs ">
                                     {legend}
                                 </h1>
                             </div>

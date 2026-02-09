@@ -6,6 +6,7 @@ export interface InputProps {
 
 export interface ButtonProps {
     type: string
+    nameConfig?: string
     onClickButtonChildren: (id:string) => void
 }
 
@@ -89,4 +90,8 @@ export interface SecondStepRegisterProps {
     name: string | undefined
     email: string | undefined
     telephone: string | undefined
+}
+
+export interface GeneralSettingsProps {
+    onClickChildren: (buttonClicked:string) => void
 }

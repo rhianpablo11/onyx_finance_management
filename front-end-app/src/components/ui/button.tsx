@@ -3,7 +3,7 @@ import backgroundButtonSend from '../../assets/bg-input-chat-ia.svg?url'
 import type { ButtonProps } from '../../interfaces/interfacesComponents'
 
 function Button(props: ButtonProps){
-    const {type, onClickButtonChildren} = props
+    const {type, onClickButtonChildren, nameConfig} = props
 
     if(type == 'login'){
         return(
@@ -13,6 +13,22 @@ function Button(props: ButtonProps){
                     <h1 className="font-medium text-xl text-black">
                         Entrar
                     </h1>
+                </button>
+            </>
+        )
+    } else if(type == 'login-biometric'){
+        return(
+            <>
+                <button onClick={() => onClickButtonChildren('')}
+                        className="bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full">
+                    <h1 className="font-medium text-base text-black">
+                        Entrar com biometria
+                    </h1>
+                    <div className='ml-2'>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.864 4.243A7.5 7.5 0 0 1 19.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 0 0 4.5 10.5a7.464 7.464 0 0 1-1.15 3.993m1.989 3.559A11.209 11.209 0 0 0 8.25 10.5a3.75 3.75 0 1 1 7.5 0c0 .527-.021 1.049-.064 1.565M12 10.5a14.94 14.94 0 0 1-3.6 9.75m6.633-4.596a18.666 18.666 0 0 1-2.485 5.33" />
+                        </svg>
+                    </div>
                 </button>
             </>
         )
@@ -60,6 +76,40 @@ function Button(props: ButtonProps){
                 </button>
             </>
         )
+    } else if(type == 'edit-account'){
+        return(
+            <>
+                <button onClick={() => onClickButtonChildren('')}
+                        className="text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                    </svg>
+
+                </button>
+            </>
+        )
+    } else if(type == 'list-config'){
+        if(nameConfig){
+            return(
+                <>
+                    <button onClick={() => onClickButtonChildren(nameConfig)}
+                            className="text-white">
+                        <div className="flex w-full h-full py-5 items-center ml-4">
+                            <h1 className="text-white font-normal text-base">
+                                {nameConfig}
+                            </h1>
+                            <div className="text-white ml-auto mr-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                                </svg>
+                            </div>
+                        </div>
+
+                    </button>
+                </>
+            )
+        }
+        
     } else{
         return(
                 <>

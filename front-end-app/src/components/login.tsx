@@ -3,8 +3,9 @@
 import { useState } from "react"
 import Button from "./ui/button"
 import Input from "./ui/input"
-import { useLogin } from "../hooks/useAuth"
+import { useBiometricAuth, useLogin } from "../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
+import { startAuthentication } from "@simplewebauthn/browser"
 
 
 
@@ -15,6 +16,7 @@ function Login(){
     const [password, setPassword] = useState('')
     //const {login, loading, error} = useLogin()
     const {login} = useLogin()
+    const {getOptionsLogin, verifyBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
         setEmail(value)
@@ -34,6 +36,17 @@ function Login(){
         } catch(err){
             console.log('deu erro')
             console.error('falha')
+        }
+    }
+
+    const onClickFatherBiometric = async ()=>{
+        try{
+            const optionsJson = await getOptionsLogin(email)
+            const authResp = await startAuthentication({'optionsJSON':optionsJson})
+            const responseVerifyBiometric = await verifyBiometric(email, authResp)
+            navigate('/dashboard')
+        } catch{
+            console.log('error')
         }
     }
 
@@ -59,9 +72,13 @@ function Login(){
                                 type="password"/>
                     </div>
                 </div>
-                <div className="w-44 mt-8 mb-9">
+                <div className="w-44 mt-8 mb-3">
                     <Button onClickButtonChildren={onClickFather}
                             type="login"/>
+                </div>
+                <div className="w-2/3 px-2 mt-1 mb-9">
+                    <Button onClickButtonChildren={onClickFatherBiometric}
+                            type="login-biometric"/>
                 </div>
             </div>
         </>

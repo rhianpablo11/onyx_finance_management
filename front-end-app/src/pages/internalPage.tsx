@@ -6,6 +6,7 @@ import ExtractPage from "./extractPage"
 import ChatPage from "./chatPage"
 import backgroundInternalPage from '../assets/bg-internalPage.svg?url'
 import { getCookie } from "../services/cookiesService"
+import ConfigsPage from "./configsPage"
 
 
 function InternalPage(){
@@ -37,6 +38,10 @@ function InternalPage(){
             return(
                 <ChatPage name={userName}/>
             )
+        } else if(pageSelected == 'config'){
+            return(
+                <ConfigsPage />
+            )
         }
     }
 
@@ -59,6 +64,10 @@ function InternalPage(){
             setTypeToShowHeader('pages-nav')
             setLegendHeader('Facilitador de adição de gastos')
             setTitleHeader('ChatBot')
+        } else if(pageSelected == 'config'){
+            setTypeToShowHeader('pages-nav')
+            setLegendHeader('Controle geral sobre a sua conta')
+            setTitleHeader('Configurações')
         }
     }, [pageSelected])
 
