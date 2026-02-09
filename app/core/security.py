@@ -23,7 +23,9 @@ DB_URL = os.getenv('DATABASE_URL')
 DB_USER = os.getenv('DATABASE_USER')
 DB_PASSWORD = os.getenv('DATABASE_PASSWORD')
 DB_NAME = os.getenv('DATABASE_NAME')
-
+BIOMETRIC_RP_ID = os.getenv('BIOMETRIC_RP_ID')
+BIOMETRIC_RP_NAME = os.getenv('BIOMETRIC_RP_NAME')
+BIOMETRIC_ORIGIN = os.getenv('BIOMETRIC_ORIGIN')
 
 
 def hash_password(password: str):

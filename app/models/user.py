@@ -1,6 +1,7 @@
 from app.core.database import Base
 from sqlalchemy import Boolean, Column, Integer, Numeric, String, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = 'users'
@@ -15,3 +16,5 @@ class User(Base):
     otp_code = Column(Integer, nullable=True)
     second_factor_auth = Column(Boolean, nullable=False, default=False)
     balance = Column(Numeric(18, 2), default=0.0)
+    current_chalenge = Column(String(255), nullable=True)
+    credentials = relationship("User_crendentials", back_populates="user")
