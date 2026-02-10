@@ -45,13 +45,11 @@ def verify_user(db: Session = Depends(get_db),
 def get_options_for_biometric(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     try:    
         user_now = get_user_by_id(db=db, user_id = current_user['user_id'])
-        print('aaaaaaaaaa')
+        
         (options, options_json) = get_options(user_id_now=user_now.id,
                             user_name_now=user_now.name)
-        print('aaaaaaaaaaaaaa')
-        print(options)
-        print('bbbbbbbbbbbbbb')
-        print(options_json)
+        
+
         save_current_chalenge(db=db,
                             user_id=current_user['user_id'],
                             chalenge=options.challenge)
@@ -100,22 +98,22 @@ async def verify_biometric(db: Session = Depends(get_db), request: Request = {})
     body_requisition = await request.json()
     email = body_requisition.get('email')
     credential = body_requisition.get('credential')
-    print('aaaaaaaaaa')
+
     user_now = get_user_by_email(db=db, email=email)
     if not user_now or not user_now.current_chalenge:
         raise HTTPException(status_code=400, detail='desafio invalido ou expirado')
 
-    print('bbbbbbbbbbbb')
+    
     credential_id_used = credential.get('id')
     
     credential_founded = get_credential_used(user=user_now, credential_id_used=credential_id_used)
-    print('cccccccccccc')
+    
     verification_returned = validate_signature(credential_received=credential, user=user_now, credential_found=credential_founded)
-    print('ddddddd')
+    
     credential_founded.sign_count = verification_returned.new_sign_count
 
     remove_current_challenge_of_user(db=db, user_id=user_now.id)
-    print('afafafa')
+    
 
     data_user = {'id': user_now.id}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)

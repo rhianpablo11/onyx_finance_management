@@ -143,7 +143,7 @@ def get_user_by_id(db: Session, user_id: int):
     
 
 def get_options(user_id_now: int, user_name_now: str):
-    print('ccccccccccc')
+    
     options = generate_registration_options(
         rp_id=BIOMETRIC_RP_ID,
         rp_name=BIOMETRIC_RP_NAME,
@@ -158,14 +158,10 @@ def get_options(user_id_now: int, user_name_now: str):
 
 
 def save_current_chalenge(db: Session, user_id: int, chalenge):
-    print(chalenge)
-    print('oiafaf')
-    print(user_id)
+
     chalenge_str = base64.urlsafe_b64encode(chalenge).decode("utf-8").rstrip("=")
-    print(chalenge_str)
     stmt = update(User).where(User.id == user_id).values(current_chalenge = chalenge_str)
     db.execute(stmt)
-    print('oi')
     db.commit()
     return True
 
@@ -209,8 +205,7 @@ def get_user_by_email(db: Session, email:str):
 
 def get_options_biometric_auth(user: User):
 
-    print(user.credentials[0])
-    print(user.credentials[0].credential_id)
+
     list_of_credentials = [
         PublicKeyCredentialDescriptor(
             id=cred.credential_id, 
@@ -241,7 +236,7 @@ def get_credential_used(user: User, credential_id_used):
 
 def validate_signature(credential_received, user: User, credential_found):
     try:
-        print('lllllllll')
+        
         verification = verify_authentication_response(
             credential=credential_received,
             expected_challenge=base64.urlsafe_b64decode(user.current_chalenge + "=="),
@@ -251,8 +246,8 @@ def validate_signature(credential_received, user: User, credential_found):
             credential_current_sign_count=credential_found.sign_count,
             require_user_verification=True
         )
-        print('mmmmmmmmmmm')
-        print(verification)
+        
+        
         return verification
     except Exception as e:
         print(e)
