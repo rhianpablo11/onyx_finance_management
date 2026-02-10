@@ -1,4 +1,7 @@
 from logging.config import fileConfig
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -8,6 +11,27 @@ from alembic import context
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+from pathlib import Path
+current_file_path = Path(__file__).resolve()
+
+# 2. Navega até a raiz do projeto. 
+# Se este arquivo está em app/main.py, precisa voltar 1 nível (.parent) ou 2 (.parent.parent)
+# Ajuste os .parent até chegar na pasta onde o .env está
+env_path = current_file_path.parent.parent / 'app/.env'
+print(f"Tentando carregar .env de: {env_path}")
+load_dotenv(dotenv_path=env_path)
+
+db_url = os.getenv("DATABASE_URL")
+db_user = os.getenv("DATABASE_USER")
+db_password = os.getenv("DATABASE_PASSWORD")
+db_name = os.getenv("DATABASE_NAME")
+
+
+DATABASE_URL = f'postgresql://{db_user}:{db_password}@{db_url}/{db_name}'
+
+# this line below indicate url to use, if not commented work with env enviroment
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -22,6 +46,7 @@ from app.models.chat_logs import Chat_logs
 from app.models.expense_category import Expense_category
 from app.models.expense import Expense
 from app.models.expenses_fixed import Expenses_fixed
+from app.models.user_crendentials import User_crendentials
 from app.core.database import Base 
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
