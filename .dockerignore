@@ -1,0 +1,40 @@
+# 1. O MAIS IMPORTANTE: Ambiente Virtual
+# O container é Linux, seu venv é Windows. Se copiar, quebra tudo!
+venv/
+.venv/
+env/
+
+# 2. Lixo do Python (Bytecode)
+# Arquivos compilados que o Python gera sozinho. Não precisamos copiar.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 3. SEGURANÇA (Crucial!)
+# Nunca coloque suas senhas DENTRO da imagem. 
+# Elas devem ser injetadas na hora de rodar (pelo Render ou pelo --env-file).
+.env
+.env.*
+
+# 4. Git e Histórico
+# A pasta .git é gigante e inútil pro servidor rodar.
+.git/
+.gitignore
+
+# 5. Configurações de IDE
+.vscode/
+.idea/
+
+# 6. Docker (O próprio Dockerfile não precisa estar dentro dele mesmo rs)
+Dockerfile
+.dockerignore
+
+# 7. Logs e Bancos Locais (se tiver SQLite)
+*.log
+*.sqlite
+*.db
+
+# 8. Arquivos de Sistema Operacional (Lixo do Windows/Mac)
+.DS_Store
+Thumbs.db
