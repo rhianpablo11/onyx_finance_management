@@ -3,7 +3,7 @@ import { getToken, removeToken } from './tokenService';
 
 
 export const api = axios.create({
-    baseURL: 'http://localhost:8000', 
+    baseURL: 'https://financialmanagementbackend-i81tfrxg.b4a.run/', 
     timeout: 1000000, 
 });
 

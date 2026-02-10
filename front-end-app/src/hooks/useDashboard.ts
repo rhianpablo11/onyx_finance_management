@@ -7,6 +7,10 @@ interface returnGetMetrics{
     month_balance: number
     expenses_out: ListTransactionProps[]
     expenses_in_on_month: ListTransactionProps[]
+    balance_geral: number
+    next_payments: ListTransactionProps[]
+    is_incoming_legend: boolean
+    legend_balance: string
 }
 
 export function useDashboard(){

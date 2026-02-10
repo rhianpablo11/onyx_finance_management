@@ -30,6 +30,7 @@ function ExtractPage(){
                 const data = await getExtract(start, end)
                 console.log(data.transactions[0].date)
                 console.log(typeof(data.transactions[0].date))
+                console.log(currentRange, showDatePicker)
                 setBalanceValueInPeriod(data.balance_value_in_period)
                 setListOfTransaction(data.transactions)
                 setValueReceivedInPeriod(data.value_received)

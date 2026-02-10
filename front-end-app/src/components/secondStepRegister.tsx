@@ -20,6 +20,7 @@ function SecondStepRegister(props: SecondStepRegisterProps){
 
     const onChangeInputFatherConfirmPassowrd = (value: string) => {
         console.log(value)
+        console.log(confirmPassword, loading)
         setConfirmPassword(value)
     }
 

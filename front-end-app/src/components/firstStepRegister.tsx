@@ -18,6 +18,7 @@ function FirstStepRegister(props: FirstStepRegisterProps){
 
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
+        console.log(loading)
         setEmail(value)
         setEmailIsValid(true)
     }

@@ -1,4 +1,3 @@
-import Login from "../components/login"
 import Button from "../components/ui/button"
 import Wellcome from "../components/ui/wellcome"
 import backgroundInitialPage  from '../assets/bg-initial-Page.svg?url'
@@ -6,7 +5,7 @@ import FirstStepRegister from "../components/firstStepRegister"
 import { useState } from "react"
 import SecondStepRegister from "../components/secondStepRegister"
 import type { SecondStepRegisterProps } from "../interfaces/interfacesComponents"
-import { useCreateAccount } from "../hooks/useCreateAccount"
+
 
 
 function CreateAccountPage(){
