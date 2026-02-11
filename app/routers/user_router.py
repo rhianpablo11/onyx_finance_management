@@ -69,11 +69,15 @@ async def register_biometric(db: Session = Depends(get_db), current_user: dict =
     print(user_now.current_chalenge)
     verification_return = verify_registration_biometric(body=body_requisition,
                                                         challenge_str=user_now.current_chalenge)
+    print('ccccccccc')
+    print(verification_return)
     add_new_credential(db=db,
                        user_id=current_user['user_id'],
                        verification=verification_return)
+    print('dddddddd')
     remove_current_challenge_of_user(db=db,
                                      user_id=current_user['user_id'])
+    print('eeeeeeeeee')
     return {'verified': True,
             'message': 'Biometria cadastrada com sucesso'}
     pass

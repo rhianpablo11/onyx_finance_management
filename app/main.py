@@ -8,18 +8,19 @@ from app.models import user
 app = FastAPI(
     title='Onyx API',
     description='API for finance management simplified and Inteligent',
-    version='0.0.1'
+    version='0.1.0'
 )
 
 origins = [
     "http://localhost:5173",     
     "http://127.0.0.1:5173",      
-    "http://localhost:3000",      
+    "http://localhost:3000",
+    "https://onyxrp11.netlify.app"      
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        # Lista de quem pode chamar a API
+    allow_origins=origins,        # Lista de quem pode chamar a API
     allow_credentials=True,       # Permite enviar Cookies/Tokens de Autenticação
     allow_methods=["*"],          # Permite GET, POST, PUT, DELETE (Tudo)
     allow_headers=["*"],          # Permite qualquer cabeçalho (Authorization, etc)

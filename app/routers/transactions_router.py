@@ -81,7 +81,10 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
                                                        month=before_month,
                                                        year=before_year)
     print(balance_previous_month)
-    comp_with_months = data_return['month_balance'] / balance_previous_month['value']
+    if(balance_previous_month['value']>0):
+        comp_with_months = (data_return['month_balance'] / balance_previous_month['value'])*100
+    else:
+        comp_with_months = (data_return['month_balance'] / data_return['month_balance']) * 100
     text = ''
     is_incoming = False
     if(comp_with_months < 0):

@@ -168,6 +168,7 @@ def save_current_chalenge(db: Session, user_id: int, chalenge):
 
 def verify_registration_biometric(body, challenge_str):
     try:
+        print("aaaaa")
         verification = verify_registration_response(
             credential=body,
             expected_challenge=base64url_to_bytes(challenge_str),
@@ -175,12 +176,14 @@ def verify_registration_biometric(body, challenge_str):
             expected_rp_id=BIOMETRIC_RP_ID,
             require_user_verification=True
         )
+        print('bbbbbbb')
         return verification
     except Exception as e:
         raise HTTPException(status_code=400, detail=f'falha na validação {str(e)}')
     
 
 def add_new_credential(db: Session, user_id: int, verification):
+    print('bbbbbbbcccccddddd')
     new_credential = User_crendentials(
         user_id=user_id,
         credential_id=verification.credential_id,
@@ -189,12 +192,14 @@ def add_new_credential(db: Session, user_id: int, verification):
         device_name='new device'
     )
     db.add(new_credential)
-
+    print('cccccddddd')
 
 def remove_current_challenge_of_user(db: Session, user_id: int):
     stmt = update(User).where(User.id == user_id).values(current_chalenge= None)
     db.execute(stmt)
+    print('oafoaipfo')
     db.commit()
+    print('aflafla')
 
 
 def get_user_by_email(db: Session, email:str):
