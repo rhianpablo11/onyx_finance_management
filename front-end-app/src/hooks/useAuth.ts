@@ -65,11 +65,17 @@ export function useBiometricAuth(){
     }
 
 
-    const getOptionsLogin = async (emailUser: String) =>{
+    const getOptionsLogin = async () =>{
         try{
-            const dataToSend = {'email': emailUser}
-            const response = await api.post('/user/login/options-biometric', dataToSend)
-            return response.data
+            const emailUser = getCookie('user_email')
+            if(emailUser){
+                const dataToSend = {'email': emailUser}
+                const response = await api.post('/user/login/options-biometric', dataToSend)
+                return response.data
+            } else{
+                throw new Error("Email do usuário não encontrado nos cookies.")
+            }
+            
         } catch(err: any){
             throw err
         }

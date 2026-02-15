@@ -41,7 +41,7 @@ function Login(){
 
     const onClickFatherBiometric = async ()=>{
         try{
-            const optionsJson = await getOptionsLogin(email)
+            const optionsJson = await getOptionsLogin()
             const authResp = await startAuthentication({'optionsJSON':optionsJson})
             const responseVerifyBiometric = await verifyBiometric(authResp)
             console.log(responseVerifyBiometric)
