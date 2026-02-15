@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { loginCredentials, LoginResponse } from "../interfaces/interfacesHooks";
 import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
-import { setCookie, setLongCookie } from "../services/cookiesService";
+import { getCookie, setCookie, setLongCookie } from "../services/cookiesService";
+
 
 
 export function useLogin(){
@@ -22,7 +23,8 @@ export function useLogin(){
             const {access_token} = response.data
             setToken(access_token)
             setCookie('user_name', response.data.user_data.name)
-            
+            setLongCookie('user_email', response.data.user_data.email)
+
             return response.data
         } catch(err: any){
             const errorMessage = err.response?.data?.message || 'Erro ao realizar login. Tente novamente.';
@@ -74,16 +76,21 @@ export function useBiometricAuth(){
     }
 
 
-    const verifyBiometric = async (emailUser: String, authResp: any) => {
+    const verifyBiometric = async ( authResp: any) => {
         try{
-            const dataToSend = {
-                'email': emailUser,
-                'credential': authResp
-            }
-            const response = await api.post('/user/login/verify-biometric', dataToSend)
-            if(response.data.access_token){
-                setToken(response.data.access_token)
-                setCookie('user_name', response.data.user_data.name)
+            const emailUser = getCookie('user_email')
+            if(emailUser){
+                const dataToSend = {
+                    'email': emailUser,
+                    'credential': authResp
+                }
+                const response = await api.post('/user/login/verify-biometric', dataToSend)
+                if(response.data.access_token){
+                    setToken(response.data.access_token)
+                    setCookie('user_name', response.data.user_data.name)
+                }
+            } else{
+                throw new Error("Email do usuário não encontrado nos cookies.")
             }
         } catch (err: any){
             throw err

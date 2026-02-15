@@ -4,6 +4,7 @@ import type { ListTransactionProps } from "../interfaces/interfacesComponents"
 import { useExtract } from "../hooks/useExtract"
 import SelectionComp from "../components/ui/selection"
 import { getDateRangeByOption } from "../utils/utils"
+import SkeletonLoader from "../components/ui/skeletonLoader"
 
 
 function ExtractPage(){
@@ -14,7 +15,7 @@ function ExtractPage(){
     const [currentRange, setCurrentRange] = useState({ start: '', end: '' });
     const [showDatePicker, setShowDatePicker] = useState(false);
     // const {getExtract, loading} = useExtract()
-    const {getExtract} = useExtract()
+    const {getExtract, loading} = useExtract()
 
     const categorysOfSearch = [
         { label: "Este mês", value: "1" },
@@ -78,9 +79,19 @@ function ExtractPage(){
                         <h1 className="text-base text-white font-extralight">
                             Saldo no perído:
                         </h1>
-                        <h1 className="font-normal text-white text-2xl">
-                            R$ {balanceValueInPeriod}
-                        </h1>
+                        {loading ? (
+                            <div className="flex justify-end">
+                                <h1 className="font-normal text-white text-2xl">
+                                    R$
+                                </h1>
+                                <SkeletonLoader className="w-20" />
+                            </div>
+                        ) : (
+                            <h1 className="font-normal text-white text-2xl">
+                                R$ {balanceValueInPeriod}
+                            </h1>
+                        )}
+                        
                     </div>
                     {/* <div className="flex justify-between px-2.5 items-center border border-white/15 h-10 w-3/8 rounded-2xl">
                         <div>
@@ -107,17 +118,36 @@ function ExtractPage(){
                         <h1 className="text-white font-extralight text-sm">
                             Recebido:
                         </h1>
-                        <h1 className="font-normal text-lg text-white">
-                            R$ {valueReceivedInPeriod}
-                        </h1>
+                        {loading ? (
+                            <div className="flex  justify-baseline items-baseline">
+                                <h1 className="font-normal text-lg text-white">
+                                    R$ 
+                                </h1>
+                                <SkeletonLoader className="w-20 h-4" />
+                            </div>
+                        ) : (
+                            <h1 className="font-normal text-lg text-white">
+                                R$ {valueReceivedInPeriod}
+                            </h1>
+                        )}
+                        
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-white font-extralight text-sm">
                             Saídas:
                         </h1>
-                        <h1 className="font-normal text-lg text-white">
-                            R$ {valueSpentInPeriod}
-                        </h1>
+                        {loading ? (
+                            <div className="flex  justify-baseline items-baseline">
+                                <h1 className="font-normal text-lg text-white">
+                                    R$ 
+                                </h1>
+                                <SkeletonLoader className="w-20 h-4" />
+                            </div>
+                        ) : (
+                            <h1 className="font-normal text-lg text-white">
+                                R$ {valueSpentInPeriod}
+                            </h1>
+                        )}
                     </div>
                 </div>
                 <div className={`mt-4 mb-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>

@@ -43,7 +43,7 @@ function Login(){
         try{
             const optionsJson = await getOptionsLogin(email)
             const authResp = await startAuthentication({'optionsJSON':optionsJson})
-            const responseVerifyBiometric = await verifyBiometric(email, authResp)
+            const responseVerifyBiometric = await verifyBiometric(authResp)
             console.log(responseVerifyBiometric)
             navigate('/dashboard')
         } catch{
