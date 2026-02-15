@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { loginCredentials, LoginResponse } from "../interfaces/interfacesHooks";
 import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
-import { setCookie } from "../services/cookiesService";
+import { setCookie, setLongCookie } from "../services/cookiesService";
 
 
 export function useLogin(){
@@ -52,6 +52,7 @@ export function useBiometricAuth(){
             const response = await api.post('/user/register/register-biometric', dataToSend)
             console.log(response)
             if(response.data.verified){
+                
                 return true
             } else{
                 return false

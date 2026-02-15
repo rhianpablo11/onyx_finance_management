@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+/* Efeito de Shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  /* degradê vai de Transparente -> Branco -> Transparente */
+  background: linear-gradient(
+    90deg, 
+    rgba(255, 255, 255, 0.1) 25%, 
+    rgba(152, 152, 152, 0.5) 50%, 
+    rgba(255, 255, 255, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}

@@ -3,7 +3,7 @@ import { getToken, removeToken } from './tokenService';
 
 
 export const api = axios.create({
-    baseURL: 'https://finance-management-api-enyq.onrender.com', 
+    baseURL: 'http://localhost:8000', 
     timeout: 1000000, 
 });
 
@@ -11,7 +11,6 @@ api.interceptors.request.use((config) => {
     const token = getToken();
 
     if (token) {
-        // Injeta o token no cabeçalho
         config.headers.Authorization = `Bearer ${token}`;
     }
 

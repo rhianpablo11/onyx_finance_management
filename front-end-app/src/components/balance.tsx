@@ -1,9 +1,11 @@
 // component for show monthly balance in initial page
 import backgroundBalance from '../assets/bg-balance2.svg?url'
 import type { BalanceProps } from '../interfaces/interfacesComponents'
+import { AnimatedCounter } from './ui/animatedCounter'
+import SkeletonLoader from './ui/skeletonLoader'
 
 function Balance(props: BalanceProps){
-    const {value, legend, incoming, balanceGeral} = props
+    const {value, legend, incoming, balanceGeral, loading = false} = props
 
     const upIcon = (
         <>
@@ -21,6 +23,8 @@ function Balance(props: BalanceProps){
         </>
     )
 
+    
+
     return(
         <>
             <div className='rounded-[29px] mb-6 bg-linear-to-tl from-white/30 via-black to-white/70 p-px'>
@@ -30,12 +34,30 @@ function Balance(props: BalanceProps){
                             Saldo do mês:
                         </h1>
                         <div className="flex-col justify-end pt-1">
-                            <h1 className="text-white text-end font-extralight text-5xl">
-                                R$ {value}
-                            </h1>
-                            <h1 className="flex justify-end text-white text-end font-extralight text-xs pt-2">
-                                {incoming ? upIcon : downIcon} {legend}
-                            </h1>
+                            {loading ? (
+                                <div className="flex justify-end items-baseline h-12">
+                                    <h1 className="text-white text-end font-extralight text-5xl">
+                                        R$
+                                    </h1>
+                                    <SkeletonLoader className="h-8/10 w-30" />
+                                </div>
+                            ) : (<h1 className="text-white text-end font-extralight text-5xl">
+                                R$ <AnimatedCounter value={value} duration={800}/> 
+                            </h1>)}
+                            
+                                {loading ? (
+                                        <div className='flex justify-end mt-2 h-4'>
+                                            <SkeletonLoader className=" w-30 mb-2" />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <h1 className="flex justify-end text-white text-end font-extralight text-xs pt-2">
+                                                {incoming ? upIcon : downIcon} {legend}
+                                            </h1>
+                                        </>
+                                        
+                                    )}
+                            
                         </div>
                     </div>
                     <div className='flex-col flex'>
@@ -43,9 +65,19 @@ function Balance(props: BalanceProps){
                             Saldo geral:
                         </h1>
                         <div className='justify-end pt-1'>
-                            <h1 className="text-white text-end font-extralight text-2xl">
-                                R$ {balanceGeral}
-                            </h1>
+                            {loading ? (
+                                <div className="flex justify-end items-baseline h-6">
+                                    <h1 className="text-white text-end font-extralight text-2xl">
+                                        R$
+                                    </h1>
+                                    <SkeletonLoader className="h-8/10 w-30 mb-2" />
+                                </div>
+                            ): (
+                                <h1 className="text-white text-end font-extralight text-2xl">
+                                    R$ <AnimatedCounter value={balanceGeral} duration={800}/> 
+                                </h1>
+                            )}
+                            
                         </div>
                     </div>
                 </div>

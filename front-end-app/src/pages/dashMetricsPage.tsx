@@ -6,7 +6,7 @@ import { useDashboard } from "../hooks/useDashboard"
 
 function DashMetricsPage(){
     // const {getMetrics, loading, error} = useDashboard()
-    const {getMetrics} = useDashboard()
+    const {getMetrics, loading} = useDashboard()
     const [balanceMonth, setBalanceMonth] = useState<number>(0)
     const [listOfTransactionsOut, setListOfTransactionsOut] = useState<ListTransactionProps[]>([])
     const [listOfTransactionsIn, setListOfTransactionsIn] = useState<ListTransactionProps[]>([])
@@ -40,9 +40,10 @@ function DashMetricsPage(){
     return(
         <>
             <Balance value={balanceMonth}
-                             legend={legendBalance}
-                             incoming={isIncoming}
-                             balanceGeral={balanceGeral} />
+                     legend={legendBalance}
+                     incoming={isIncoming}
+                     balanceGeral={balanceGeral} 
+                     loading={loading} />
             <TransactionsRecents dayExpenses={listOfTransactionsOut}
                                 monthReceives={listOfTransactionsIn}
                                 nextPayments={listOfNextPayments}/>

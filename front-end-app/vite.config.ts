@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'Onyx Finance', // Nome completo
         short_name: 'Onyx', // Nome que fica embaixo do ícone no celular
         description: 'Seu gerenciador financeiro pessoal',
-        theme_color: '#ffffff', // Cor da barra de status do celular
-        background_color: '#ffffff', // Cor de fundo enquanto carrega
+        theme_color: '#000000', // Cor da barra de status do celular
+        background_color: '#000000', // Cor de fundo enquanto carrega
         display: 'standalone', // <--- ISSO TIRA A BARRA DO NAVEGADOR (Fica parecendo app nativo)
         scope: '/',
         start_url: '/',

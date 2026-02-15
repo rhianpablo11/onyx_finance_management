@@ -45,6 +45,7 @@ export interface BalanceProps {
     legend: string
     incoming: boolean  //true for incoming or false for exit
     balanceGeral: number
+    loading?: boolean
 }
 
 export interface TransactionsRecentsProps{
@@ -94,4 +95,14 @@ export interface SecondStepRegisterProps {
 
 export interface GeneralSettingsProps {
     onClickChildren: (buttonClicked:string) => void
+}
+
+export interface LoadingModalProps {
+    isOpen: boolean
+}
+
+
+export interface AnimatedCounterProps {
+    value: number;
+    duration?: number; // Tempo em ms
 }
