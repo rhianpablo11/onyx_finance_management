@@ -15,7 +15,7 @@ function Login(){
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     //const {login, loading, error} = useLogin()
-    const {login} = useLogin()
+    const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
@@ -53,11 +53,11 @@ function Login(){
 
     return(
         <>
-            <div className="flex flex-col justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
-                <h1 className="text-white font-medium text-[32px] mt-7">
+            <div className="flex flex-col mt-4 justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
+                <h1 className="text-white font-medium text-[32px] mt-2">
                     Login
                 </h1>
-                <div className="flex-col w-full flex justify-start mr-auto mt-7 px-3">
+                <div className="flex-col w-full flex justify-start mr-auto mt-4 px-3">
                     <div>
                         <h1 className="text-white font-light text-sm pb-1">
                             E-mail:
@@ -75,11 +75,13 @@ function Login(){
                 </div>
                 <div className="w-44 mt-8 mb-3">
                     <Button onClickButtonChildren={onClickFather}
-                            type="login"/>
+                            type="login"
+                            loading={loading} />
                 </div>
-                <div className="w-2/3 px-2 mt-1 mb-9">
+                <div className="w-2/3 px-2 mt-1 mb-4">
                     <Button onClickButtonChildren={onClickFatherBiometric}
-                            type="login-biometric"/>
+                            type="login-biometric"
+                            loading={loading} />
                 </div>
             </div>
         </>

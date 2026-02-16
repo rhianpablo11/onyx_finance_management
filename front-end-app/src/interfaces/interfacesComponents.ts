@@ -7,6 +7,7 @@ export interface InputProps {
 export interface ButtonProps {
     type: string
     nameConfig?: string
+    loading?: boolean
     onClickButtonChildren: (id:string) => void
 }
 

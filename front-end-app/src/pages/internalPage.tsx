@@ -77,7 +77,7 @@ function InternalPage(){
             <div className="w-full max-w-full h-dvh m-0 px-4 bg-no-repeat bg-cover bg-center " 
                      style={{backgroundImage: `url("${backgroundInternalPage}")`}}>
                 <div className="w-full h-dvh max-h-dvh flex flex-col">
-                    <div className="shrink-0 mt-5">
+                    <div className="shrink-0">
                         <HeaderInternal name={userName}
                                         legend={legendHeader}
                                         title={titleHeader}

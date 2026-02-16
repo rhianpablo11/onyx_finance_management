@@ -18,7 +18,7 @@ function HeaderInternal(props: HeaderInternalProps){
     if(type == 'wellcome'){
         return(
             <>
-                <div className="w-full h-full flex rounded-xl pt-4 justify-between">
+                <div className="w-full h-full flex rounded-xl pt-1 justify-between">
                         <div className="flex-col">
                             <div className="flex items-baseline">
                                 <h1 className="text-white/50 pr-2 font-extralight text-[28px] ">
