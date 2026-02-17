@@ -1,11 +1,12 @@
 // component for login feature
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Button from "./ui/button"
 import Input from "./ui/input"
 import { useBiometricAuth, useLogin } from "../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 import { startAuthentication } from "@simplewebauthn/browser"
+import { getCookie } from "../services/cookiesService"
 
 
 
@@ -14,6 +15,7 @@ function Login(){
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [existEmail, setExistEmail] = useState(false)
     //const {login, loading, error} = useLogin()
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric} = useBiometricAuth()
@@ -51,6 +53,15 @@ function Login(){
         }
     }
 
+    useEffect(()=>{
+        const emailUserCookies = getCookie('user_email')
+        if(typeof(emailUserCookies) != undefined){
+            setExistEmail(false)
+        } else{
+            setExistEmail(true)
+        }
+    },[])
+
     return(
         <>
             <div className="flex flex-col mt-4 justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
@@ -78,11 +89,16 @@ function Login(){
                             type="login"
                             loading={loading} />
                 </div>
-                <div className="w-2/3 px-2 mt-1 mb-4">
-                    <Button onClickButtonChildren={onClickFatherBiometric}
-                            type="login-biometric"
-                            loading={loading} />
-                </div>
+                {existEmail ? (
+                    <>
+                        <div className="w-2/3 px-2 mt-1 mb-4">
+                            <Button onClickButtonChildren={onClickFatherBiometric}
+                                    type="login-biometric"
+                                    loading={loading} />
+                        </div>
+                    </>
+                ) : null}
+                
             </div>
         </>
     )
