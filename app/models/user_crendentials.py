@@ -11,4 +11,6 @@ class User_crendentials(Base):
     public_key = Column(LargeBinary, nullable=False)
     sign_count = Column(Integer, default=0)
     device_name = Column(String(255), nullable=True)
+    device_id = Column(String, nullable=True)
     user = relationship("User", back_populates="credentials")
+    

@@ -25,6 +25,7 @@ def authenticate_user(email:str, password: str ,db: Session):
     data_user = {'id': user.id}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
     access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+    
 
     return {
         'access_token': access_token,
@@ -182,14 +183,15 @@ def verify_registration_biometric(body, challenge_str):
         raise HTTPException(status_code=400, detail=f'falha na validação {str(e)}')
     
 
-def add_new_credential(db: Session, user_id: int, verification):
+def add_new_credential(db: Session, user_id: int, device_id: str, verification):
     print('bbbbbbbcccccddddd')
     new_credential = User_crendentials(
         user_id=user_id,
         credential_id=verification.credential_id,
         public_key=verification.credential_public_key,
         sign_count=verification.sign_count,
-        device_name='new device'
+        device_name='new device',
+        device_id=device_id
     )
     db.add(new_credential)
     print('cccccddddd')
@@ -257,3 +259,16 @@ def validate_signature(credential_received, user: User, credential_found):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail='falha na autenticação')
+    
+
+def device_has_biometric_registered(db: Session, user_id: int, device_id_for_verify: str):
+    stmt = (select(User_crendentials)
+            .where(User_crendentials.user_id == user_id)
+            .where(User_crendentials.device_id == device_id_for_verify))
+    
+    user_crendentials_founded = db.execute(stmt).first()
+    
+    if(user_crendentials_founded):
+        return True
+    
+    return False

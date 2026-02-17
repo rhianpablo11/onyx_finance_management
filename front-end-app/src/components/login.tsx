@@ -54,12 +54,18 @@ function Login(){
     }
 
     useEffect(()=>{
-        const emailUserCookies = getCookie('user_email')
-        if(typeof(emailUserCookies) != undefined){
-            setExistEmail(false)
+        const biometricExist = getCookie('this_device_has_biometric')
+        if(biometricExist && biometricExist == 'true'){
+            const emailUserCookies = getCookie('user_email')
+            if(typeof(emailUserCookies) != undefined){
+                setExistEmail(false)
+            } else{
+                setExistEmail(true)
+            }
         } else{
-            setExistEmail(true)
+            setExistEmail(false)
         }
+        
     },[])
 
     return(

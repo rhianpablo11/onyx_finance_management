@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
-from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, get_credential_used, get_options, get_options_biometric_auth, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
+from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, device_has_biometric_registered, get_credential_used, get_options, get_options_biometric_auth, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
@@ -25,8 +25,17 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
                             password=form_data.password,
                             db=db)
     
-    
     return user
+
+
+@router.post('/has-biometric', status_code=201)
+async def verify_biometric_device_exists(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user), request: Request = {}):
+    body_request = await request.json()
+    biometric_registered_in_device = device_has_biometric_registered(db=db,
+                                                                     user_id=current_user['user_id'],
+                                                                     device_id_for_verify=body_request['idDevice'])
+    return {'exists_biometric':biometric_registered_in_device}
+
 
 @router.get('/verify-user', status_code=201)
 def verify_user(db: Session = Depends(get_db),
@@ -62,18 +71,20 @@ def get_options_for_biometric(db: Session = Depends(get_db), current_user: dict 
 @router.post('/register/register-biometric', status_code=201)
 async def register_biometric(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user), request: Request = {}):
     body_requisition = await request.json()
+
     user_now = get_user_by_id(db=db, user_id = current_user['user_id'])
     if not user_now.current_chalenge:
         raise HTTPException(status_code=400, detail='nenhum desafio foi encontrado')
 
     print(user_now.current_chalenge)
-    verification_return = verify_registration_biometric(body=body_requisition,
+    verification_return = verify_registration_biometric(body=body_requisition['dataBiometric'],
                                                         challenge_str=user_now.current_chalenge)
     print('ccccccccc')
     print(verification_return)
     add_new_credential(db=db,
                        user_id=current_user['user_id'],
-                       verification=verification_return)
+                       verification=verification_return,
+                       device_id=body_requisition['idDevice'])
     print('dddddddd')
     remove_current_challenge_of_user(db=db,
                                      user_id=current_user['user_id'])

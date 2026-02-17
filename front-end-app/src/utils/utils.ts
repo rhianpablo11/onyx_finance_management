@@ -1,5 +1,5 @@
 import { endOfMonth } from 'date-fns';
-
+import {v4 as uuidv4} from 'uuid'
 
 export const formatDate = (date: Date): string => {
     return date.toISOString().split('T')[0];
@@ -51,3 +51,14 @@ export const getDateRangeByOption = (optionValue: string) => {
         endDate: formatDate(endDate)
     };
 };
+
+
+export const getDeviceId = () =>{
+    let deviceId = localStorage.getItem('onyxDeviceId')
+
+    if(!deviceId){
+        deviceId = uuidv4()
+        localStorage.setItem('onyxDeviceId', deviceId)
+    }
+    return deviceId
+}

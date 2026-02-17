@@ -3,6 +3,7 @@ import type { loginCredentials, LoginResponse } from "../interfaces/interfacesHo
 import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
 import { getCookie, setCookie, setLongCookie } from "../services/cookiesService";
+import { getDeviceId } from "../utils/utils";
 
 
 
@@ -34,10 +35,32 @@ export function useLogin(){
             setLoading(false);
         }
     }
+
+    
+
     return {login, loading, error}
 }
 
 export function useBiometricAuth(){
+
+    const existBiometricInDevice = async () =>{
+        try{
+            const dataSend = {
+                'idDevice': getDeviceId()
+            }
+            const response = await api.post('/user/has-biometric', dataSend)
+            if(response.data.exists_biometric){
+                setLongCookie('this_device_has_biometric', 'true')
+                return true
+            } else{
+                setLongCookie('this_device_has_biometric', 'false')
+                return false
+            }
+        } catch (err: any) {
+            return false
+            throw err
+        }
+    }
 
     const getOptions = async () =>{
         try{
@@ -54,7 +77,7 @@ export function useBiometricAuth(){
             const response = await api.post('/user/register/register-biometric', dataToSend)
             console.log(response)
             if(response.data.verified){
-                
+                setLongCookie('this_device_has_biometric', 'true')
                 return true
             } else{
                 return false
@@ -103,5 +126,5 @@ export function useBiometricAuth(){
         }
     }
 
-    return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric}
+    return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric, existBiometricInDevice}
 }
