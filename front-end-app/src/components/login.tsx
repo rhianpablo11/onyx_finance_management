@@ -59,9 +59,9 @@ function Login(){
         if(biometricExist == 'true'){
             const emailUserCookies = getCookie('user_email')
             if(typeof(emailUserCookies) != undefined){
-                setExistEmail(false)
-            } else{
                 setExistEmail(true)
+            } else{
+                setExistEmail(false)
             }
         } else{
             setExistEmail(false)
