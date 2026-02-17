@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { loginCredentials, LoginResponse } from "../interfaces/interfacesHooks";
 import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
-import { getCookie, setCookie, setLongCookie } from "../services/cookiesService";
+import { getCookie, removeCookie, setCookie, setLongCookie } from "../services/cookiesService";
 import { getDeviceId } from "../utils/utils";
 
 
@@ -132,6 +132,10 @@ export function useBiometricAuth(){
             
             const dataToSend = {'deviceId': getDeviceId()}
             const response = await api.post('/user/biometric/delete', dataToSend)
+            if(response.status = 201){
+                setLongCookie('this_device_has_biometric', 'false')
+                removeCookie('user_email')
+            }
             return response.data
             
         } catch(err: any){

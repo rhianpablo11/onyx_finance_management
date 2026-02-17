@@ -18,6 +18,7 @@ function GeneralSettings(props: GeneralSettingsProps){
             requestBiometric()
         } else if(buttonClicked == 'Remover Biometria'){
             removeBiometricOfDevice()
+            setTextBiometric('Configurar Biometria')
         }
     }
 
