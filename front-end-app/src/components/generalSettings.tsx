@@ -36,7 +36,7 @@ function GeneralSettings(props: GeneralSettingsProps){
                 }
             }
 
-            setTextBiometric('Configurar Biometria')
+            
         }
         verifyBiometricExists()
     },[])
