@@ -55,7 +55,7 @@ function Login(){
 
     useEffect(()=>{
         const biometricExist = getCookie('this_device_has_biometric')
-        if(biometricExist && biometricExist == 'true'){
+        if(biometricExist == 'true'){
             const emailUserCookies = getCookie('user_email')
             if(typeof(emailUserCookies) != undefined){
                 setExistEmail(false)

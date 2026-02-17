@@ -31,6 +31,8 @@ function GeneralSettings(props: GeneralSettingsProps){
                 const biometricExistInDatabase = await existBiometricInDevice()
                 if(biometricExistInDatabase == false){
                     setTextBiometric('Configurar Biometria')
+                } else{
+                    setTextBiometric('Remover Biometria')
                 }
             }
 
