@@ -56,6 +56,7 @@ function GeneralSettings(props: GeneralSettingsProps){
             if(response_of_register == false){
                 throw new Error('falha ao registrar nova biometria')
             }
+            setTextBiometric('Remover Biometria')
         } catch (error){
             // if(error.name === 'NotAllowedError'){
             //     alert('operação cancelada')
