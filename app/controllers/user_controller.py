@@ -272,3 +272,19 @@ def device_has_biometric_registered(db: Session, user_id: int, device_id_for_ver
         return True
     
     return False
+
+
+def delete_biometric_of_device_selected(db: Session, user_id: int, device_id_for_remove: str):
+    stmt = (select(User_crendentials)
+            .where(User_crendentials.user_id == user_id)
+            .where(User_crendentials.device_id == device_id_for_remove))
+    
+    user_crendentials_founded = db.execute(stmt).first()
+    if(user_crendentials_founded):
+        stmt = (delete(User_crendentials)
+            .where(User_crendentials.user_id == user_id)
+            .where(User_crendentials.device_id == device_id_for_remove))
+        result = db.execute(stmt)
+        print(result)
+        return result
+    return False

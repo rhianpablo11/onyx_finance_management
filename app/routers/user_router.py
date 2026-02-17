@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
-from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, device_has_biometric_registered, get_credential_used, get_options, get_options_biometric_auth, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
+from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, device_has_biometric_registered, get_credential_used, get_options, get_options_biometric_auth, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
@@ -140,3 +140,11 @@ async def verify_biometric(db: Session = Depends(get_db), request: Request = {})
         'user_data': user_now
     }
 
+
+@router.post('/biometric/delete', status_code=201)
+async def remove_biometric_for_this_device(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user), request: Request ={}):
+    id_of_device = await request.json()
+    delete_biometric_of_device_selected(db=db,
+                                        user_id=current_user['user_id'],
+                                        device_id_for_remove=id_of_device['deviceId'])
+    return True

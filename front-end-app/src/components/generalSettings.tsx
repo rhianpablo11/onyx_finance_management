@@ -9,13 +9,15 @@ import { getCookie } from "../services/cookiesService";
 
 function GeneralSettings(props: GeneralSettingsProps){
     const {onClickChildren} = props
-    const {getOptions, registerBiometric, existBiometricInDevice} = useBiometricAuth()
+    const {getOptions, registerBiometric, existBiometricInDevice, removeBiometricOfDevice} = useBiometricAuth()
     const [textBiometric, setTextBiometric] = useState('')
 
     const onClickFather = async (buttonClicked:string) =>{
         onClickChildren(buttonClicked)
-        if(buttonClicked == 'Configurar Biometria' && textBiometric == 'Configurar biometria'){
+        if(buttonClicked == 'Configurar Biometria' && textBiometric == 'Configurar Biometria'){
             requestBiometric()
+        } else if(buttonClicked == 'Remover Biometria'){
+            removeBiometricOfDevice()
         }
     }
 
@@ -24,15 +26,15 @@ function GeneralSettings(props: GeneralSettingsProps){
         const verifyBiometricExists = async () =>{
             const biometricAuthInThisDevice = getCookie("this_device_has_biometric")
             if(biometricAuthInThisDevice == 'true'){
-                setTextBiometric('Deletar biometria')
+                setTextBiometric('Remover Biometria')
             } else{
                 const biometricExistInDatabase = await existBiometricInDevice()
                 if(biometricExistInDatabase == false){
-                    setTextBiometric('Configurar biometria')
+                    setTextBiometric('Configurar Biometria')
                 }
             }
 
-            setTextBiometric('Configurar biometria')
+            setTextBiometric('Configurar Biometria')
         }
         verifyBiometricExists()
     },[])

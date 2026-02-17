@@ -126,5 +126,19 @@ export function useBiometricAuth(){
         }
     }
 
-    return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric, existBiometricInDevice}
+
+    const removeBiometricOfDevice = async () =>{
+        try{
+            
+            const dataToSend = {'deviceId': getDeviceId()}
+            const response = await api.post('/user/biometric/delete', dataToSend)
+            return response.data
+            
+        } catch(err: any){
+            throw err
+        }
+    }
+
+
+    return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric, existBiometricInDevice, removeBiometricOfDevice}
 }
