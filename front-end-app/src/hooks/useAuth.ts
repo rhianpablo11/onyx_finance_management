@@ -4,6 +4,7 @@ import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
 import { getCookie, removeCookie, setCookie, setLongCookie } from "../services/cookiesService";
 import { getDeviceId } from "../utils/utils";
+import { getIdUser, setBiometricExistence, setIdUser } from "../services/localStorageService";
 
 
 
@@ -24,8 +25,12 @@ export function useLogin(){
             const {access_token} = response.data
             setToken(access_token)
             setCookie('user_name', response.data.user_data.name)
+            
+            
             setLongCookie('user_email', response.data.user_data.email)
 
+
+            setIdUser(response.data.user_data.id)
             return response.data
         } catch(err: any){
             const errorMessage = err.response?.data?.message || 'Erro ao realizar login. Tente novamente.';
@@ -52,9 +57,13 @@ export function useBiometricAuth(){
             const response = await api.post('/user/has-biometric', dataSend)
             if(response.data.exists_biometric){
                 setLongCookie('this_device_has_biometric', 'true')
+
+                setBiometricExistence(true)
+
                 return true
             } else{
                 setLongCookie('this_device_has_biometric', 'false')
+                setBiometricExistence(false)
                 return false
             }
         } catch (err: any) {
@@ -85,6 +94,8 @@ export function useBiometricAuth(){
             console.log(response)
             if(response.data.verified){
                 setLongCookie('this_device_has_biometric', 'true')
+
+                setBiometricExistence(true)
                 return true
             } else{
                 return false
@@ -120,16 +131,18 @@ export function useBiometricAuth(){
     const verifyBiometric = async ( authResp: any) => {
         setLoadingBiometric(true)
         try{
-            const emailUser = getCookie('user_email')
-            if(emailUser){
+            const idUser = getIdUser()
+            if(idUser){
                 const dataToSend = {
-                    'email': emailUser,
+                    'id': idUser,
                     'credential': authResp
                 }
                 const response = await api.post('/user/login/verify-biometric', dataToSend)
                 if(response.data.access_token){
                     setToken(response.data.access_token)
                     setCookie('user_name', response.data.user_data.name)
+                    setLongCookie('user_email', response.data.user_data.email)
+                    setIdUser(response.data.user_data.id)
                 }
             } else{
                 throw new Error("Email do usuário não encontrado nos cookies.")

@@ -4,7 +4,7 @@ import type { GeneralSettingsProps } from "../interfaces/interfacesComponents"
 import { getDeviceId } from "../utils/utils";
 import Button from "./ui/button"
 import { startRegistration } from '@simplewebauthn/browser';
-import { getCookie } from "../services/cookiesService";
+import { getBiometricExistence } from "../services/localStorageService";
 
 
 function GeneralSettings(props: GeneralSettingsProps){
@@ -25,8 +25,9 @@ function GeneralSettings(props: GeneralSettingsProps){
     useEffect(()=>{
 
         const verifyBiometricExists = async () =>{
-            const biometricAuthInThisDevice = getCookie("this_device_has_biometric")
-            if(biometricAuthInThisDevice == 'true'){
+            //const biometricAuthInThisDevice = getCookie("this_device_has_biometric")
+            const biometricAuthInThisDevice = getBiometricExistence()
+            if(biometricAuthInThisDevice){
                 setTextBiometric('Remover Biometria')
             } else{
                 const biometricExistInDatabase = await existBiometricInDevice()
@@ -36,8 +37,6 @@ function GeneralSettings(props: GeneralSettingsProps){
                     setTextBiometric('Remover Biometria')
                 }
             }
-
-            
         }
         verifyBiometricExists()
     },[])

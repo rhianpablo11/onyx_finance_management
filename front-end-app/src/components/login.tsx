@@ -6,7 +6,7 @@ import Input from "./ui/input"
 import { useBiometricAuth, useLogin } from "../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 import { startAuthentication } from "@simplewebauthn/browser"
-import { getCookie } from "../services/cookiesService"
+import { getBiometricExistence } from "../services/localStorageService"
 
 
 
@@ -54,16 +54,11 @@ function Login(){
     }
 
     useEffect(()=>{
-        const biometricExist = getCookie('this_device_has_biometric')
+        //const biometricExist = getCookie('this_device_has_biometric')
+        const biometricExist = getBiometricExistence()
         console.log('biometric login ' + biometricExist)
-        if(biometricExist == 'true'){
-            const emailUserCookies = getCookie('user_email')
-            console.log(emailUserCookies)
-            if(emailUserCookies){
-                setExistEmail(true)
-            } else{
-                setExistEmail(false)
-            }
+        if(biometricExist){
+            setExistEmail(true)
         } else{
             setExistEmail(false)
         }

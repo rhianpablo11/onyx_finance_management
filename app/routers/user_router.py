@@ -111,10 +111,11 @@ async def get_options_for_biometric_login(db: Session = Depends(get_db), request
 @router.post('/login/verify-biometric', status_code=201)
 async def verify_biometric(db: Session = Depends(get_db), request: Request = {}):
     body_requisition = await request.json()
-    email = body_requisition.get('email')
+    id = body_requisition.get('id')
     credential = body_requisition.get('credential')
 
-    user_now = get_user_by_email(db=db, email=email)
+    user_now = get_user_by_id(db=db, user_id=id)
+
     if not user_now or not user_now.current_chalenge:
         raise HTTPException(status_code=400, detail='desafio invalido ou expirado')
 
