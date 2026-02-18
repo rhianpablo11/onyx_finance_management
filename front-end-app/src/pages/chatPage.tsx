@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import ChatBubble from "../components/chatBubble"
 import Button from "../components/ui/button"
 import Input from "../components/ui/input"
@@ -11,64 +11,58 @@ import type { ChatPageProps } from "../interfaces/interfacesComponents"
 function ChatPage(props: ChatPageProps){
     const {name} = props
     // const {sendMessage, loading, error} = useChat()
-    const {sendMessage} = useChat()
+    const {sendMessage, loading, errorMsg} = useChat()
     const [textTyped, setTextTyped] = useState('')
-    const [showChatBubbleUser, setShowChatBubbleUser] = useState(false)
     const [showChatBubbleResponse, setShowChatBubbleResponse] = useState(false)
     const [responseOfChat, setResponseOfChat] = useState('')
     const [controlClearTextInput, setControlClearTextInput] = useState(false)
 
     const onChangeInputFatherChat = (value: string) => {
         setTextTyped(value)
-        setShowChatBubbleUser(false)
         setShowChatBubbleResponse(false)
             
     }
     
     const onClickFather = async (buttonClicked:string) =>{
-        setShowChatBubbleUser(true)
         console.log(buttonClicked)
         setControlClearTextInput(true)
+        setShowChatBubbleResponse(true)
         const data = await sendMessage(textTyped)
         if(data){
-            setShowChatBubbleResponse(true)
-            setShowChatBubbleUser(false)
+
             setResponseOfChat(data['text_response'])
+            setControlClearTextInput(false)
+        } else if(errorMsg){
+            setResponseOfChat(errorMsg + "O texto que você digitou: " + textTyped)
             setControlClearTextInput(false)
         }
     }
 
     const chatBubbleShowControl = () => {
-        if(showChatBubbleUser){
-            return(
-                <ChatBubble isSentMessage={true}
-                                name={name}
-                                text={textTyped} />
-            )
-        } else if (showChatBubbleResponse){
-            return(
-                <>
-                <div className="flex flex-col">
-                    <div>
-                        <ChatBubble isSentMessage={true}
-                                name={name}
-                                text={textTyped} />
+            if(showChatBubbleResponse){
+                return(
+                    <>
+                    <div className="flex flex-col">
+                        <div>
+                            <ChatBubble isSentMessage={true}
+                                    name={name}
+                                    text={textTyped}
+                                    loading={false} />
+                        </div>
+                        <div className="mt-3">
+                            <ChatBubble isSentMessage={false}
+                                    name="ChatBot - by Gemini"
+                                    text={responseOfChat}
+                                    loading={loading} />
+                        </div>
                     </div>
-                    <div className="mt-3">
-                        <ChatBubble isSentMessage={false}
-                                name="ChatBot - by Gemini"
-                                text={responseOfChat} />
-                    </div>
-                </div>
-                
-                </>
-            )
+                    </>
+                )
+            }
+            
         }
-    }
+    
 
-    useEffect(()=>{
-        chatBubbleShowControl
-    }, [showChatBubbleResponse])
 
     return(
         <>

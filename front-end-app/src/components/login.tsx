@@ -18,7 +18,7 @@ function Login(){
     const [existEmail, setExistEmail] = useState(false)
     //const {login, loading, error} = useLogin()
     const {login, loading} = useLogin()
-    const {getOptionsLogin, verifyBiometric} = useBiometricAuth()
+    const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
         console.log(value)
         setEmail(value)
@@ -102,7 +102,7 @@ function Login(){
                         <div className="w-2/3 px-2 mt-1 mb-4">
                             <Button onClickButtonChildren={onClickFatherBiometric}
                                     type="login-biometric"
-                                    loading={loading} />
+                                    loading={loadingBiometric} />
                         </div>
                     </>
                 ) : null}

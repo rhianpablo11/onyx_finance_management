@@ -62,3 +62,18 @@ export const getDeviceId = () =>{
     }
     return deviceId
 }
+
+
+export const getGreting = () => {
+    const hour = new Date().getHours()
+
+    if(hour > 0 && hour < 6){
+        return 'uma ótima madrugada'
+    } else if( hour > 6 && hour < 12){
+        return 'uma ótima manhã'
+    } else if( hour > 12 && hour < 18){
+        return 'uma ótima tarde'
+    } else if( hour > 18){
+        return 'uma ótima noite'
+    }
+}

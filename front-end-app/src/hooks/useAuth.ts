@@ -42,8 +42,9 @@ export function useLogin(){
 }
 
 export function useBiometricAuth(){
-
+    const [loadingBiometric, setLoadingBiometric] = useState(false);
     const existBiometricInDevice = async () =>{
+        setLoadingBiometric(true)
         try{
             const dataSend = {
                 'idDevice': getDeviceId()
@@ -59,20 +60,26 @@ export function useBiometricAuth(){
         } catch (err: any) {
             return false
             throw err
+        } finally{
+            setLoadingBiometric(false)
         }
     }
 
     const getOptions = async () =>{
+        setLoadingBiometric(true)
         try{
             const response = await api.get('/user/register/options-biometric')
             console.log(response)
             return response.data
         } catch (err: any) {
             throw err
+        } finally{
+            setLoadingBiometric(false)
         }
     }
 
     const registerBiometric = async (dataToSend: any) => {
+        setLoadingBiometric(true)
         try{
             const response = await api.post('/user/register/register-biometric', dataToSend)
             console.log(response)
@@ -84,11 +91,14 @@ export function useBiometricAuth(){
             }
         } catch (err: any){
             throw err
+        } finally{
+            setLoadingBiometric(false)
         }
     }
 
 
     const getOptionsLogin = async () =>{
+        setLoadingBiometric(true)
         try{
             const emailUser = getCookie('user_email')
             if(emailUser){
@@ -101,11 +111,14 @@ export function useBiometricAuth(){
             
         } catch(err: any){
             throw err
+        } finally{
+            setLoadingBiometric(false)
         }
     }
 
 
     const verifyBiometric = async ( authResp: any) => {
+        setLoadingBiometric(true)
         try{
             const emailUser = getCookie('user_email')
             if(emailUser){
@@ -123,11 +136,14 @@ export function useBiometricAuth(){
             }
         } catch (err: any){
             throw err
+        } finally{
+            setLoadingBiometric(false)
         }
     }
 
 
     const removeBiometricOfDevice = async () =>{
+        setLoadingBiometric(true)
         try{
             
             const dataToSend = {'deviceId': getDeviceId()}
@@ -140,9 +156,11 @@ export function useBiometricAuth(){
             
         } catch(err: any){
             throw err
+        } finally{
+            setLoadingBiometric(false)
         }
     }
 
 
-    return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric, existBiometricInDevice, removeBiometricOfDevice}
+    return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric, existBiometricInDevice, removeBiometricOfDevice, loadingBiometric}
 }

@@ -4,11 +4,11 @@ import { api } from "../services/apiService"
 
 export function useChat(){
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>('')
+    const [errorMsg, setErrorMsg] = useState<string | null>('')
 
     const sendMessage = async (text: string) => {
         setLoading(true)
-        setError(null)
+        setErrorMsg(null)
         const payload = {
             message: text
         }
@@ -17,14 +17,14 @@ export function useChat(){
             console.log(response.data)
             return response.data
         } catch (err:any){
-            const errorMsg = err.response?.data?.detail || 'Erro ao processar mensagem';
-            setError(errorMsg)
-            throw err
+            const errorMsg = err.response?.data?.detail || 'Erro ao processar mensagem, tente novamente mais tarde. Por favor não faça outra tentativa seguida.';
+            
+            setErrorMsg(errorMsg)
         } finally{
             setLoading(false)
         }
     }
 
 
-    return {sendMessage, loading, error}
+    return {sendMessage, loading, errorMsg}
 }

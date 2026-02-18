@@ -3,7 +3,7 @@
 import type { ChatBubbleProps } from "../interfaces/interfacesComponents"
 
 function ChatBubble(props: ChatBubbleProps){
-    const {isSentMessage, name, text} = props
+    const {isSentMessage, name, text, loading=true} = props
     
     if(isSentMessage){
         return (
@@ -41,10 +41,17 @@ function ChatBubble(props: ChatBubbleProps){
 
                         <div className="bg-[#151515] shadow-white/20 shadow-md  text-white p-3.5 rounded-4xl rounded-bl-none ">
                             <div className="space-y-1">
-                                <p className="pl-2 font-light text-base leading-tight mb-2">
-                                    {text}
-                                </p>
-                                
+                                {loading ? (
+                                    <div className="flex items-center justify-center space-x-1 h-2.5 px-2">
+                                        <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce"></div>
+                                    </div>
+                                ) : (
+                                    <p className="pl-2 font-light text-base leading-tight mb-2">
+                                        {text}
+                                    </p>
+                                )}
                             </div>
                         </div>
 

@@ -58,17 +58,17 @@ function ListTransaction(props: ListTransactionProps){
     } else if(type == 'extractPage'){
         return (
             <>
-                <div className="flex-col mt-2 w-full h-16 border-white">
+                <div className="flex-col mt-2 w-full max-h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-6/10 flex items-center">
                             <div className="bg-white/8 w-12 h-12 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
-                            <div className="flex-col pl-2.5">
+                            <div className=" flex-col pl-2.5">
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
-                                <h3 className="text-white font-normal text-xl">
+                                <h3 className="text-white font-normal text-xl truncate">
                                     R$ {value}
                                 </h3>
                             </div>

@@ -7,6 +7,7 @@ import ChatPage from "./chatPage"
 import backgroundInternalPage from '../assets/bg-internalPage.svg?url'
 import { getCookie } from "../services/cookiesService"
 import ConfigsPage from "./configsPage"
+import { getGreting } from "../utils/utils"
 
 
 function InternalPage(){
@@ -55,11 +56,12 @@ function InternalPage(){
     useEffect(()=>{
         if(pageSelected == 'home'){
             setTypeToShowHeader('wellcome')
-            setLegendHeader('Tenha uma ótima tarde')
+            const legend = 'Tenha ' + getGreting()
+            setLegendHeader(legend)
         } else if(pageSelected == 'extract'){
             setTypeToShowHeader('pages-nav')
             setLegendHeader('Acompanhe as ultimas movimentações realizadas')
-            setTitleHeader('Extrato das atividades')
+            setTitleHeader('Extrato')
         }  else if(pageSelected == 'chat'){
             setTypeToShowHeader('pages-nav')
             setLegendHeader('Facilitador de adição de gastos')

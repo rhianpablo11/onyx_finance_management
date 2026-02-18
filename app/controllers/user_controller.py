@@ -278,7 +278,7 @@ def delete_biometric_of_device_selected(db: Session, user_id: int, device_id_for
     stmt = (select(User_crendentials)
             .where(User_crendentials.user_id == user_id)
             .where(User_crendentials.device_id == device_id_for_remove))
-    #nao ta removendo
+    
     user_crendentials_founded = db.execute(stmt).first()
     if(user_crendentials_founded):
         stmt = (delete(User_crendentials)
