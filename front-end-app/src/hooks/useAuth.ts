@@ -164,6 +164,7 @@ export function useBiometricAuth(){
             if(response.status = 201){
                 setLongCookie('this_device_has_biometric', 'false')
                 removeCookie('user_email')
+                setBiometricExistence(false)
             }
             return response.data
             
