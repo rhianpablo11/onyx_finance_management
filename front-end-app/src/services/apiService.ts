@@ -39,7 +39,7 @@ api.interceptors.response.use(
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
                 return api(originalRequest)
             } catch(refreshError){
-                removeToken()
+                //removeToken()
                 //window.location.href = '/login'
                 console.log('erro 44 '+ refreshError)
                 return Promise.reject(refreshError)

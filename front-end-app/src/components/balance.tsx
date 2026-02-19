@@ -31,7 +31,7 @@ function Balance(props: BalanceProps){
                 <div className="flex-col  px-4 pt-4 rounded-[28px] min-h-48 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundBalance}")`}}>
                     <div className=" flex-col rounded-4xl">
                         <h1 className="text-white font-extralight text-xl">
-                            Saldo do mês:
+                            SaldoAAA do mês:
                         </h1>
                         <div className="flex-col justify-end pt-1">
                             {loading ? (

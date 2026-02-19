@@ -69,7 +69,7 @@ function Login(){
         <>
             <div className="flex flex-col mt-4 justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
                 <h1 className="text-white font-medium text-[32px] mt-2">
-                    Login
+                    LoginAA
                 </h1>
                 <div className="flex-col w-full flex justify-start mr-auto mt-4 px-3">
                     <div>
