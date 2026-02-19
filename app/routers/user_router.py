@@ -175,7 +175,7 @@ def refresh_token_user(request: Request, db: Session = Depends(get_db), response
             value=new_refresh_token,
             httponly=True,
             secure=True,
-            samesite="lax",
+            samesite="none",
             max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
         )
 

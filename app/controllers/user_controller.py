@@ -34,7 +34,7 @@ def authenticate_user(email:str, password: str ,db: Session, response: Response)
         value=refresh_token,
         httponly=True,
         secure=True,
-        samesite='lax',
+        samesite='none',
         max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
     )
 
