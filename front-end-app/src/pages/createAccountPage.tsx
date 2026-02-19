@@ -36,17 +36,16 @@ function CreateAccountPage(){
             <div className='bg-black w-full h-dvh max-h-dvh'>
                 <div className="flex flex-col justify-center w-full h-dvh bg-no-repeat bg-cover bg-center " 
                     style={{backgroundImage: `url("${backgroundInitialPage}")`}}>
-                    <div className='mt-30 '>
+                    <div className=''>
                         <Wellcome />
                     </div>
-                    <div className='mt-16 px-7'>
+                    <div className='mt-3 px-7'>
                         {renderComponent()}
                     </div>
-                    <div className='w-full px-6 flex flex-col mt-auto mb-8'>
-                        <Button type='create account'
-                                onClickButtonChildren={onClickFather}/>
-                        
-                    </div>
+                </div>
+                <div className='w-full px-6 flex flex-col fixed bottom-0 mt-auto mb-8'>
+                    <Button type='sign in'
+                            onClickButtonChildren={onClickFather}/>
                     
                 </div>
             </div>

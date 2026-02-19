@@ -16,17 +16,18 @@ function Login(){
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [existEmail, setExistEmail] = useState(false)
+    const [errorLogin, setErrorLogin] = useState(false)
     //const {login, loading, error} = useLogin()
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
-        console.log(value)
         setEmail(value)
+        setErrorLogin(false)
     }
 
     const onChangeInputFatherPassword = (value: string) => {
-        console.log(value)
         setPassword(value)
+        setErrorLogin(false)
     }
     
     const onClickFather = async (buttonClicked:string) =>{
@@ -34,9 +35,11 @@ function Login(){
         try{
             await login({email, password})
             console.log('deu bom')
+            setErrorLogin(false)
             navigate('/dashboard')
         } catch(err){
             console.log('deu erro')
+            setErrorLogin(true)
             console.error('falha')
         }
     }
@@ -86,15 +89,19 @@ function Login(){
                         <Input  onChangeInputChildren={onChangeInputFatherPassword} 
                                 type="password"/>
                     </div>
+                    {errorLogin && (
+                            <p className="text-red-400 text-xs mt-1 pl-2">E-mail ou senha incorretos</p>
+                        )}
                 </div>
-                <div className="w-44 mt-8 mb-3">
+                <div className="w-44 mt-5 mb-2">
+                    
                     <Button onClickButtonChildren={onClickFather}
                             type="login"
                             loading={loading} />
                 </div>
                 {existEmail ? (
                     <>
-                        <div className="w-2/3 px-2 mt-1 mb-4">
+                        <div className=" px-2 mt-1 mb-4">
                             <Button onClickButtonChildren={onClickFatherBiometric}
                                     type="login-biometric"
                                     loading={loadingBiometric} />

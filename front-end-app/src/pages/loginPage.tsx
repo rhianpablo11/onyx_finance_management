@@ -2,11 +2,14 @@ import Wellcome from '../components/ui/wellcome'
 import backgroundInitialPage  from '../assets/bg-initial-Page.svg?url'
 import Button from '../components/ui/button'
 import Login from '../components/login'
+import { useNavigate } from 'react-router-dom'
 
 function LoginPage(){
+    const navigate = useNavigate()
 
     const onClickFather = (buttonClicked:string) =>{
             console.log(buttonClicked)
+            navigate('/sign-up')
     }
 
     return(
@@ -25,7 +28,7 @@ function LoginPage(){
                         <Button type='create account'
                                 onClickButtonChildren={onClickFather}/>
                     </div>
-                </div>
+            </div>
         </>
     )
 }

@@ -12,8 +12,8 @@ import json
 router = APIRouter()
 
 @router.post('/register', status_code=201)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    new_user = create_user(user, db)
+def register_user(user: UserCreate, db: Session = Depends(get_db), response: Response = {}):
+    new_user = create_user(user, db, response)
     
     return new_user
 

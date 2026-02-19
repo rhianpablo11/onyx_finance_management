@@ -16,6 +16,7 @@ export function useCreateAccount(){
             console.log(response.data)
             return response.data
         } catch(err: any){
+            console.log('passei aq')
             console.log(err.response.data.detail)
             setError(err.response.data.detail)
             throw err

@@ -45,7 +45,7 @@ def authenticate_user(email:str, password: str ,db: Session, response: Response)
     }
 
 
-def create_user(user: UserCreate, db: Session):
+def create_user(user: UserCreate, db: Session, response: Response):
     verify_email = db.query(User).filter(User.email == user.email).first()
     if verify_email:
         raise HTTPException(
@@ -76,6 +76,19 @@ def create_user(user: UserCreate, db: Session):
         data_user = {'id': new_user.id}
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
         access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+        
+        
+        refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
+        refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
+
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite='none',
+            max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
+        )
     except:
         raise HTTPException(status_code=400, detail='error in database')
 

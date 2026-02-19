@@ -9,42 +9,50 @@ import { useCreateAccount } from "../hooks/useCreateAccount"
 
 function FirstStepRegister(props: FirstStepRegisterProps){
     const {changeStatus, sendInfoInitialUser} = props
-    const {loading, verifyUser, error} = useCreateAccount()
+    const {loading, verifyUser} = useCreateAccount()
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
     const [telephone, setTelephone] = useState('')
     const [emailIsValid, setEmailIsValid] = useState(true)
     const [telephoneIsValid, setTelephoneIsValid] = useState(true)
+    const [inputsFilled, setInputsFilleds] = useState(true)
 
     const onChangeInputFatherEmail = (value: string) => {
-        console.log(value)
         console.log(loading)
         setEmail(value)
         setEmailIsValid(true)
+        setInputsFilleds(true)
     }
 
     const onChangeInputFatherName = (value: string) => {
-        console.log(value)
         setName(value)
+        setInputsFilleds(true)
     }
 
     const onChangeInputFatherTelephone = (value: string) => {
-        console.log(value)
         setTelephone(value)
         setTelephoneIsValid(true)
+        setInputsFilleds(true)
     }
 
     const onClickFather = async (buttonClicked:string) =>{
         console.log(buttonClicked)
         try{
-            await verifyUser(email, telephone)
-            sendInfoInitialUser({email, name, telephone})
-            changeStatus(true)
-        } catch(err){
-            console.log('oi ' + error)
-            if(error == 'Email already in database'){
+            if(email == '' || name == '' || telephone == ''){
+                setInputsFilleds(false)
+            } else{
+                await verifyUser(email, telephone)
+                sendInfoInitialUser({email, name, telephone})
+                changeStatus(true)
+            }
+            
+        } catch(err: any){
+            console.log('akfokfodfno')
+            console.log('oi ' + err.response.data.detail)
+            const errorMsg = err.response.data.detail
+            if(errorMsg == 'Email already in database'){
                 setEmailIsValid(false)
-            } else if(error == 'telephone alredy in database'){
+            } else if(errorMsg == 'telephone alredy in database'){
                 setTelephoneIsValid(false)
             }
             changeStatus(false)
@@ -55,10 +63,10 @@ function FirstStepRegister(props: FirstStepRegisterProps){
     return(
         <>
             <div className="flex flex-col justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
-                <h1 className="text-white font-medium text-[32px] mt-7">
+                <h1 className="text-white font-medium text-[32px] mt-2">
                     Cadastro
                 </h1>
-                <div className="flex-col w-full flex justify-start mr-auto mt-7 px-3">
+                <div className="flex-col w-full flex justify-start mr-auto mt-4 px-3">
                     <div>
                         <h1 className="text-white font-light text-sm pb-1">
                             E-mail:
@@ -85,11 +93,16 @@ function FirstStepRegister(props: FirstStepRegisterProps){
                         {!telephoneIsValid && (
                             <p className="text-red-400 text-xs mt-1 pl-2">Telefone ja presente no sistema!</p>
                         )}
+                        {!inputsFilled && (
+                            <p className="text-red-400 text-xs mt-3 pl-2">Há campos vazios, por favor preencha antes de avançar!</p>
+                        )}
                     </div>
                 </div>
-                <div className="w-44 mt-8 mb-9">
+                <div className="w-44 mt-5 mb-4">
+                    
                     <Button onClickButtonChildren={onClickFather}
-                            type="next_create"/>
+                            type="next_create"
+                            loading={loading} />
                 </div>
             </div>
         </>

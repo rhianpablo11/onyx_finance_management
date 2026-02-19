@@ -34,7 +34,7 @@ function Button(props: ButtonProps){
         return(
             <>
                 <button onClick={() => onClickButtonChildren('')}
-                        className="bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full">
+                        className="bg-[#D9D9D9] px-3 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full">
                     {loading ? (
                         <>
                             <h1 className="font-medium text-xl text-black">
@@ -65,10 +65,23 @@ function Button(props: ButtonProps){
         return(
             <>
                 <button onClick={() => onClickButtonChildren('')}
-                        className="bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-13 w-full">
-                    <h1 className="font-medium text-xl text-black">
-                        Avançar
-                    </h1>
+                        disabled={loading}
+                        className={`bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-13 w-full ${loading ? 'bg-[#555555] cursor-not-allowed' : ''}`}>
+                    {loading ? (
+                        <>
+                            <h1 className="font-medium text-xl text-black">
+                                Verificando
+                            </h1>
+                            <div className='ml-2 text-black'>
+                                <LoadingSpinner />
+                            </div>
+                            
+                        </>
+                        ) : (
+                            <h1 className="font-medium text-xl text-black">
+                                Avançar
+                            </h1>
+                        )}
                 </button>
             </>
         )
@@ -76,10 +89,23 @@ function Button(props: ButtonProps){
         return(
             <>
                 <button onClick={() => onClickButtonChildren('')}
-                        className="bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-13 w-full">
-                    <h1 className="font-medium text-xl text-black">
-                        Criar Conta
-                    </h1>
+                        disabled={loading}
+                        className={`bg-[#D9D9D9] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-13 w-full ${loading ? 'bg-[#555555] cursor-not-allowed' : ''}`}>
+                        {loading ? (
+                            <>
+                                <h1 className="font-medium text-xl text-black">
+                                    Criando a conta
+                                </h1>
+                                <div className='ml-2 text-black'>
+                                    <LoadingSpinner />
+                                </div>
+                                
+                            </>
+                            ) : (
+                                <h1 className="font-medium text-xl text-black">
+                                    Criar Conta
+                                </h1>
+                            )}
                 </button>
             </>
         )
