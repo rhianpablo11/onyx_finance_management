@@ -155,8 +155,6 @@ async def remove_biometric_for_this_device(db: Session = Depends(get_db), curren
 @router.post('/refresh')
 def refresh_token_user(request: Request, db: Session = Depends(get_db), response: Response = {}):
     refresh_token = request.cookies.get('refresh_token')
-    print('AAAAAAA-refresh')
-    print(refresh_token)
     if not refresh_token:
         raise HTTPException(status_code=401, detail='não autenticado')
     

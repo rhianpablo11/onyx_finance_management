@@ -1,18 +1,13 @@
 // component for header of internal pages -> say hello or indicate page
-import { useNavigate } from "react-router-dom"
 import type { HeaderInternalProps } from "../../interfaces/interfacesComponents"
-import { removeCookie } from "../../services/cookiesService"
-import { removeToken } from "../../services/tokenService"
+import { makeLogout } from "../../utils/utils"
 
 function HeaderInternal(props: HeaderInternalProps){
     const {type, legend, title, name, onClickChildren} = props
-    const navigate = useNavigate()
     console.log(name)
-    //function temporary for logout
+
     const onClickLogout = () => {
-        removeCookie('user_name')
-        removeToken()
-        navigate('/')
+        makeLogout()
     } 
 
     if(type == 'wellcome'){

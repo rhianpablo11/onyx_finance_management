@@ -1,5 +1,8 @@
 import { endOfMonth } from 'date-fns';
 import {v4 as uuidv4} from 'uuid'
+import { removeCookie } from '../services/cookiesService';
+import { removeToken } from '../services/tokenService';
+import { useNavigate } from 'react-router-dom';
 
 export const formatDate = (date: Date): string => {
     return date.toISOString().split('T')[0];
@@ -76,4 +79,12 @@ export const getGreting = () => {
     } else if( hour > 18){
         return 'uma ótima noite'
     }
+}
+
+
+export const makeLogout = () => {
+    const navigate = useNavigate()
+    removeCookie('user_name')
+    removeToken()
+    navigate('/')
 }

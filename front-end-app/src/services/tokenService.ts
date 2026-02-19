@@ -29,6 +29,7 @@ function getToken(){
 
 function removeToken(){
     removeCookie(TOKEN_KEY)
+    removeCookie('refresh_token')
 }
 
 function setToken(token:string){
