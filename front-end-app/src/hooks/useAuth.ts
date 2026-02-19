@@ -111,9 +111,9 @@ export function useBiometricAuth(){
     const getOptionsLogin = async () =>{
         setLoadingBiometric(true)
         try{
-            const emailUser = getCookie('user_email')
-            if(emailUser){
-                const dataToSend = {'email': emailUser}
+            const idUser = getIdUser()
+            if(idUser){
+                const dataToSend = {'id': idUser}
                 const response = await api.post('/user/login/options-biometric', dataToSend)
                 return response.data
             } else{

@@ -98,7 +98,8 @@ async def register_biometric(db: Session = Depends(get_db), current_user: dict =
 @router.post('/login/options-biometric', status_code=201)
 async def get_options_for_biometric_login(db: Session = Depends(get_db), request: Request = {}):
     body_requisition = await request.json()
-    user_now = get_user_by_email(db=db, email=body_requisition['email'])
+    id = body_requisition.get('id')
+    user_now = get_user_by_id(db=db, user_id=id)
     if not user_now.credentials:
         raise HTTPException(status_code=400, detail='não ha biometria cadastrada')
 

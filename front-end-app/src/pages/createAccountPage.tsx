@@ -5,14 +5,17 @@ import FirstStepRegister from "../components/firstStepRegister"
 import { useState } from "react"
 import SecondStepRegister from "../components/secondStepRegister"
 import type { SecondStepRegisterProps } from "../interfaces/interfacesComponents"
+import { useNavigate } from "react-router-dom"
 
 
 
 function CreateAccountPage(){
     const [isAuthorizedNext, setIsAuthorizedNext] = useState<boolean>(false)
     const [initialDataUser, setInitialDataUser] = useState<SecondStepRegisterProps>()
+    const navigate = useNavigate()
     const onClickFather = (buttonClicked:string) =>{
             console.log(buttonClicked)
+            navigate('/login')
     }
 
     const renderComponent = () => {
