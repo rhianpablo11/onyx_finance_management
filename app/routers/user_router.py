@@ -1,8 +1,8 @@
 from datetime import timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user
+from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user, verify_token
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
 from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, device_has_biometric_registered, get_credential_used, get_options, get_options_biometric_auth, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
@@ -19,11 +19,12 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post('/login', status_code=201, response_model=UserResponseLogin)
-def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db), response: Response = {}):
     user = authenticate_user(
                             email=form_data.username,
                             password=form_data.password,
-                            db=db)
+                            db=db, 
+                            response=response)
     
     return user
 
@@ -149,3 +150,35 @@ async def remove_biometric_for_this_device(db: Session = Depends(get_db), curren
                                         user_id=current_user['user_id'],
                                         device_id_for_remove=id_of_device['deviceId'])
     return True
+
+
+@router.post('/refresh')
+def refresh_token_user(request: Request, db: Session = Depends(get_db), response: Response = {}):
+    refresh_token = request.cookies.get('refresh_token')
+    print(refresh_token)
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail='não autenticado')
+    
+    payload = verify_token(refresh_token)
+    try:
+        data_user = {'id': payload.get('id')}
+        access_token_expires = timedelta(seconds=ACCESS_TOKEN_DURATION_TIME)
+        new_access_token = create_access_token(data=data_user,
+                                               expires_delta=access_token_expires)
+        
+        refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
+        new_refresh_token = create_access_token(data=data_user,
+                                                expires_delta=refresh_token_expires)
+        response.set_cookie(
+            key="refresh_token",
+            value=new_refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
+        )
+
+
+        return new_access_token
+    except:
+        raise HTTPException(status_code=401, detail='Token expirado ou invalido')

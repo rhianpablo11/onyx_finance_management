@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Response
 from sqlalchemy import delete, insert, select, update
 from app.core.auth import create_access_token, ACCESS_TOKEN_DURATION_TIME
 from datetime import timedelta
@@ -12,7 +12,7 @@ from webauthn.helpers.structs import AuthenticatorSelectionCriteria, UserVerific
 from app.core.security import BIOMETRIC_ORIGIN, BIOMETRIC_RP_ID, BIOMETRIC_RP_NAME
 import base64
 
-def authenticate_user(email:str, password: str ,db: Session):
+def authenticate_user(email:str, password: str ,db: Session, response: Response):
     user = db.query(User).filter(User.email == email).first()
 
     if user is None:
@@ -23,9 +23,20 @@ def authenticate_user(email:str, password: str ,db: Session):
 
     
     data_user = {'id': user.id}
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+    access_token_expires = timedelta(seconds=ACCESS_TOKEN_DURATION_TIME)
+    refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
+    #create token for long time
     access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
-    
+    refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
+
+    response.set_cookie(
+        key='refresh_token',
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite='lax',
+        max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
+    )
 
     return {
         'access_token': access_token,

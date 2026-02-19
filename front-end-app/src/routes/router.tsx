@@ -5,20 +5,26 @@ import { DashboardLayout } from "../layouts/dashboardLayout";
 import LoginPage from "../pages/loginPage";
 import InternalPage from "../pages/internalPage";
 import CreateAccountPage from "../pages/createAccountPage";
+import { PublicRoute } from "./publicRoute";
 
 
 export const router = createBrowserRouter([
     //public routes
     {
-        path: '/',
-        element: <InitialPage />
-    },
-    {
-        path:'/login',
-        element: <LoginPage />
-    },{
-        path:'/sign-up',
-        element: <CreateAccountPage />
+        element: <PublicRoute />,
+        children: [
+            {
+                path: '/',
+                element: <InitialPage />
+            },
+            {
+                path:'/login',
+                element: <LoginPage />
+            },{
+                path:'/sign-up',
+                element: <CreateAccountPage />
+            }
+        ]
     },
 
     // private routes

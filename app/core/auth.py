@@ -12,7 +12,7 @@ from app.core.security import SECRET_KEY_JWT
 
 SECRET_KEY = SECRET_KEY_JWT
 ALGORITHM = 'HS256'
-ACCESS_TOKEN_DURATION_TIME = 300
+ACCESS_TOKEN_DURATION_TIME = 30 # 30 days of token
 
 
 def create_access_token(data:dict, expires_delta: Optional[timedelta] = None):
@@ -51,3 +51,19 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     
     except JWTError:
         raise credentials_exception
+    
+
+def verify_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        if payload.get('id') is None and payload.get('sub') is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Token sem identificação do usuário'
+            )
+        
+        return payload
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Token invalido ou expirado')
+    
