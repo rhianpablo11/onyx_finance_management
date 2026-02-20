@@ -145,7 +145,9 @@ async def verify_biometric( request: Request = {}, db: Session = Depends(get_db)
     credential_id = credential_received_in_request['id']
     print(credential_id)
 
-    expected_challenge = base64.b64decode(saved_challenge)
+    print(base64.urlsafe_b64decode(saved_challenge))
+    expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
+    print(expected_challenge)
     print('aaaaa')
     credential_founded = get_credential_by_cred_id(credential_id, db)
     

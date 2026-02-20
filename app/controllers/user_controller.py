@@ -306,7 +306,8 @@ def get_user_by_credential_id(db: Session, cred_id_user):
 
 def validate_signature(credential_received, expected_challenge_received, credential_found):
     try:
-        
+        print('expected_challende_received ')
+        print(expected_challenge_received)
         verification = verify_authentication_response(
             credential=credential_received,
             expected_challenge=expected_challenge_received,
