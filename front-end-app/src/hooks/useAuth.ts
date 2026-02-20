@@ -48,6 +48,7 @@ export function useLogin(){
 
 export function useBiometricAuth(){
     const [loadingBiometric, setLoadingBiometric] = useState(false);
+
     const existBiometricInDevice = async () =>{
         setLoadingBiometric(true)
         try{
@@ -111,10 +112,11 @@ export function useBiometricAuth(){
     const getOptionsLogin = async () =>{
         setLoadingBiometric(true)
         try{
-            const idUser = getIdUser()
+            // const idUser = getIdUser()
+            const idUser = true
             if(idUser){
-                const dataToSend = {'id': idUser}
-                const response = await api.post('/user/login/options-biometric', dataToSend)
+                //const dataToSend = {'id': idUser}
+                const response = await api.get('/user/login/options-generic-biometric')
                 return response.data
             } else{
                 throw new Error("Email do usuário não encontrado nos cookies.")
@@ -131,7 +133,7 @@ export function useBiometricAuth(){
     const verifyBiometric = async ( authResp: any) => {
         setLoadingBiometric(true)
         try{
-            const idUser = getIdUser()
+            const idUser = true
             if(idUser){
                 const dataToSend = {
                     'id': idUser,

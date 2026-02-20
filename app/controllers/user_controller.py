@@ -8,7 +8,8 @@ from app.core.security import compare_password, hash_password
 from app.models.user_crendentials import User_crendentials
 from app.schemas.user_schema import UserCreate, UserResponse
 from webauthn import generate_authentication_options, generate_registration_options, verify_authentication_response, verify_registration_response, options_to_json, base64url_to_bytes
-from webauthn.helpers.structs import AuthenticatorSelectionCriteria, UserVerificationRequirement, RegistrationCredential, AuthenticationCredential, PublicKeyCredentialType, PublicKeyCredentialDescriptor
+from webauthn.helpers.structs import AuthenticatorSelectionCriteria, ResidentKeyRequirement, UserVerificationRequirement, RegistrationCredential, AuthenticationCredential, PublicKeyCredentialType, PublicKeyCredentialDescriptor
+from webauthn.helpers import generate_challenge, bytes_to_base64url
 from app.core.security import BIOMETRIC_ORIGIN, BIOMETRIC_RP_ID, BIOMETRIC_RP_NAME
 import base64
 
@@ -176,7 +177,8 @@ def get_options(user_id_now: int, user_name_now: str):
         user_name=user_name_now,
         authenticator_selection=AuthenticatorSelectionCriteria(
             user_verification=UserVerificationRequirement.PREFERRED,
-            authenticator_attachment=None
+            authenticator_attachment=None,
+            resident_key=ResidentKeyRequirement.REQUIRED
         )
     )
     return (options, options_to_json(options))
@@ -209,9 +211,10 @@ def verify_registration_biometric(body, challenge_str):
 
 def add_new_credential(db: Session, user_id: int, device_id: str, verification):
     print('bbbbbbbcccccddddd')
+    credencial_id_text = bytes_to_base64url(verification.credential_id)
     new_credential = User_crendentials(
         user_id=user_id,
-        credential_id=verification.credential_id,
+        credential_id=credencial_id_text,
         public_key=verification.credential_public_key,
         sign_count=verification.sign_count,
         device_name='new device',
@@ -253,6 +256,21 @@ def get_options_biometric_auth(user: User):
     return (options, options_to_json(options))
 
 
+def get_generic_options_biometric(challenge):
+    
+    options = generate_authentication_options(
+        rp_id=BIOMETRIC_RP_ID,
+        challenge=challenge
+    )
+    return (options, options_to_json(options))
+
+
+def get_challenge():
+    challenge = generate_challenge()
+    return (challenge, base64.b64encode(challenge).decode('utf-8'))
+
+
+
 def get_credential_used(user: User, credential_id_used):
     credential_found = None
     for cred in user.credentials:
@@ -265,12 +283,33 @@ def get_credential_used(user: User, credential_id_used):
         raise HTTPException(status_code=400, detail='credencial nao encontrada')
     return credential_found
 
-def validate_signature(credential_received, user: User, credential_found):
+
+def get_credential_by_cred_id(cred_id, db: Session) -> User_crendentials:
+    try:
+        stmt = (select(User_crendentials)
+                .where(User_crendentials.credential_id == cred_id))
+        cred = db.execute(stmt).first()[0]
+        print(cred)
+        return cred
+    except:
+        raise HTTPException(status_code=400, detail='credencial nao encontrada')
+    
+
+def get_user_by_credential_id(db: Session, cred_id_user):
+    try:
+        stmt = (select(User)
+                .where(User.id == cred_id_user))
+        user_founded = db.execute(stmt).first()[0]
+        return user_founded
+    except:
+        raise HTTPException(status_code=400, detail='usuario nao encontrado')
+
+def validate_signature(credential_received, expected_challenge_received, credential_found):
     try:
         
         verification = verify_authentication_response(
             credential=credential_received,
-            expected_challenge=base64.urlsafe_b64decode(user.current_chalenge + "=="),
+            expected_challenge=expected_challenge_received,
             expected_rp_id=BIOMETRIC_RP_ID,
             expected_origin=BIOMETRIC_ORIGIN,
             credential_public_key=credential_found.public_key,

@@ -1,10 +1,11 @@
+import base64
 from datetime import timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user, verify_token
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
-from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, device_has_biometric_registered, get_credential_used, get_options, get_options_biometric_auth, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
+from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, device_has_biometric_registered, get_challenge, get_credential_by_cred_id, get_credential_used, get_generic_options_biometric, get_options, get_options_biometric_auth, get_user_by_credential_id, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
@@ -67,7 +68,8 @@ def get_options_for_biometric(db: Session = Depends(get_db), current_user: dict 
     except:
         raise HTTPException(status_code=400, detail='erro ao pegar as opções')
     
-    
+
+
 
 @router.post('/register/register-biometric', status_code=201)
 async def register_biometric(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user), request: Request = {}):
@@ -81,6 +83,8 @@ async def register_biometric(db: Session = Depends(get_db), current_user: dict =
     verification_return = verify_registration_biometric(body=body_requisition['dataBiometric'],
                                                         challenge_str=user_now.current_chalenge)
     print('ccccccccc')
+    print(verification_return)
+    print('VERIFICATION RETURN')
     print(verification_return)
     add_new_credential(db=db,
                        user_id=current_user['user_id'],
@@ -110,38 +114,97 @@ async def get_options_for_biometric_login(db: Session = Depends(get_db), request
     return json.loads(options_return_json)
 
 
+@router.get('/login/options-generic-biometric', status_code=201)
+def get_generic_options_for_biometric(response: Response):
+    try:
+        (challenge_generated, challenge_generated_str) = get_challenge()
+        (options, options_json) = get_generic_options_biometric(challenge=challenge_generated)
+        response.set_cookie(
+            key='biometric_challenge',
+            value=challenge_generated_str,
+            httponly=True,
+            secure=True,
+            samesite='none',
+            max_age=120
+        )
+        return json.loads(options_json)
+    except:
+        raise HTTPException(status_code=400, detail='erro ao pegar as opções')
+
+    
+
 @router.post('/login/verify-biometric', status_code=201)
-async def verify_biometric(db: Session = Depends(get_db), request: Request = {}):
+async def verify_biometric( request: Request = {}, db: Session = Depends(get_db)):
     body_requisition = await request.json()
-    id = body_requisition.get('id')
-    credential = body_requisition.get('credential')
+    saved_challenge = request.cookies.get('biometric_challenge')
+    if not saved_challenge:
+        raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
+    
+    credential_received_in_request = body_requisition.get('credential')
+    print(credential_received_in_request)
+    credential_id = credential_received_in_request['id']
+    print(credential_id)
 
-    user_now = get_user_by_id(db=db, user_id=id)
+    expected_challenge = base64.b64decode(saved_challenge)
+    print('aaaaa')
+    credential_founded = get_credential_by_cred_id(credential_id, db)
+    
+    print('bbbbbbbb')
+    user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
+    print('cvccccccc')
 
-    if not user_now or not user_now.current_chalenge:
-        raise HTTPException(status_code=400, detail='desafio invalido ou expirado')
-
+    #credential_founded = get_credential_used(user=user_now, credential_id_used=credential_id_used)
     
-    credential_id_used = credential.get('id')
-    
-    credential_founded = get_credential_used(user=user_now, credential_id_used=credential_id_used)
-    
-    verification_returned = validate_signature(credential_received=credential, user=user_now, credential_found=credential_founded)
-    
+    verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
+    print('dddddd')
     credential_founded.sign_count = verification_returned.new_sign_count
-
-    remove_current_challenge_of_user(db=db, user_id=user_now.id)
+    print('eeeeeee')
+    # remove_current_challenge_of_user(db=db, user_id=user_now.id)
     
 
-    data_user = {'id': user_now.id}
+    data_user = {'id': user_founded.id}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
     access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
 
     return {
         'access_token': access_token,
         'token_type': 'bearer',
-        'user_data': user_now
+        'user_data': user_founded
     }
+
+
+# @router.post('/login/verify-biometric', status_code=201)
+# async def verify_biometric(db: Session = Depends(get_db), request: Request = {}):
+#     body_requisition = await request.json()
+#     id = body_requisition.get('id')
+#     credential = body_requisition.get('credential')
+
+#     user_now = get_user_by_id(db=db, user_id=id)
+
+#     if not user_now or not user_now.current_chalenge:
+#         raise HTTPException(status_code=400, detail='desafio invalido ou expirado')
+
+    
+#     credential_id_used = credential.get('id')
+    
+#     credential_founded = get_credential_used(user=user_now, credential_id_used=credential_id_used)
+    
+#     verification_returned = validate_signature(credential_received=credential, user=user_now, credential_found=credential_founded)
+    
+#     credential_founded.sign_count = verification_returned.new_sign_count
+
+#     remove_current_challenge_of_user(db=db, user_id=user_now.id)
+    
+
+#     data_user = {'id': user_now.id}
+#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+#     access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+
+#     return {
+#         'access_token': access_token,
+#         'token_type': 'bearer',
+#         'user_data': user_now
+#     }
 
 
 @router.post('/biometric/delete', status_code=201)

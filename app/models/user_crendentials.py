@@ -7,7 +7,7 @@ class User_crendentials(Base):
 
     id = Column(Integer, primary_key=True, autoincrement = True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable = False)
-    credential_id = Column(LargeBinary, unique = True, nullable = False)
+    credential_id = Column(String, unique = True, nullable = False)
     public_key = Column(LargeBinary, nullable=False)
     sign_count = Column(Integer, default=0)
     device_name = Column(String(255), nullable=True)
