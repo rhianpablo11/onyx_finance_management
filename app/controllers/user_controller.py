@@ -210,7 +210,7 @@ def verify_registration_biometric(body, challenge_str):
     
 
 def add_new_credential(db: Session, user_id: int, device_id: str, verification):
-    print('bbbbbbbcccccddddd')
+    
     credencial_id_text = bytes_to_base64url(verification.credential_id)
     new_credential = User_crendentials(
         user_id=user_id,
@@ -221,14 +221,14 @@ def add_new_credential(db: Session, user_id: int, device_id: str, verification):
         device_id=device_id
     )
     db.add(new_credential)
-    print('cccccddddd')
+    
 
 def remove_current_challenge_of_user(db: Session, user_id: int):
     stmt = update(User).where(User.id == user_id).values(current_chalenge= None)
     db.execute(stmt)
-    print('oafoaipfo')
+    
     db.commit()
-    print('aflafla')
+    
 
 
 def get_user_by_email(db: Session, email:str):
@@ -306,8 +306,7 @@ def get_user_by_credential_id(db: Session, cred_id_user):
 
 def validate_signature(credential_received, expected_challenge_received, credential_found):
     try:
-        print('expected_challende_received ')
-        print(expected_challenge_received)
+        
         verification = verify_authentication_response(
             credential=credential_received,
             expected_challenge=expected_challenge_received,
@@ -321,7 +320,7 @@ def validate_signature(credential_received, expected_challenge_received, credent
         
         return verification
     except Exception as e:
-        print(e)
+        
         raise HTTPException(status_code=400, detail='falha na autenticação - validação da assinatura')
     
 
@@ -350,6 +349,6 @@ def delete_biometric_of_device_selected(db: Session, user_id: int, device_id_for
             .where(User_crendentials.device_id == device_id_for_remove))
         result = db.execute(stmt)
         db.commit()
-        print(result)
+        
         return result
     return False

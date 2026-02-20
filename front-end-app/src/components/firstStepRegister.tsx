@@ -47,8 +47,7 @@ function FirstStepRegister(props: FirstStepRegisterProps){
             }
             
         } catch(err: any){
-            console.log('akfokfodfno')
-            console.log('oi ' + err.response.data.detail)
+            
             const errorMsg = err.response.data.detail
             if(errorMsg == 'Email already in database'){
                 setEmailIsValid(false)

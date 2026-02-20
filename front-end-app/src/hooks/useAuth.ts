@@ -41,9 +41,19 @@ export function useLogin(){
         }
     }
 
-    
+    const logout = async () =>{
+        try{
+            const response = await api.get('/user/logout')
+            if(response.data.message == 'usuario deslogado e token removido!' ){
+                return true
+            }
+            return false
+        } catch{
+            return false
+        }
+    }
 
-    return {login, loading, error}
+    return {login, logout, loading, error}
 }
 
 export function useBiometricAuth(){

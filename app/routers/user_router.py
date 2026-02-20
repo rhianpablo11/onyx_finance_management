@@ -82,18 +82,15 @@ async def register_biometric(db: Session = Depends(get_db), current_user: dict =
     print(user_now.current_chalenge)
     verification_return = verify_registration_biometric(body=body_requisition['dataBiometric'],
                                                         challenge_str=user_now.current_chalenge)
-    print('ccccccccc')
-    print(verification_return)
-    print('VERIFICATION RETURN')
-    print(verification_return)
+
     add_new_credential(db=db,
                        user_id=current_user['user_id'],
                        verification=verification_return,
                        device_id=body_requisition['idDevice'])
-    print('dddddddd')
+
     remove_current_challenge_of_user(db=db,
                                      user_id=current_user['user_id'])
-    print('eeeeeeeeee')
+
     return {'verified': True,
             'message': 'Biometria cadastrada com sucesso'}
     pass
@@ -141,28 +138,20 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
         raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
     
     credential_received_in_request = body_requisition.get('credential')
-    print(credential_received_in_request)
+    
     credential_id = credential_received_in_request['id']
-    print(credential_id)
 
-    print(base64.urlsafe_b64decode(saved_challenge))
+
     expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
-    print(expected_challenge)
-    print('aaaaa')
+
     credential_founded = get_credential_by_cred_id(credential_id, db)
     
-    print('bbbbbbbb')
-    user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
-    print('cvccccccc')
 
-    #credential_founded = get_credential_used(user=user_now, credential_id_used=credential_id_used)
+    user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
     
     verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
-    print('dddddd')
+
     credential_founded.sign_count = verification_returned.new_sign_count
-    print('eeeeeee')
-    # remove_current_challenge_of_user(db=db, user_id=user_now.id)
-    
 
     data_user = {'id': user_founded.id}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
@@ -179,46 +168,11 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
         max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
     )
 
-
     return {
         'access_token': access_token,
         'token_type': 'bearer',
         'user_data': user_founded
     }
-
-
-# @router.post('/login/verify-biometric', status_code=201)
-# async def verify_biometric(db: Session = Depends(get_db), request: Request = {}):
-#     body_requisition = await request.json()
-#     id = body_requisition.get('id')
-#     credential = body_requisition.get('credential')
-
-#     user_now = get_user_by_id(db=db, user_id=id)
-
-#     if not user_now or not user_now.current_chalenge:
-#         raise HTTPException(status_code=400, detail='desafio invalido ou expirado')
-
-    
-#     credential_id_used = credential.get('id')
-    
-#     credential_founded = get_credential_used(user=user_now, credential_id_used=credential_id_used)
-    
-#     verification_returned = validate_signature(credential_received=credential, user=user_now, credential_found=credential_founded)
-    
-#     credential_founded.sign_count = verification_returned.new_sign_count
-
-#     remove_current_challenge_of_user(db=db, user_id=user_now.id)
-    
-
-#     data_user = {'id': user_now.id}
-#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
-#     access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
-
-#     return {
-#         'access_token': access_token,
-#         'token_type': 'bearer',
-#         'user_data': user_now
-#     }
 
 
 @router.post('/biometric/delete', status_code=201)
@@ -259,3 +213,15 @@ def refresh_token_user(request: Request, db: Session = Depends(get_db), response
         return new_access_token
     except:
         raise HTTPException(status_code=401, detail='Token expirado ou invalido')
+
+
+@router.get('/logout', status_code=201)
+def logout_user(response: Response = {}):
+    response.delete_cookie(
+        key='refresh_token',
+        httponly=True,
+        secure=True,
+        samesite='none'
+    )
+
+    return {'message': 'usuario deslogado e token removido!'}

@@ -15,10 +15,10 @@ export function setIdUser(idUser: string){
 }
 
 
-export function removeIdUser(idUser: string){
-    const idUserFounded = localStorage.getItem(idUser)
+export function removeIdUser(){
+    const idUserFounded = localStorage.getItem('idUser')
     if(idUserFounded){
-        localStorage.removeItem(idUserFounded)
+        localStorage.removeItem('idUser')
         return true
     }
     return false   

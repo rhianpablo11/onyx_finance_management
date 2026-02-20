@@ -15,7 +15,7 @@ function Login(){
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [existEmail, setExistEmail] = useState(false)
+    const [existBiometric, setExistBiometric] = useState(false)
     const [errorLogin, setErrorLogin] = useState(false)
     const [textError, setTextError] = useState('')
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
@@ -65,11 +65,11 @@ function Login(){
     useEffect(()=>{
         //const biometricExist = getCookie('this_device_has_biometric')
         const biometricExist = getBiometricExistence()
-        console.log('biometric login ' + biometricExist)
+        
         if(biometricExist){
-            setExistEmail(true)
+            setExistBiometric(true)
         } else{
-            setExistEmail(false)
+            setExistBiometric(false)
         }
         
     },[])
@@ -105,7 +105,7 @@ function Login(){
                             type="login"
                             loading={loading} />
                 </div>
-                {existEmail ? (
+                {existBiometric ? (
                     <>
                         <div className=" px-2 mt-1 mb-4">
                             <Button onClickButtonChildren={onClickFatherBiometric}
