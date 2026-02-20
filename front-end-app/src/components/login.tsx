@@ -17,17 +17,21 @@ function Login(){
     const [password, setPassword] = useState('')
     const [existEmail, setExistEmail] = useState(false)
     const [errorLogin, setErrorLogin] = useState(false)
+    const [textError, setTextError] = useState('')
+    const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
     //const {login, loading, error} = useLogin()
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
         setEmail(value)
         setErrorLogin(false)
+        setErrorLoginBiometric(false)
     }
 
     const onChangeInputFatherPassword = (value: string) => {
         setPassword(value)
         setErrorLogin(false)
+        setErrorLoginBiometric(false)
     }
     
     const onClickFather = async (buttonClicked:string) =>{
@@ -51,7 +55,9 @@ function Login(){
             const responseVerifyBiometric = await verifyBiometric(authResp)
             console.log(responseVerifyBiometric)
             navigate('/dashboard')
-        } catch{
+        } catch(err: any){
+            setTextError(err.response.data.detail)
+            setErrorLoginBiometric(true)
             console.log('error')
         }
     }
@@ -105,6 +111,9 @@ function Login(){
                             <Button onClickButtonChildren={onClickFatherBiometric}
                                     type="login-biometric"
                                     loading={loadingBiometric} />
+                            {errorLoginBiometric && (
+                                <p className="text-red-400 text-xs mt-1 pl-2">Erro ao fazer login com biometria. Detalhes do erro: {textError}</p>
+                            )}
                         </div>
                     </>
                 ) : null}

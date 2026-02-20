@@ -134,7 +134,7 @@ def get_generic_options_for_biometric(response: Response):
     
 
 @router.post('/login/verify-biometric', status_code=201)
-async def verify_biometric( request: Request = {}, db: Session = Depends(get_db)):
+async def verify_biometric(response: Response, request: Request = {}, db: Session = Depends(get_db)):
     body_requisition = await request.json()
     saved_challenge = request.cookies.get('biometric_challenge')
     if not saved_challenge:
@@ -167,6 +167,18 @@ async def verify_biometric( request: Request = {}, db: Session = Depends(get_db)
     data_user = {'id': user_founded.id}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
     access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+
+    refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
+    refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
+    response.set_cookie(
+        key='refresh_token',
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite='none',
+        max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
+    )
+
 
     return {
         'access_token': access_token,

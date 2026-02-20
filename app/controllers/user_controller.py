@@ -322,7 +322,7 @@ def validate_signature(credential_received, expected_challenge_received, credent
         return verification
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail='falha na autenticação')
+        raise HTTPException(status_code=400, detail='falha na autenticação - validação da assinatura')
     
 
 def device_has_biometric_registered(db: Session, user_id: int, device_id_for_verify: str):
