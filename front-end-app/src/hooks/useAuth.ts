@@ -2,9 +2,9 @@ import { useState } from "react";
 import type { loginCredentials, LoginResponse } from "../interfaces/interfacesHooks";
 import { api } from "../services/apiService";
 import { setToken } from "../services/tokenService";
-import { getCookie, removeCookie, setCookie, setLongCookie } from "../services/cookiesService";
+import {  removeCookie, setCookie, setLongCookie } from "../services/cookiesService";
 import { getDeviceId } from "../utils/utils";
-import { getIdUser, setBiometricExistence, setIdUser } from "../services/localStorageService";
+import {  setBiometricExistence, setIdUser } from "../services/localStorageService";
 
 
 
