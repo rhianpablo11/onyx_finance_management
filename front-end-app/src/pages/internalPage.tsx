@@ -11,7 +11,7 @@ import { getGreting } from "../utils/utils"
 
 
 function InternalPage(){
-    const [pageSelected, setPageSelected] = useState<string>('extract')
+    const [pageSelected, setPageSelected] = useState<string>('home')
     const [typeToShowHeader, setTypeToShowHeader] = useState<string>('wellcome')
     const [legendHeader, setLegendHeader] = useState<string>('')
     const [titleHeader, setTitleHeader] = useState<string>('')

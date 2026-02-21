@@ -1,6 +1,6 @@
 // component for input of chat page and login/sign up
 import { useEffect, useState } from 'react'
-import backgroundInputChat from '../../assets/bg-input-chat-ia.svg?url'
+import backgroundInputChat from '../../assets/bg-input-chat-ia-3.svg?url'
 import type { InputProps } from "../../interfaces/interfacesComponents"
 
 

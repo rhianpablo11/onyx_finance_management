@@ -33,7 +33,7 @@ function ListTransaction(props: ListTransactionProps){
             <>
                 <div className="flex-col mt-2 w-full h-16 border-white">
                     <div className="flex items-center">
-                        <div className="bg-white/8 w-12 h-12 rounded-4xl flex justify-center items-center text-white">
+                        <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                             {iconShow}
                         </div>
                         <div className="flex-col pl-2.5">
@@ -58,13 +58,13 @@ function ListTransaction(props: ListTransactionProps){
     } else if(type == 'extractPage'){
         return (
             <>
-                <div className="flex-col mt-2 w-full max-h-16 border-white">
+                <div className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-6/10 flex items-center">
-                            <div className="bg-white/8 w-12 h-12 rounded-4xl flex justify-center items-center text-white">
+                            <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
-                            <div className=" flex-col pl-2.5">
+                            <div className=" flex-col pl-1.5">
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
@@ -91,7 +91,7 @@ function ListTransaction(props: ListTransactionProps){
                                 </h1>
                             </div>
                         </div>
-                        <div className="text-white ml-auto pr-4">
+                        <div className="text-white ml-auto pl-1 pr-1">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>
@@ -108,7 +108,7 @@ function ListTransaction(props: ListTransactionProps){
                 <div className="flex-col mt-2 w-full h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-6/10 flex items-center">
-                            <div className="bg-white/8 w-12 h-12 rounded-4xl flex justify-center items-center text-white">
+                            <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
                             <div className="flex-col pl-2.5">
@@ -145,7 +145,7 @@ function ListTransaction(props: ListTransactionProps){
                 <div className="flex-col mt-2 w-full h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-6/10 flex items-center">
-                            <div className="bg-white/8 w-12 h-12 rounded-4xl flex justify-center items-center text-white">
+                            <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
                             <div className="flex-col pl-2.5">
