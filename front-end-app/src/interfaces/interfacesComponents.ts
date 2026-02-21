@@ -77,6 +77,7 @@ export interface SelectionProps {
     placeholder: string
     onChange: (value: string) => void
     initialValue: string
+    useFor: string
 }
 
 export interface SelectionOptionProps {

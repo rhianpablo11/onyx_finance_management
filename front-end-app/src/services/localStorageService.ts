@@ -37,7 +37,7 @@ export function setBiometricExistence(isBiometric: boolean){
 
 export function getBiometricExistence(){
     const isBiometric = localStorage.getItem('isBiometric')
-    if(isBiometric == 'true' && getIdUser() != null){
+    if(isBiometric == 'true'){
         return true
     }
     return false
