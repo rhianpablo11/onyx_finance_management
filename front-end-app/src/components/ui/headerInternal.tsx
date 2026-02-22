@@ -87,8 +87,6 @@ function HeaderInternal(props: HeaderInternalProps){
             </>
         )
     }
-    
-    
 }
 
 export default HeaderInternal

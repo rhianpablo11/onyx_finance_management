@@ -11,7 +11,7 @@ current_file_path = Path(__file__).resolve()
 # Se este arquivo está em app/main.py, precisa voltar 1 nível (.parent) ou 2 (.parent.parent)
 # Ajuste os .parent até chegar na pasta onde o .env está
 env_path = current_file_path.parent.parent / '.env'
-(f"Tentando carregar .env de: {env_path}")
+#(f"Tentando carregar .env de: {env_path}")
 load_dotenv(dotenv_path=env_path)
 
 
