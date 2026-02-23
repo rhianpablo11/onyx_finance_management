@@ -81,19 +81,25 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
                                                        month=before_month,
                                                        year=before_year)
     print(balance_previous_month)
-    if(balance_previous_month['value']>0):
+    comp_with_months = 0.0
+    if(balance_previous_month['value']!=0):
+        
         comp_with_months = (data_return['month_balance'] / balance_previous_month['value'])*100
     else:
-        comp_with_months = (data_return['month_balance'] / data_return['month_balance']) * 100
+        if( data_return['month_balance'] != 0):
+            comp_with_months = (data_return['month_balance'] / data_return['month_balance']) * 100
     text = ''
     is_incoming = False
     if(comp_with_months < 0):
-        text = 'a menos'
+        text = 'a menos que o mês anterior'
+        is_incoming = False
+    elif(comp_with_months == 0):
+        text = 'igualando ao mês anterior'
         is_incoming = False
     else:
-        text = 'a mais'
+        text = 'a mais que o mês anterior'
         is_incoming = True
-    data_return['legend_balance'] = f'{comp_with_months:.2f}% {text} que o mês anterior'
+    data_return['legend_balance'] = f'{comp_with_months:.2f}% {text}'
     data_return['is_incoming_legend'] = is_incoming
     data_return['expenses_out'] = get_day_and_last_transactions(db=db,
                                                                 user_id=current_user['user_id'])
