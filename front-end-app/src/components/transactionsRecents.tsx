@@ -30,7 +30,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
             setTypeList('receivesMonth')
             setListToShow(monthReceives)
         }
-    }, [activeTab])
+    }, [activeTab, dayExpenses, monthReceives, nextPayments])
 
 
     const renderList = () => {
@@ -92,8 +92,8 @@ function TransactionsRecents(props: TransactionsRecentsProps){
 
     return(
         <>
-            <div className="rounded-[29px] flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
-                <div className="rounded-[28px] px-3 pt-6  flex flex-col  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundTransactionsRecents}")`}}>
+            <div className="rounded-[29px] flex-1 flex flex-col min-h-0 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
+                <div className="rounded-[28px] px-3 pt-4  flex flex-col flex-1 min-h-0 bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundTransactionsRecents}")`}}>
                     <div className="flex justify-between text-white font-extralight text-sm relative pb-2">
                         <button onClick={() => setActiveTab(0)}
                                 className={`pb-2 transition-colors duration-300 ${activeTab === 0 ? "text-white font-normal" : "text-white/50 font-extralight"}`}>
@@ -126,7 +126,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
                         </div>
                     </div>
                     
-                    <div className="flex flex-col pb-3 pt-3">
+                    <div className="flex flex-col flex-1 overflow-y-auto min-h-0 pb-3 pt-3">
                         {renderList()}
                     </div>
 

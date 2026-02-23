@@ -39,14 +39,17 @@ function DashMetricsPage(){
     // trazer para ca toda a logica da requisição
     return(
         <>
-            <Balance value={balanceMonth}
-                     legend={legendBalance}
-                     incoming={isIncoming}
-                     balanceGeral={balanceGeral} 
-                     loading={loading} />
-            <TransactionsRecents dayExpenses={listOfTransactionsOut}
-                                monthReceives={listOfTransactionsIn}
-                                nextPayments={listOfNextPayments}/>
+            <div className="w-full h-full flex flex-col overflow-hidden">
+                
+                <Balance value={balanceMonth}
+                        legend={legendBalance}
+                        incoming={isIncoming}
+                        balanceGeral={balanceGeral} 
+                        loading={loading} />
+                <TransactionsRecents dayExpenses={listOfTransactionsOut}
+                                    monthReceives={listOfTransactionsIn}
+                                    nextPayments={listOfNextPayments}/>
+            </div>
         </>
     )
 }
