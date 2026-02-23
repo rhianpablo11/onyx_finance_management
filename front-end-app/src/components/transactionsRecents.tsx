@@ -11,26 +11,22 @@ import backgroundTransactionsRecents from '../../src/assets/bg-transactions-rece
 function TransactionsRecents(props: TransactionsRecentsProps){
     const {dayExpenses, monthReceives, nextPayments} = props
     const [activeTab, setActiveTab] = useState(0)
-    const [typeList, setTypeList] = useState('expenseOfDay')
-    const [listToShow, setListToShow] = useState<ListTransactionProps[]>(dayExpenses)
+
     //const [nextPaymentsList, setNextPaymentsList] = useState<ListTransactionProps[]>([]);
 
-    useEffect(()=>{
-        setListToShow(dayExpenses)
-    },[dayExpenses, monthReceives, nextPayments])
-
-    useEffect(()=>{
-        if(activeTab == 0){
-            setTypeList('expenseOfDay')
-            setListToShow(dayExpenses)
-        } else if(activeTab == 1){
-            setTypeList('nextPayments')
-            setListToShow(nextPayments)
-        } else if(activeTab == 2){
-            setTypeList('receivesMonth')
-            setListToShow(monthReceives)
-        }
-    }, [activeTab, dayExpenses, monthReceives, nextPayments])
+    let listToShow: ListTransactionProps[] = []
+    let typeList = ''
+    
+    if (activeTab == 0){
+        listToShow = dayExpenses || []
+        typeList = 'expenseOfDay'
+    } else if(activeTab == 1){
+        listToShow = nextPayments || []
+        typeList = 'nextPayments'
+    } else if(activeTab == 2){
+        listToShow = monthReceives || []
+        typeList = 'receivesMonth'
+    }
 
 
     const renderList = () => {
