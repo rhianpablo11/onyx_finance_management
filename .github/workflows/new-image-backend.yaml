@@ -4,6 +4,10 @@ on:
   push:
     branchs:
       - master
+    paths:
+      - 'app/**'
+      - 'Dockerfile'
+      - 'requirements.txt'
 
 jobs:
   build:
