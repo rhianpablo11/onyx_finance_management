@@ -70,8 +70,8 @@ export const getDeviceId = () =>{
 
 export const getGreting = () => {
     const hour = new Date().getHours()
-
-    if(hour > 0 && hour < 6){
+    console.log(hour)
+    if(hour >= 0 && hour < 6){
         return 'uma ótima madrugada'
     } else if( hour > 6 && hour < 12){
         return 'uma ótima manhã'
@@ -80,7 +80,7 @@ export const getGreting = () => {
     } else if( hour > 18){
         return 'uma ótima noite'
     }
-    return 'excelente dia'
+    return 'um excelente dia'
 }
 
 
@@ -96,4 +96,20 @@ export const makeLogout = () => {
     }
     removeToken()
     
+}
+
+
+export const formatValue = (value: number) =>{
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+export const formatDateShow = (date: string | undefined) => {
+    if(!date){
+        return ''
+    }
+
+    const [year, month, day] = date.split('-')
+    const shortYear = year.slice(-2)
+    
+    return `${day}/${month}/${shortYear}`
 }
