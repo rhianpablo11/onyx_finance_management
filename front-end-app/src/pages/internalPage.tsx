@@ -86,7 +86,7 @@ function InternalPage(){
                                         type={typeToShowHeader}
                                         onClickChildren={returnPage}/>
                     </div>
-                    <div className="flex-1 overflow-hidden pb-24 pt-4">
+                    <div className="flex-1 overflow-hidden pb-24 pt-4 flex flex-col">
                         {renderInternal()}
                     </div>  
                     <div className="w-full max-w-full fixed bottom-0 left-0 px-4 z-50 shrink-0">
