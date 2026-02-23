@@ -3,7 +3,7 @@ import ListTransaction from "../components/ui/listTransaction"
 import type { ListTransactionProps } from "../interfaces/interfacesComponents"
 import { useExtract } from "../hooks/useExtract"
 import SelectionComp from "../components/ui/selection"
-import { getDateRangeByOption } from "../utils/utils"
+import { formatValue, getDateRangeByOption } from "../utils/utils"
 import SkeletonLoader from "../components/ui/skeletonLoader"
 import backgroundExtractPage from '../assets/Group 8.svg?url'
 
@@ -139,7 +139,7 @@ function ExtractPage(){
                                 </div>
                             ) : (
                                 <h1 className="font-normal text-white text-2xl">
-                                    R$ {balanceValueInPeriod}
+                                    R$ {formatValue(balanceValueInPeriod)}
                                 </h1>
                             )}
                             
@@ -179,7 +179,7 @@ function ExtractPage(){
                                 </div>
                             ) : (
                                 <h1 className="font-normal text-lg text-white">
-                                    R$ {valueReceivedInPeriod}
+                                    R$ {formatValue(valueReceivedInPeriod)}
                                 </h1>
                             )}
                             
@@ -197,7 +197,7 @@ function ExtractPage(){
                                 </div>
                             ) : (
                                 <h1 className="font-normal text-lg text-white">
-                                    R$ {valueSpentInPeriod}
+                                    R$ {formatValue(valueSpentInPeriod)}
                                 </h1>
                             )}
                         </div>

@@ -2,6 +2,7 @@
 // show the data resumid of expense/transaction in date
 import { useState } from "react"
 import type { ListTransactionProps } from "../../interfaces/interfacesComponents"
+import { formatDateShow, formatValue } from "../../utils/utils"
 
 
 function ListTransaction(props: ListTransactionProps){
@@ -40,9 +41,14 @@ function ListTransaction(props: ListTransactionProps){
                             <h1 className="text-white font-extralight text-sm">
                                 {nameExpense}
                             </h1>
-                            <h3 className="text-white font-normal text-xl">
-                                R$ {value}
-                            </h3>
+                            <div className="flex items-baseline">
+                                    <h4 className="text-white font-extralight pr-1">
+                                        R$
+                                    </h4>
+                                    <h3 className="text-white font-normal text-xl">
+                                        {formatValue(value)}
+                                    </h3>
+                                </div>
                         </div>
                         <div className="text-white ml-auto pr-4">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -60,7 +66,7 @@ function ListTransaction(props: ListTransactionProps){
             <>
                 <div className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
                     <div className="flex items-center w-full">
-                        <div className="w-6/10 flex items-center">
+                        <div className="w-7/10 flex items-center">
                             <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
@@ -68,12 +74,17 @@ function ListTransaction(props: ListTransactionProps){
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
-                                <h3 className="text-white font-normal text-xl truncate">
-                                    R$ {value}
-                                </h3>
+                                <div className="flex items-baseline">
+                                    <h4 className="text-white font-extralight pr-1">
+                                        R$
+                                    </h4>
+                                    <h3 className="text-white font-normal text-xl">
+                                        {formatValue(value)}
+                                    </h3>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex flex-col w-28 justify-center">
+                        <div className="flex flex-col  justify-center">
                             <div className="flex items-baseline">
                                 <h1 className="text-white font-extralight text-xs">
                                     Tipo:
@@ -87,7 +98,8 @@ function ListTransaction(props: ListTransactionProps){
                                     Data:
                                 </h1>
                                 <h1 className="pl-1 text-white font-normal text-sm">
-                                    {date?.replaceAll('-','/')}
+                                    
+                                    {formatDateShow(date)}
                                 </h1>
                             </div>
                         </div>
@@ -107,7 +119,7 @@ function ListTransaction(props: ListTransactionProps){
             <>
                 <div className="flex-col mt-2 w-full h-16 border-white">
                     <div className="flex items-center w-full">
-                        <div className="w-6/10 flex items-center">
+                        <div className="w-7/10 flex items-center">
                             <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
@@ -115,20 +127,25 @@ function ListTransaction(props: ListTransactionProps){
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
-                                <h3 className="text-white font-normal text-xl">
-                                    R$ {value}
-                                </h3>
+                                <div className="flex items-baseline">
+                                    <h4 className="text-white font-extralight pr-1">
+                                        R$
+                                    </h4>
+                                    <h3 className="text-white font-normal text-xl">
+                                        {formatValue(value)}
+                                    </h3>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex flex-col w- h-full items-start">
+                        <div className="flex flex-col  h-full items-start pr-1">
                             <h1 className="text-white font-extralight text-sm">
                                 Rec. em
                             </h1>
                             <h1 className="text-white font-light text-sm">
-                                {date}
+                                {formatDateShow(date)}
                             </h1>
                         </div>
-                        <div className="text-white ml-auto pr-4">
+                        <div className="text-white ml-auto pr-1">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>
@@ -152,9 +169,15 @@ function ListTransaction(props: ListTransactionProps){
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
-                                <h3 className="text-white font-normal text-xl">
-                                    R$ {value}
-                                </h3>
+                                <div className="flex items-baseline">
+                                    <h4 className="text-white font-extralight pr-1">
+                                        R$
+                                    </h4>
+                                    <h3 className="text-white font-normal text-xl">
+                                        {formatValue(value)}
+                                    </h3>
+                                </div>
+                                
                             </div>
                         </div>
                         <div className="flex flex-col w-28 justify-center">
@@ -163,7 +186,8 @@ function ListTransaction(props: ListTransactionProps){
                                     Venc.:
                                 </h1>
                                 <h1 className="pl-1 text-white text-sm font-normal">
-                                   {end_date?.replaceAll('-','/')}
+                                   
+                                   {formatDateShow(end_date)}
                                 </h1>
                             </div>
                             <div className="flex items-baseline">
