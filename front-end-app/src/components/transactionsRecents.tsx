@@ -1,7 +1,7 @@
 // component for show in initial page the last transactions of day, and next
 // payments and receives in monthly
 
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import ListTransaction from "./ui/listTransaction"
 import type { ListTransactionProps, TransactionsRecentsProps } from "../interfaces/interfacesComponents"
 import backgroundTransactionsRecents from '../../src/assets/bg-transactions-recents.svg?url'
