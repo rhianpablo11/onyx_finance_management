@@ -9,7 +9,7 @@ function CreditCard(props: CreditCardProps){
         <>
             <div className="flex rounded-t-[20px] justify-between bg-linear-to-br from-[#E4E4E4] via-[#868686] to-[#ADA9A9] w-full min-h-28">
                 <div className="flex items-center pl-4">
-                    <div className="bg-[#F6F6F6] flex flex-col justify-between py-2 items-center border border-[#ACADAC] w-12 h-10 rounded-xl">
+                    <div className="bg-[#F6F6F6] flex flex-col justify-between py-2 items-center border border-[#7e7e7e] w-12 h-10 rounded-xl">
                         <div className='border-b w-full border-black/30'>
                         </div>
 

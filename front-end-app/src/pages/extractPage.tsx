@@ -6,6 +6,7 @@ import SelectionComp from "../components/ui/selection"
 import { formatValue, getDateRangeByOption } from "../utils/utils"
 import SkeletonLoader from "../components/ui/skeletonLoader"
 import backgroundExtractPage from '../assets/Group 8.svg?url'
+import DetailsExpense from "../components/detailsExpense"
 
 function ExtractPage(){
     const [balanceValueInPeriod, setBalanceValueInPeriod] = useState<number>(0)
@@ -17,6 +18,8 @@ function ExtractPage(){
     const [orderListSelected, setOrderListSelected] = useState('2')
     const [handleTypeOfExpense, setHandleTypeOfExpense] = useState(false)
     const {getExtract, loading} = useExtract()
+    const [idSelectedTransactionToSeeDetails, setIdSelectedTransactionToSeeDetails] = useState<number | null>(null)
+    const [transactionSelected, setTransactionSelected] = useState<ListTransactionProps | undefined>()
 
     const categorysOfSearch = [
         { label: "Este mês", value: "1" },
@@ -119,126 +122,156 @@ function ExtractPage(){
         }
     }, [])
 
+
+    const onClickFather = (idTransaction: number) =>{
+        console.log(idTransaction)
+        setIdSelectedTransactionToSeeDetails(idTransaction)
+        if(listOfTransaction != undefined){
+            setTransactionSelected(listOfTransaction.find(item => item.id == idTransaction))
+        }
+        
+    }
     
-    return(
-        <>
-        <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
-            <div className="w-full h-full px-2.5 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-hidden bg-auto  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundExtractPage}")`}}>
-                <div className="shrink-0">
-                    <div className="flex items-center justify-between w-full pt-5">
-                        <div className="flex flex-col">
-                            <h1 className="text-base text-white font-extralight">
-                                Saldo no perído:
-                            </h1>
-                            {loading ? (
-                                <div className="flex justify-end">
+    if(idSelectedTransactionToSeeDetails == null){
+        return(
+            <>
+            <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
+                <div className="w-full h-full px-2.5 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-hidden bg-auto  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundExtractPage}")`}}>
+                    <div className="shrink-0">
+                        <div className="flex items-center justify-between w-full pt-5">
+                            <div className="flex flex-col">
+                                <h1 className="text-base text-white font-extralight">
+                                    Saldo no perído:
+                                </h1>
+                                {loading ? (
+                                    <div className="flex justify-end">
+                                        <h1 className="font-normal text-white text-2xl">
+                                            R$
+                                        </h1>
+                                        <SkeletonLoader className="w-20" />
+                                    </div>
+                                ) : (
                                     <h1 className="font-normal text-white text-2xl">
-                                        R$
+                                        R$ {formatValue(balanceValueInPeriod)}
                                     </h1>
-                                    <SkeletonLoader className="w-20" />
-                                </div>
-                            ) : (
-                                <h1 className="font-normal text-white text-2xl">
-                                    R$ {formatValue(balanceValueInPeriod)}
-                                </h1>
-                            )}
-                            
-                        </div>
-                        {/* <div className="flex justify-between px-2.5 items-center border border-white/15 h-10 w-3/8 rounded-2xl">
-                            <div>
-                                <h1 className="text-white/75 font-normal">
-                                    Este mês
-                                </h1>
-                            </div>
-                            <div className="text-white/75">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                </svg>
-                            </div>
-                        </div> */}
-                        <div className="w-4/8">
-                            <SelectionComp options={categorysOfSearch}
-                                    placeholder={'Selecione o per.'}
-                                    onChange={handleCategoryChange}
-                                    initialValue="1"
-                                    useFor='select-period-extract' />
-                        </div>
-                    </div>
-                    <div className={`mt-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>
-                    <div className="flex items-center justify-start w-full pt-4">
-                        <div className="flex flex-col w-1/2">
-                            <h1 className="text-white font-extralight text-sm">
-                                Recebido:
-                            </h1>
-                            {loading ? (
-                                <div className="flex  justify-baseline items-baseline">
-                                    <h1 className="font-normal text-lg text-white">
-                                        R$ 
-                                    </h1>
-                                    <SkeletonLoader className="w-20 h-4" />
-                                </div>
-                            ) : (
-                                <h1 className="font-normal text-lg text-white">
-                                    R$ {formatValue(valueReceivedInPeriod)}
-                                </h1>
-                            )}
-                            
-                        </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-white font-extralight text-sm">
-                                Saídas:
-                            </h1>
-                            {loading ? (
-                                <div className="flex  justify-baseline items-baseline">
-                                    <h1 className="font-normal text-lg text-white">
-                                        R$ 
-                                    </h1>
-                                    <SkeletonLoader className="w-20 h-4" />
-                                </div>
-                            ) : (
-                                <h1 className="font-normal text-lg text-white">
-                                    R$ {formatValue(valueSpentInPeriod)}
-                                </h1>
-                            )}
-                        </div>
-                    </div>
-                    <div className={`mt-4 mb-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>
-                    <div className="flex flex-col w-full justify-center mb-4">
-                        <div className="flex w-full">
-                            <div className="w-2/3">
-                                <h1 className="text-white font-extralight text-base">
-                                    Extrato das movimentações
-                                </h1>
-                            </div>
-                            <div className="w-32">
-                                <SelectionComp options={categorysOfOrdering}
-                                    placeholder={'Ordernar por'}
-                                    onChange={handleOrderChange}
-                                    initialValue="2" 
-                                    useFor='order-moviments' />
+                                )}
                                 
                             </div>
+                            {/* <div className="flex justify-between px-2.5 items-center border border-white/15 h-10 w-3/8 rounded-2xl">
+                                <div>
+                                    <h1 className="text-white/75 font-normal">
+                                        Este mês
+                                    </h1>
+                                </div>
+                                <div className="text-white/75">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                            </div> */}
+                            <div className="w-4/8">
+                                <SelectionComp options={categorysOfSearch}
+                                        placeholder={'Selecione o per.'}
+                                        onChange={handleCategoryChange}
+                                        initialValue="1"
+                                        useFor='select-period-extract' />
+                            </div>
+                        </div>
+                        <div className={`mt-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>
+                        <div className="flex items-center justify-start w-full pt-4">
+                            <div className="flex flex-col w-1/2">
+                                <h1 className="text-white font-extralight text-sm">
+                                    Recebido:
+                                </h1>
+                                {loading ? (
+                                    <div className="flex  justify-baseline items-baseline">
+                                        <h1 className="font-normal text-lg text-white">
+                                            R$ 
+                                        </h1>
+                                        <SkeletonLoader className="w-20 h-4" />
+                                    </div>
+                                ) : (
+                                    <h1 className="font-normal text-lg text-white">
+                                        R$ {formatValue(valueReceivedInPeriod)}
+                                    </h1>
+                                )}
+                                
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-white font-extralight text-sm">
+                                    Saídas:
+                                </h1>
+                                {loading ? (
+                                    <div className="flex  justify-baseline items-baseline">
+                                        <h1 className="font-normal text-lg text-white">
+                                            R$ 
+                                        </h1>
+                                        <SkeletonLoader className="w-20 h-4" />
+                                    </div>
+                                ) : (
+                                    <h1 className="font-normal text-lg text-white">
+                                        R$ {formatValue(valueSpentInPeriod)}
+                                    </h1>
+                                )}
+                            </div>
+                        </div>
+                        <div className={`mt-4 mb-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>
+                        <div className="flex flex-col w-full justify-center mb-4">
+                            <div className="flex w-full">
+                                <div className="w-2/3">
+                                    <h1 className="text-white font-extralight text-base">
+                                        Extrato das movimentações
+                                    </h1>
+                                </div>
+                                <div className="w-32">
+                                    <SelectionComp options={categorysOfOrdering}
+                                        placeholder={'Ordernar por'}
+                                        onChange={handleOrderChange}
+                                        initialValue="2" 
+                                        useFor='order-moviments' />
+                                    
+                                </div>
+                            </div>
                         </div>
                     </div>
+                        <div className="w-full flex-1 overflow-y-auto min-h-0 ">
+                            {sortedTransactions.map((item) => (
+                                <ListTransaction 
+                                    key={item.id} 
+                                    type='extractPage'
+                                    category={item.category}
+                                    nameExpense={item.nameExpense}
+                                    value={item.value} 
+                                    id={item.id}
+                                    typeExpense={item.typeExpense}
+                                    date={item.date}
+                                    onClickChildren={onClickFather}
+                                />
+                            ))}
+                        </div>
                 </div>
-                    <div className="w-full flex-1 overflow-y-auto min-h-0 ">
-                        {sortedTransactions.map((item) => (
-                            <ListTransaction 
-                                key={item.id} 
-                                type='extractPage'
-                                category={item.category}
-                                nameExpense={item.nameExpense}
-                                value={item.value} 
-                                id={item.id}
-                                typeExpense={item.typeExpense}
-                                date={item.date}
-                            />
-                        ))}
-                    </div>
             </div>
-        </div>
-        </>
-    )
+            </>
+        )
+    } else {
+        if(transactionSelected != undefined){
+            return(
+                <>
+                    <DetailsExpense nameExpense={transactionSelected.nameExpense}
+                                nameUser="Rhian Pablo"
+                                telephone="75 98765-4321"
+                                amount={transactionSelected.value}
+                                dateExpense={transactionSelected.date || '29/02/26'}
+                                paymentMethod={transactionSelected.nameExpense}
+                                description={transactionSelected.nameExpense}
+                                category={transactionSelected.category}
+                                idExpense={transactionSelected.id} />
+                </>
+            )
+        }
+        
+    }
+    
 }
 
 export default ExtractPage

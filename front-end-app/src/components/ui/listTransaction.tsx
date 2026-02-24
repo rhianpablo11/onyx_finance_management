@@ -6,7 +6,16 @@ import { formatDateShow, formatValue } from "../../utils/utils"
 
 
 function ListTransaction(props: ListTransactionProps){
-    const {type, nameExpense, value, category, typeExpense, date, end_date, installments_count} = props
+    const {type,
+           nameExpense,
+           value,
+           category,
+           typeExpense,
+           date,
+           end_date,
+           installments_count,
+           onClickChildren,
+           id} = props
     const alimentationIcon = (
         <>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -64,13 +73,14 @@ function ListTransaction(props: ListTransactionProps){
     } else if(type == 'extractPage'){
         return (
             <>
-                <div className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
+                <button onClick={()=>onClickChildren(id)}
+                        className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-7/10 flex items-center">
                             <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
-                            <div className=" flex-col pl-1.5">
+                            <div className="flex items-start flex-col pl-1.5">
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
@@ -110,7 +120,7 @@ function ListTransaction(props: ListTransactionProps){
                         </div>
                     </div>
                     
-                </div>
+                </button>
                 <div className="border-b border-white/25"></div>
             </>
         )

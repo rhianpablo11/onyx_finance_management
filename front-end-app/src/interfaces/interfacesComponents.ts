@@ -22,6 +22,7 @@ export interface ListTransactionProps {
     installments_count?: number | null
     start_date?: string
     end_date?: string
+    onClickChildren: (idTransaction:number) => void
 }
 
 export interface ListTransactionForExtractProps {
@@ -125,4 +126,10 @@ export interface DetailsExpenseProps{
     nameExpense: string
     category: string
     idExpense: number
+}
+
+
+export interface PaperMoneyProps{
+    value: number
+    typeMoney: string
 }
