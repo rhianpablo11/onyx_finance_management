@@ -109,3 +109,20 @@ export interface AnimatedCounterProps {
     value: number;
     duration?: number; // Tempo em ms
 }
+
+export interface CreditCardProps{
+    name: string
+    telephone: string
+}
+
+export interface DetailsExpenseProps{
+    nameUser: string
+    telephone: string
+    amount: number
+    dateExpense: string
+    paymentMethod: string
+    description: string
+    nameExpense: string
+    category: string
+    idExpense: number
+}
