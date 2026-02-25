@@ -2,7 +2,7 @@ name: create-docker-image-backend
 
 on:
   push:
-    branchs:
+    branches:
       - master
     paths:
       - 'app/**'
