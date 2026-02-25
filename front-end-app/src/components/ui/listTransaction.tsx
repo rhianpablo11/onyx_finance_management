@@ -41,12 +41,13 @@ function ListTransaction(props: ListTransactionProps){
     if(type == 'expenseOfDay'){
         return (
             <>
-                <div className="flex-col mt-2 w-full h-16 border-white">
+                <button onClick={()=>onClickChildren(id)}
+                        className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
                     <div className="flex items-center">
                         <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                             {iconShow}
                         </div>
-                        <div className="flex-col pl-2.5">
+                        <div className="flex-col flex items-start pl-2.5">
                             <h1 className="text-white font-extralight text-sm">
                                 {nameExpense}
                             </h1>
@@ -66,7 +67,7 @@ function ListTransaction(props: ListTransactionProps){
                         </div>
                     </div>
                     
-                </div>
+                </button>
                 <div className="border-b border-white/25"></div>
             </>
         )
@@ -127,13 +128,14 @@ function ListTransaction(props: ListTransactionProps){
     } else if(type == 'receivesMonth'){
         return (
             <>
-                <div className="flex-col mt-2 w-full h-16 border-white">
+                <button onClick={()=>onClickChildren(id)}
+                        className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-7/10 flex items-center">
                             <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
-                            <div className="flex-col pl-2.5">
+                            <div className="flex-col flex items-start pl-2.5">
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
@@ -162,20 +164,21 @@ function ListTransaction(props: ListTransactionProps){
                         </div>
                     </div>
                     
-                </div>
+                </button>
                 <div className="border-b border-white/25"></div>
             </>
         )
     } else if(type == 'nextPayments'){
         return (
             <>
-                <div className="flex-col mt-2 w-full h-16 border-white">
+                <button onClick={()=>onClickChildren(id)}
+                        className="flex-col mt-1.5 mb-1.5 w-full max-h-16 border-white">
                     <div className="flex items-center w-full">
                         <div className="w-6/10 flex items-center">
                             <div className="bg-white/8 w-10 h-10 rounded-4xl flex justify-center items-center text-white">
                                 {iconShow}
                             </div>
-                            <div className="flex-col pl-2.5">
+                            <div className="flex-col flex items-start pl-2.5">
                                 <h1 className="text-white font-extralight text-sm">
                                     {nameExpense}
                                 </h1>
@@ -224,7 +227,7 @@ function ListTransaction(props: ListTransactionProps){
                         </div>
                     </div>
                     
-                </div>
+                </button>
                 <div className="border-b border-white/25"></div>
             </>
         )

@@ -16,6 +16,8 @@ export interface ListTransactionProps {
     nameExpense: string
     value: number
     category: string
+    description?: string
+    paymentMethod?: string
     id: number
     typeExpense?: boolean
     date?: string
@@ -54,6 +56,8 @@ export interface TransactionsRecentsProps{
     dayExpenses: ListTransactionProps[]
     nextPayments: ListTransactionProps[]
     monthReceives: ListTransactionProps[]
+    setTransactionSelected: (transaction: ListTransactionProps | undefined) => void
+    setIdOfTransactionSelected: (id: number)=> void
 }
 
 
@@ -117,7 +121,6 @@ export interface CreditCardProps{
 }
 
 export interface DetailsExpenseProps{
-    nameUser: string
     telephone: string
     amount: number
     dateExpense: string
@@ -126,10 +129,25 @@ export interface DetailsExpenseProps{
     nameExpense: string
     category: string
     idExpense: number
+    typeExpense: boolean
 }
 
 
 export interface PaperMoneyProps{
     value: number
     typeMoney: string
+}
+
+
+export interface ExtractPageProps{
+    setCustomBackAction: (action: (()=>void) | null) => void
+    setTitleHeader?: (title: string) => void
+    setLegendHeader?: (legend: string) => void
+}
+
+export interface DashMetricsProps{
+    setCustomBackAction: (action: (()=>void) | null) => void
+    setTitleHeader?: (title: string) => void
+    setLegendHeader?: (legend: string) => void
+    setTypeToShowHeader?: (typeHeader: string) => void
 }

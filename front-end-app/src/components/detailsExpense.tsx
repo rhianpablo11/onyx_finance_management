@@ -1,22 +1,47 @@
 import backgroundDetailsExpense from '../assets/Group 8.svg?url'
 import type { DetailsExpenseProps } from '../interfaces/interfacesComponents'
+import { getCookie } from '../services/cookiesService'
+import {  formatDateShow, formatValue } from '../utils/utils'
 import CreditCard from './creditCard'
 import PaperMoney from './paperMoney'
 import Button from './ui/button'
 
 
 function DetailsExpense(props: DetailsExpenseProps){
-    const {nameUser, nameExpense, telephone, amount, dateExpense, paymentMethod, description, category, idExpense} = props
+    const {nameExpense,
+           telephone,
+           amount,
+           dateExpense,
+           paymentMethod,
+           description,
+           category,
+           idExpense,
+           typeExpense} = props
     
     const onClickFather = async () =>{
         console.log(idExpense)
-        
+    }
+
+
+
+    const methodPaymentShow = () =>{
+        if(paymentMethod == 'Cartão de crédito' || paymentMethod == 'Cartão de debito'){
+            return(
+                <CreditCard name={getCookie('user_name') || ''}
+                            telephone={telephone} />
+            )
+        } else{
+            return(
+                <PaperMoney value={100}
+                            typeMoney={ paymentMethod == 'Físico' ? 'Físico' : 'Pix'} />
+            )
+        }
     }
 
     return(
         <>
             <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px ">
-                <div className="w-full h-full px-4 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-auto bg-auto  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundDetailsExpense}")`}}>
+                <div className="w-full h-full px-4 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-auto bg-cover  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundDetailsExpense}")`}}>
                     <div className='flex pt-5 '>
                         <div className='bg-[#D9D9D9] w-16 h-16 rounded-2xl flex justify-center items-center'>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-9">
@@ -35,7 +60,7 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                     <div className='flex pt-5 pb-5'>
                         <h3 className='text-white font-light text-base leading-none'>
-                            {description}
+                            {description}.
                         </h3>
                     </div>
 
@@ -47,7 +72,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                             R$
                         </h3>
                         <h1 className='text-white text-[32px] font-normal pl-1'>
-                            {amount}
+                            {formatValue(amount)}
                         </h1>
                     </div>
 
@@ -56,10 +81,11 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                     <div className='flex pt-2 pb-2 justify-between items-baseline'>
                         <h3 className='text-base text-white font-light'>
-                            Data do pagamento:
+                            Data do {typeExpense ? 'pagamento' : 'recebimento'}:
                         </h3>
                         <h1 className='text-white text-lg font-normal '>
-                            {dateExpense}
+                            {formatDateShow(dateExpense)}
+                            
                         </h1>
                     </div>
 
@@ -68,18 +94,16 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                     <div className='flex pt-2 pb-5 justify-between items-baseline'>
                         <h3 className='text-base text-white font-light'>
-                            Pagamento via:
+                            {typeExpense ? 'Pagamento' : 'Recebimento'} via:
                         </h3>
                         <h1 className='text-white text-lg font-normal '>
                             {paymentMethod}
                         </h1>
                     </div>
 
-                    {/* <CreditCard name={nameUser}
-                                telephone={telephone} /> */}
+                    {methodPaymentShow()}
                     
-                    <PaperMoney value={900}
-                                typeMoney='Físico' />
+                    
 
                     <div className='flex w-full items-center justify-center mt-auto pb-3 pt-4'>
                         <Button type='edit-expense'

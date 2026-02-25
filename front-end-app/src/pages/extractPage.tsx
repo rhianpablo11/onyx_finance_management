@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import ListTransaction from "../components/ui/listTransaction"
-import type { ListTransactionProps } from "../interfaces/interfacesComponents"
+import type { ExtractPageProps, ListTransactionProps } from "../interfaces/interfacesComponents"
 import { useExtract } from "../hooks/useExtract"
 import SelectionComp from "../components/ui/selection"
 import { formatValue, getDateRangeByOption } from "../utils/utils"
@@ -8,7 +8,8 @@ import SkeletonLoader from "../components/ui/skeletonLoader"
 import backgroundExtractPage from '../assets/Group 8.svg?url'
 import DetailsExpense from "../components/detailsExpense"
 
-function ExtractPage(){
+function ExtractPage(props: ExtractPageProps){
+    const {setCustomBackAction, setLegendHeader, setTitleHeader} = props
     const [balanceValueInPeriod, setBalanceValueInPeriod] = useState<number>(0)
     const [valueReceivedInPeriod, setValueReceivedInPeriod] = useState<number>(0)
     const [valueSpentInPeriod, setValueSpentInPeriod] = useState<number>(0)
@@ -131,12 +132,38 @@ function ExtractPage(){
         }
         
     }
+
+    useEffect(()=>{
+        if(setCustomBackAction){
+            if(idSelectedTransactionToSeeDetails != null){
+                setCustomBackAction(()=>()=>{
+                    setIdSelectedTransactionToSeeDetails(null)
+                    setTransactionSelected(undefined)
+                })
+                if(setTitleHeader && setLegendHeader){
+                    setTitleHeader('Detalhes')
+                    setLegendHeader('Visualize as informações completas da transação')
+                }
+            } else{
+                setCustomBackAction(null)
+                if(setTitleHeader && setLegendHeader){
+                    setTitleHeader('Extrato')
+                    setLegendHeader('Acompanhe as últimas movimentações realizadas')
+                }
+            }
+        }
+        return ()=>{
+            if(setCustomBackAction){
+                setCustomBackAction(null)
+            }
+        }
+    },[idSelectedTransactionToSeeDetails, setCustomBackAction])
     
     if(idSelectedTransactionToSeeDetails == null){
         return(
             <>
             <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
-                <div className="w-full h-full px-2.5 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-hidden bg-auto  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundExtractPage}")`}}>
+                <div className="w-full h-full px-2.5 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-hidden bg-cover  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundExtractPage}")`}}>
                     <div className="shrink-0">
                         <div className="flex items-center justify-between w-full pt-5">
                             <div className="flex flex-col">
@@ -258,14 +285,14 @@ function ExtractPage(){
             return(
                 <>
                     <DetailsExpense nameExpense={transactionSelected.nameExpense}
-                                nameUser="Rhian Pablo"
                                 telephone="75 98765-4321"
                                 amount={transactionSelected.value}
                                 dateExpense={transactionSelected.date || '29/02/26'}
-                                paymentMethod={transactionSelected.nameExpense}
-                                description={transactionSelected.nameExpense}
+                                paymentMethod={transactionSelected.paymentMethod || 'dinheiro físico'}
+                                description={transactionSelected.description || 'Nenhuma descrição foi encontrada'}
                                 category={transactionSelected.category}
-                                idExpense={transactionSelected.id} />
+                                idExpense={transactionSelected.id}
+                                typeExpense={transactionSelected.typeExpense || true} />
                 </>
             )
         }
