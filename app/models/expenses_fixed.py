@@ -17,3 +17,4 @@ class Expenses_fixed(Base):
     type_expense = Column(Boolean, nullable=False)
     installments_count = Column(Integer, nullable=True)
     description = Column(String(255), nullable=True)
+    payment_method = Column(String(200))
