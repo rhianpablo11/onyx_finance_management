@@ -4,6 +4,7 @@ from app.routers import user_router, transactions_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import engine, Base
 from app.models import user
+from app.core.security import ORIGINS_ALLOWED_LIST
 
 app = FastAPI(
     title='Onyx API',
@@ -17,13 +18,13 @@ origins = [
     "http://localhost:3000",
     "https://onyxrp11.netlify.app"      
 ]
-
+print(ORIGINS_ALLOWED_LIST)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # Lista de quem pode chamar a API
-    allow_credentials=True,       # Permite enviar Cookies/Tokens de Autenticação
-    allow_methods=["*"],          # Permite GET, POST, PUT, DELETE (Tudo)
-    allow_headers=["*"],          # Permite qualquer cabeçalho (Authorization, etc)
+    allow_origins=ORIGINS_ALLOWED_LIST,        # Lista de quem pode chamar a API
+    allow_credentials=True,                    # Permite enviar Cookies/Tokens de Autenticação
+    allow_methods=["*"],                       # Permite GET, POST, PUT, DELETE (Tudo)
+    allow_headers=["*"],                       # Permite qualquer cabeçalho (Authorization, etc)
 )
 
 app.include_router(user_router.router, prefix='/user', tags=['user control'])
