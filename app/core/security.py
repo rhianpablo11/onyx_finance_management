@@ -26,7 +26,9 @@ DB_NAME = os.getenv('DATABASE_NAME')
 BIOMETRIC_RP_ID = os.getenv('BIOMETRIC_RP_ID')
 BIOMETRIC_RP_NAME = os.getenv('BIOMETRIC_RP_NAME')
 BIOMETRIC_ORIGIN = os.getenv('BIOMETRIC_ORIGIN')
+ORIGINS_ALLOWED_FOR_API = os.getenv('ORIGINS_ALLOWED', 'http://localhost:5173,http://127.0.0.1:5173')
 
+ORIGINS_ALLOWED_LIST = ORIGINS_ALLOWED_FOR_API.split(',')
 
 def hash_password(password: str):
     password_bytes = password.encode('utf-8')

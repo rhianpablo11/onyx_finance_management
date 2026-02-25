@@ -4,14 +4,16 @@
 import {  useState } from "react"
 import ListTransaction from "./ui/listTransaction"
 import type { ListTransactionProps, TransactionsRecentsProps } from "../interfaces/interfacesComponents"
-import backgroundTransactionsRecents from '../../src/assets/bg-transactions-recents.svg?url'
+import backgroundTransactionsRecents from '../../src/assets/bg-transactions-recents-v2.svg?url'
 
 
 
 function TransactionsRecents(props: TransactionsRecentsProps){
-    const {dayExpenses, monthReceives, nextPayments} = props
+    const {dayExpenses, monthReceives, nextPayments, setIdOfTransactionSelected, setTransactionSelected} = props
     const [activeTab, setActiveTab] = useState(0)
 
+
+    
     //const [nextPaymentsList, setNextPaymentsList] = useState<ListTransactionProps[]>([]);
 
     let listToShow: ListTransactionProps[] = []
@@ -28,6 +30,14 @@ function TransactionsRecents(props: TransactionsRecentsProps){
         typeList = 'receivesMonth'
     }
 
+    const onClickFather = (idTransaction: number) => {
+        console.log(idTransaction)
+        setIdOfTransactionSelected(idTransaction)
+        if(listToShow != undefined){
+            setTransactionSelected(listToShow.find(item => item.id == idTransaction))
+        }
+        
+    }
 
     const renderList = () => {
         console.log(monthReceives)
@@ -52,6 +62,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
                         value={item.value} 
                         id={item.id}
                         date={item.date}
+                        onClickChildren={onClickFather}
                     />
                     )
                 ))
@@ -67,6 +78,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
                         id={item.id}
                         end_date={item.end_date}
                         installments_count={item.installments_count}
+                        onClickChildren={onClickFather}
                     />
                     )
                 ))
@@ -80,6 +92,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
                         nameExpense={item.nameExpense}
                         value={item.value} 
                         id={item.id}
+                        onClickChildren={onClickFather}
                     />
                 ))
             )
@@ -89,7 +102,7 @@ function TransactionsRecents(props: TransactionsRecentsProps){
     return(
         <>
             <div className="rounded-[29px] flex-1 flex flex-col min-h-0 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
-                <div className="rounded-[28px] px-3 pt-4  flex flex-col flex-1 min-h-0 bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundTransactionsRecents}")`}}>
+                <div className="rounded-[28px] px-3 pt-4  flex flex-col flex-1 min-h-0 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundTransactionsRecents}")`}}>
                     <div className="flex justify-between text-white font-extralight text-sm relative pb-2">
                         <button onClick={() => setActiveTab(0)}
                                 className={`pb-2 transition-colors duration-300 ${activeTab === 0 ? "text-white font-normal" : "text-white/50 font-extralight"}`}>
