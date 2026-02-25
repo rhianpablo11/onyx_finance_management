@@ -10,30 +10,43 @@ import ConfigsPage from "./configsPage"
 import { getGreting } from "../utils/utils"
 
 
+
 function InternalPage(){
     const [pageSelected, setPageSelected] = useState<string>('home')
     const [typeToShowHeader, setTypeToShowHeader] = useState<string>('wellcome')
     const [legendHeader, setLegendHeader] = useState<string>('')
     const [titleHeader, setTitleHeader] = useState<string>('')
     const [userName, setUserName] = useState('')
+    const [customBackAction, setCustomBackAction] = useState<(()=>void) | null>(null)
 
     const handlePageSelected = (pageClicked: string) => {
         setPageSelected(pageClicked)
+        setCustomBackAction(null)
     }
 
     const returnPage = () => {
-        setPageSelected('home')
+        if(customBackAction){
+            customBackAction()
+        }else{
+            setPageSelected('home')
+        }
+        
     }
 
     const renderInternal = () => {
         
         if(pageSelected == 'home'){
             return(
-                <DashMetricsPage />
+                <DashMetricsPage setCustomBackAction={setCustomBackAction}
+                                 setTypeToShowHeader={setTypeToShowHeader}
+                                 setLegendHeader={setLegendHeader}
+                                 setTitleHeader={setTitleHeader} />
             )
         } else if(pageSelected == 'extract'){
             return(
-                <ExtractPage />
+                <ExtractPage setCustomBackAction={setCustomBackAction} 
+                             setLegendHeader={setLegendHeader}
+                             setTitleHeader={setTitleHeader}   />
             )
         } else if(pageSelected == 'chat'){
             return(
@@ -42,6 +55,10 @@ function InternalPage(){
         } else if(pageSelected == 'config'){
             return(
                 <ConfigsPage />
+            )
+        } else if(pageSelected == 'insights'){
+            return(
+                <></>
             )
         }
     }
@@ -70,6 +87,10 @@ function InternalPage(){
             setTypeToShowHeader('pages-nav')
             setLegendHeader('Controle geral sobre a sua conta')
             setTitleHeader('Configurações')
+        } else if(pageSelected == 'insights'){
+            setTypeToShowHeader('pages-nav')
+            setLegendHeader('Pagina em construção - breve novidades')
+            setTitleHeader('Insights')
         }
     }, [pageSelected])
 

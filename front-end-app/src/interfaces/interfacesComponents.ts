@@ -16,12 +16,15 @@ export interface ListTransactionProps {
     nameExpense: string
     value: number
     category: string
+    description?: string
+    paymentMethod?: string
     id: number
     typeExpense?: boolean
     date?: string
     installments_count?: number | null
     start_date?: string
     end_date?: string
+    onClickChildren: (idTransaction:number) => void
 }
 
 export interface ListTransactionForExtractProps {
@@ -53,6 +56,8 @@ export interface TransactionsRecentsProps{
     dayExpenses: ListTransactionProps[]
     nextPayments: ListTransactionProps[]
     monthReceives: ListTransactionProps[]
+    setTransactionSelected: (transaction: ListTransactionProps | undefined) => void
+    setIdOfTransactionSelected: (id: number)=> void
 }
 
 
@@ -108,4 +113,41 @@ export interface LoadingModalProps {
 export interface AnimatedCounterProps {
     value: number;
     duration?: number; // Tempo em ms
+}
+
+export interface CreditCardProps{
+    name: string
+    telephone: string
+}
+
+export interface DetailsExpenseProps{
+    telephone: string
+    amount: number
+    dateExpense: string
+    paymentMethod: string
+    description: string
+    nameExpense: string
+    category: string
+    idExpense: number
+    typeExpense: boolean
+}
+
+
+export interface PaperMoneyProps{
+    value: number
+    typeMoney: string
+}
+
+
+export interface ExtractPageProps{
+    setCustomBackAction: (action: (()=>void) | null) => void
+    setTitleHeader?: (title: string) => void
+    setLegendHeader?: (legend: string) => void
+}
+
+export interface DashMetricsProps{
+    setCustomBackAction: (action: (()=>void) | null) => void
+    setTitleHeader?: (title: string) => void
+    setLegendHeader?: (legend: string) => void
+    setTypeToShowHeader?: (typeHeader: string) => void
 }

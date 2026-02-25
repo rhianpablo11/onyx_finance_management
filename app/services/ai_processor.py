@@ -81,9 +81,9 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     - "is_recurrent": boolean (true se for assinatura tipo Netflix).
     - "type": True se for uma entrada de dinheiro ou False se for uma saida.
     - "category": Sugestão de categoria, veja primeiramente se esse texto se encaixa dentro de alguma categoria ja existente, as existentes são: [{categorias_str}].
-    - "description": Resumo, com no maximo de 255 caracteres, tem que caber no banco de dados.
+    - "description": Resumo, com no maximo de 255 caracteres, e no minimo 70 caracteres, tem que caber no banco de dados.
     - "first_payment_date": Data do PRIMEIRO pagamento (YYYY-MM-DD). Calcule baseado no contexto ("hoje", "mês que vem").
-    - "payment_method": Se o usuario informar algo sobre o metodo de pagamento como credito, ou debito, ou dinheiro, ou pix, ou outros. Caso ele nao informe o padrão será dinheiro fisico.
+    - "payment_method": Se o usuario informar algo sobre o metodo de pagamento como credito, ou debito, ou dinheiro, ou pix, ou outros. Caso ele nao informe o padrão será dinheiro fisico. Os nomes para os metodos padrão são: "Cartão de crédito", "Cartão de debito", "Dinheiro Físico", "PIX", ao realizar a seleção utilize esses nomes da mesma forma que foi escrito entre aspas.
     - "last_payment_date": Data do ULTIMO pagamento (YYYY-MM-DD). Calcule baseado no contexto,
     - "type_of_installment": Indica se o parcelamento é mensal, quinzenal, ou outro tipo. Por padrão se não for informado é mensal, já essa lista no banco de dados, [{charge_types}], veja se o que usuario digitou se encaixa em alguma delas.
     - "name": Indica um nome curto para aquele gasto, ou entrada de dinheiro, contendo no maximo 2 palavras
