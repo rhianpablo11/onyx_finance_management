@@ -15,7 +15,9 @@ def associate_email_with_code(db: Session, email: str):
     try:
         
         code = generate_new_otp()
+        print(code)
         respose = send_email(email, code)
+        print(respose)
         if(respose == 'ok'):
             stmt = (select(User_temp)
                     .where(User_temp.email == email))
@@ -34,7 +36,7 @@ def associate_email_with_code(db: Session, email: str):
                 )
 
                 db.add(new_user_temp)
-                
+
             db.commit()
             return True     
         else:

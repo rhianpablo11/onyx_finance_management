@@ -249,4 +249,4 @@ async def get_new_otp_code(db: Session = Depends(get_db), request: Request = {})
         if(associate_email_with_code(db=db, email=email)):
             return {'message': 'um novo codigo foi enviado'}
         
-    return {'message': 'ocorreu um erro ao fazer o processo'}
+    raise HTTPException(status_code=400, detail='error')
