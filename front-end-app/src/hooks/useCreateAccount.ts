@@ -25,6 +25,27 @@ export function useCreateAccount(){
         }
     }
 
+    const verifyOtpCode = async (email: string, otpCode: string) => {
+        setLoading(true)
+        setError(null)
+        try{
+            const payload = {
+                'email': email,
+                'otpCode': otpCode
+            }
+            const response = await api.post('/user/register/verify-otp', payload)
+            if(response.status == 200){
+                return true
+            }
+            return false
+        } catch (err: any) {
+            setError(err)
+            return
+        } finally{
+            setLoading(false)
+        }
+    }
+
     const createAccount = async (email: string | undefined, name: string | undefined, password: string | undefined, telephone: string | undefined) =>{
         setLoading(true)
         const payload = {
@@ -46,5 +67,5 @@ export function useCreateAccount(){
         }
     }
 
-    return {loading, verifyUser, createAccount, error}
+    return {loading, verifyUser, createAccount, error, verifyOtpCode}
 }
