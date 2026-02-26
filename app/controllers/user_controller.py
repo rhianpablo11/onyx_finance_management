@@ -101,7 +101,7 @@ def create_user(user: UserCreate, db: Session, response: Response):
     }
 
 
-def verify_user_exist(db: Session, email: str, telephone: str):
+def verify_user_exist(db: Session, email: str, telephone: str, name: str):
     try:
         stmt = (select(User.id)
                 .where(User.email == email))
@@ -121,7 +121,7 @@ def verify_user_exist(db: Session, email: str, telephone: str):
     if(len(list_user2) > 0):
         raise HTTPException(status_code=400, detail='telephone alredy in database')
     
-    associate_email_with_code(db=db, email=email)
+    associate_email_with_code(db=db, email=email, name=name)
     return {'message': 'user not in database'}
 
 

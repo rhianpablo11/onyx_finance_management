@@ -43,14 +43,16 @@ async def verify_biometric_device_exists(db: Session = Depends(get_db), current_
 @router.get('/verify-user', status_code=201)
 def verify_user(db: Session = Depends(get_db),
                 email: Optional[str] = None,
-                telephone: Optional[str] = None):
+                telephone: Optional[str] = None,
+                name: Optional[str] = None):
     if(email == None):
         return {'message': 'not email in request'}
     if(telephone == None):
         return {'telephone': 'not telephone in request'}
     return verify_user_exist(email=email,
                              telephone=telephone,
-                             db=db)
+                             db=db,
+                             name=name)
 
 
 @router.get('/register/options-biometric', status_code=201)
@@ -233,6 +235,7 @@ async def verify_otp_received(db: Session = Depends(get_db),  request: Request =
     payload = await request.json()
     email = payload.get('email')
     otpCode = payload.get('otpCode')
+    print('oi')
     if(verify_code(db=db,
                    code=otpCode,
                    email=email)):
