@@ -2,6 +2,7 @@ export interface InputProps {
     type: string;
     onChangeInputChildren: (value: string) => void
     cleanText?: boolean
+    isError?: boolean
 }
 
 export interface ButtonProps {
@@ -138,6 +139,12 @@ export interface PaperMoneyProps{
     typeMoney: string
 }
 
+
+export interface VerifyEmailRegisterProps{
+    setOtpCodeUser: (otpCode: string) => void
+    setIsAuthorizedNextAfterOTP: (authorization: boolean) => void
+    email: string | undefined
+}
 
 export interface ExtractPageProps{
     setCustomBackAction: (action: (()=>void) | null) => void

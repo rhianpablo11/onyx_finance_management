@@ -232,7 +232,7 @@ def get_day_and_last_transactions(db: Session, user_id: int):
     # preciso: nome, valor, categoria
 
     today = date.today()
-
+    
     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
                 .where(Expense.user_id == user_id)
                 .where(Expense.date == today)
@@ -354,11 +354,11 @@ def get_next_payments(db: Session, user_id: int):
     list_formatted = []
 
 
-    for expense in list_next_payments:
+    for item in list_next_payments:
         nameCategory = get_expense_category_by_id(id=item.category,
                                                   user_id=user_id,
                                                   db=db)
-        formatted_list.append({
+        list_formatted.append({
             "nameExpense": item.name,
             "value": item.value,
             "category": nameCategory,
