@@ -5,7 +5,7 @@ import type { InputProps } from "../../interfaces/interfacesComponents"
 
 
 function Input(props: InputProps){
-    const {type, onChangeInputChildren, cleanText} = props
+    const {type, onChangeInputChildren, cleanText, isError} = props
     const [valueInputTyped, setValueInputTyped] = useState('')
     const [otp, setOtp] = useState<string[]>(new Array(6).fill(''))
     const inputsRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -196,11 +196,11 @@ function Input(props: InputProps){
     } else if(type == 'otpCode'){
         return(
             <>
-                <div className='flex  h-12 justify-between items-center w-full max-w-full'>
+                <div className='flex  h-10 justify-between items-center w-full max-w-full'>
                     {otp.map((data, index)=>(
                         <input key={index}
                                ref={(el)=>{inputsRefs.current[index] = el}}
-                               className='w-12 rounded-[14px] bg-[#37363E] h-full text-center flex items-center font-bold text-lg text-white placeholder:text-white/25 focus:outline-none'
+                               className={`w-10 rounded-[14px] bg-[#37363E] h-full text-center flex items-center font-bold text-lg text-white placeholder:text-white/25 focus:outline-none ${isError ? 'border-2 border-red-900' : ''}`}
                                type='text'
                                placeholder='0'
                                maxLength={1}

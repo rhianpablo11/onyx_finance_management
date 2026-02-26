@@ -2,6 +2,7 @@ export interface InputProps {
     type: string;
     onChangeInputChildren: (value: string) => void
     cleanText?: boolean
+    isError?: boolean
 }
 
 export interface ButtonProps {

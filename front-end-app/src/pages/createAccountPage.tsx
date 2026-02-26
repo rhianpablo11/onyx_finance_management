@@ -22,18 +22,18 @@ function CreateAccountPage(){
     }
 
     const renderComponent = () => {
-        return(
-            <VerifyEmailRegister setOtpCodeUser={setOtpCodeUser}
-                                 setIsAuthorizedNextAfterOTP={setIsAuthorizedNextAfterOTP}
-                                 email="rhianpablo11@gmail.com"  />
-        )
+        // return(
+        //     <VerifyEmailRegister setOtpCodeUser={setOtpCodeUser}
+        //                          setIsAuthorizedNextAfterOTP={setIsAuthorizedNextAfterOTP}
+        //                          email="rhianpablo11@gmail.com"  />
+        // )
 
         if(!isAuthorizedNext){
             return(
                     <FirstStepRegister changeStatus={setIsAuthorizedNext}
                                        sendInfoInitialUser={setInitialDataUser}/>
                 )
-        } else if(!isAuthorizedNext && !isAuthorizedNextAfterOTP){
+        } else if(isAuthorizedNext && !isAuthorizedNextAfterOTP){
             return(
                 <VerifyEmailRegister setOtpCodeUser={setOtpCodeUser}
                                      setIsAuthorizedNextAfterOTP={setIsAuthorizedNextAfterOTP}
