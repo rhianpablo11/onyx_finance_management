@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
+from app.controllers.user_temp_controller import associate_email_with_code, verify_code
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user, verify_token
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
 from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, device_has_biometric_registered, get_challenge, get_credential_by_cred_id, get_credential_used, get_generic_options_biometric, get_options, get_options_biometric_auth, get_user_by_credential_id, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_current_chalenge, validate_signature, verify_registration_biometric, verify_user_exist
@@ -42,14 +43,16 @@ async def verify_biometric_device_exists(db: Session = Depends(get_db), current_
 @router.get('/verify-user', status_code=201)
 def verify_user(db: Session = Depends(get_db),
                 email: Optional[str] = None,
-                telephone: Optional[str] = None):
+                telephone: Optional[str] = None,
+                name: Optional[str] = None):
     if(email == None):
         return {'message': 'not email in request'}
     if(telephone == None):
         return {'telephone': 'not telephone in request'}
     return verify_user_exist(email=email,
                              telephone=telephone,
-                             db=db)
+                             db=db,
+                             name=name)
 
 
 @router.get('/register/options-biometric', status_code=201)
@@ -225,3 +228,28 @@ def logout_user(response: Response = {}):
     )
 
     return {'message': 'usuario deslogado e token removido!'}
+
+
+@router.post('/register/verify-otp', status_code=200)
+async def verify_otp_received(db: Session = Depends(get_db),  request: Request ={}):
+    payload = await request.json()
+    email = payload.get('email')
+    otpCode = payload.get('otpCode')
+    print('oi')
+    if(verify_code(db=db,
+                   code=otpCode,
+                   email=email)):
+        return {'message': 'everything is ok'}
+    else:
+        raise HTTPException(status_code=400, detail='otp code not correct')
+    
+
+@router.post('/register/get-new-otp-code', status_code=200)
+async def get_new_otp_code(db: Session = Depends(get_db), request: Request = {}):
+    payload = await request.json()
+    email = payload.get('email')
+    if(email):
+        if(associate_email_with_code(db=db, email=email)):
+            return {'message': 'um novo codigo foi enviado'}
+        
+    raise HTTPException(status_code=400, detail='error')

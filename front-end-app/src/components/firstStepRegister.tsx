@@ -41,7 +41,7 @@ function FirstStepRegister(props: FirstStepRegisterProps){
             if(email == '' || name == '' || telephone == ''){
                 setInputsFilleds(false)
             } else{
-                await verifyUser(email, telephone)
+                await verifyUser(email, telephone, name)
                 sendInfoInitialUser({email, name, telephone})
                 changeStatus(true)
             }

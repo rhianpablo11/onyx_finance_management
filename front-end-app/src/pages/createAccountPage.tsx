@@ -6,24 +6,40 @@ import { useState } from "react"
 import SecondStepRegister from "../components/secondStepRegister"
 import type { SecondStepRegisterProps } from "../interfaces/interfacesComponents"
 import { useNavigate } from "react-router-dom"
+import VerifyEmailRegister from "../components/verifyEmailRegister"
 
 
 
 function CreateAccountPage(){
     const [isAuthorizedNext, setIsAuthorizedNext] = useState<boolean>(false)
     const [initialDataUser, setInitialDataUser] = useState<SecondStepRegisterProps>()
+    const [otpCodeUser, setOtpCodeUser] = useState<string>('')
+    const [isAuthorizedNextAfterOTP, setIsAuthorizedNextAfterOTP] = useState<boolean>(false)
     const navigate = useNavigate()
     const onClickFather = (buttonClicked:string) =>{
             console.log(buttonClicked)
             navigate('/login')
+            console.log(otpCodeUser)
     }
 
     const renderComponent = () => {
+        // return(
+        //     <VerifyEmailRegister setOtpCodeUser={setOtpCodeUser}
+        //                          setIsAuthorizedNextAfterOTP={setIsAuthorizedNextAfterOTP}
+        //                          email="rhianpablo11@gmail.com"  />
+        // )
+
         if(!isAuthorizedNext){
             return(
                     <FirstStepRegister changeStatus={setIsAuthorizedNext}
                                        sendInfoInitialUser={setInitialDataUser}/>
                 )
+        } else if(isAuthorizedNext && !isAuthorizedNextAfterOTP){
+            return(
+                <VerifyEmailRegister setOtpCodeUser={setOtpCodeUser}
+                                     setIsAuthorizedNextAfterOTP={setIsAuthorizedNextAfterOTP}
+                                     email={initialDataUser?.email}  />
+            )
         } else{
             return(
                 <SecondStepRegister name={initialDataUser?.name} 

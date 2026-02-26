@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status, Response
 from sqlalchemy import delete, insert, select, update
+from app.controllers.user_temp_controller import associate_email_with_code
 from app.core.auth import create_access_token, ACCESS_TOKEN_DURATION_TIME
 from datetime import timedelta
 from sqlalchemy.orm import Session
@@ -100,7 +101,7 @@ def create_user(user: UserCreate, db: Session, response: Response):
     }
 
 
-def verify_user_exist(db: Session, email: str, telephone: str):
+def verify_user_exist(db: Session, email: str, telephone: str, name: str):
     try:
         stmt = (select(User.id)
                 .where(User.email == email))
@@ -120,6 +121,7 @@ def verify_user_exist(db: Session, email: str, telephone: str):
     if(len(list_user2) > 0):
         raise HTTPException(status_code=400, detail='telephone alredy in database')
     
+    associate_email_with_code(db=db, email=email, name=name)
     return {'message': 'user not in database'}
 
 
