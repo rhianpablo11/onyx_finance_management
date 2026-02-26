@@ -1,5 +1,5 @@
 // component for input of chat page and login/sign up
-import { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import backgroundInputChat from '../../assets/bg-input-chat-ia-3.svg?url'
 import type { InputProps } from "../../interfaces/interfacesComponents"
 
@@ -7,6 +7,8 @@ import type { InputProps } from "../../interfaces/interfacesComponents"
 function Input(props: InputProps){
     const {type, onChangeInputChildren, cleanText} = props
     const [valueInputTyped, setValueInputTyped] = useState('')
+    const [otp, setOtp] = useState<string[]>(new Array(6).fill(''))
+    const inputsRefs = useRef<(HTMLInputElement | null)[]>([])
 
     const handleInputChange = (event: any) =>{
         const value = event.target.value
@@ -17,8 +19,53 @@ function Input(props: InputProps){
     useEffect(()=>{
         if(cleanText){
             setValueInputTyped('')
+            setOtp(new Array(6).fill(''))
         } 
     }, [cleanText])
+
+
+    const handleChangeOtp = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const value = e.target.value
+        if(isNaN(Number(value))){
+            return
+        }
+
+        const newOtp = [...otp]
+        newOtp[index] = value.substring(value.length - 1)
+        setOtp(newOtp)
+        onChangeInputChildren(newOtp.join(''))
+
+        if(value && index < 5 && inputsRefs.current[index + 1]){
+            inputsRefs.current[index + 1]?.focus()
+        }
+    }
+
+    const handleKeyDownOtp = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if(e.key === 'Backspace' && !otp[index] && index > 0 && inputsRefs.current[index - 1]){
+            inputsRefs.current[index - 1]?.focus()
+        }
+    }
+
+    const handlePasteOtp = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        e.preventDefault()
+        const pastedData = e.clipboardData.getData('text').slice(0, 6).split('')
+        if(pastedData.some(char => isNaN(Number(char)))){
+            return
+        }
+
+        const newOtp = [...otp]
+        pastedData.forEach((char, index)=>{
+            newOtp[index] = char
+        })
+        setOtp(newOtp)
+        onChangeInputChildren(newOtp.join(''))
+
+        const focusIndex = pastedData.length < 6 ? pastedData.length : 5
+        inputsRefs.current[focusIndex]?.focus()
+    }
+
+
+
 
     if(type == 'email'){
         return(
@@ -146,38 +193,27 @@ function Input(props: InputProps){
                 
             </>
         )
+    } else if(type == 'otpCode'){
+        return(
+            <>
+                <div className='flex  h-12 justify-between items-center w-full max-w-full'>
+                    {otp.map((data, index)=>(
+                        <input key={index}
+                               ref={(el)=>{inputsRefs.current[index] = el}}
+                               className='w-12 rounded-[14px] bg-[#37363E] h-full text-center flex items-center font-bold text-lg text-white placeholder:text-white/25 focus:outline-none'
+                               type='text'
+                               placeholder='0'
+                               maxLength={1}
+                               value={data}
+                               onChange={(e)=>handleChangeOtp(e, index)}
+                               onKeyDown={(e)=>handleKeyDownOtp(e, index)}
+                               onPaste={handlePasteOtp}></input>
+                    ))}
+                </div>
+            </>
+        )
     }
-    
-
-
-
-
-    
-
-
-
-
-    
-
-
-    // return(
-    //     <>
-    //         <div className='flex h-10 rounded-[14px] bg-[#37363E] justify-center items-center w-full'>
-    //             <input className='w-full h-full p-2.5 flex items-center font-normal text-base text-white placeholder:text-white/75 focus:outline-none'
-    //                    type='text'
-    //                    placeholder='Fulano da Silva dos Santos'
-    //                    required
-    //                    maxLength={255}
-    //                    >
-    //             </input>
-    //         </div>
-    //     </>
-    // )
-
-
-
-    
-
+ 
 }
 
 
