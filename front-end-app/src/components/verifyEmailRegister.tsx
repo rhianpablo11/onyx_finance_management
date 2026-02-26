@@ -7,7 +7,7 @@ import Input from "./ui/input"
 
 function VerifyEmailRegister(props: VerifyEmailRegisterProps){
     const {setOtpCodeUser, setIsAuthorizedNextAfterOTP, email} =  props
-    const {loading, error, verifyOtpCode, requestNewOtpCode} = useCreateAccount()
+    const {loading,  verifyOtpCode, requestNewOtpCode} = useCreateAccount()
     const [otpCodeIn, setOtpCodeIn] = useState('')
     const [inputNotComplete, setInputNotComplete] = useState(true)
     const [isError, setIsError] = useState(false)

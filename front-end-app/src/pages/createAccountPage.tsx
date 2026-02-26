@@ -19,6 +19,7 @@ function CreateAccountPage(){
     const onClickFather = (buttonClicked:string) =>{
             console.log(buttonClicked)
             navigate('/login')
+            console.log(otpCodeUser)
     }
 
     const renderComponent = () => {
