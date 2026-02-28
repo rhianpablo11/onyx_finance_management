@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
   steps:
-    - name: clone-code
+    - name: clone code
       uses: actions/checkout@v4
 
     - name: setup docker buildx
@@ -34,4 +34,3 @@ jobs:
           ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:latest
           ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:v${{ github.run_number }}
 
-    
