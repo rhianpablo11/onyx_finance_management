@@ -1,0 +1,39 @@
+name: test-docker-builds
+
+on:
+  push:
+    branches-ignore:
+      - 'master'
+      - 'feature/**'
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: clone code
+        uses: actions/checkout@v4
+
+      - name: start docker compose 
+        run: docker compose up -d --build
+
+      - name: wait for services wake up
+        run: sleep 20
+
+      - name: test backend health
+        run: curl -f http://localhost:8000/ || exit 1
+
+      - name: test frontend health
+        run: curl -f http://localhost:5173 || exit 1
+
+      - name: show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: tear down docker compose
+        if: always()
+        run: docker compose down -v

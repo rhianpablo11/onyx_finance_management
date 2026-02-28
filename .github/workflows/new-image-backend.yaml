@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - 'app/**'
-      - 'Dockerfile'
+      - 'app/Dockerfile'
       - 'requirements.txt'
 
 jobs:
@@ -32,7 +32,8 @@ jobs:
       - name: docker image build
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./app
+          file: ./app/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-backend:latest

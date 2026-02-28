@@ -1,0 +1,61 @@
+
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: onyx_db
+    restart: always
+    environment:
+      POSTGRES_USER: onyx_user
+      POSTGRES_PASSWORD: onyx_password
+      POSTGRES_DB: onyx_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onyx_user -d onyx_database"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: onyx_backend
+    restart: always
+    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=keyOfAPI
+      - DATABASE_PASSWORD=onyx_password
+      - DATABASE_USER=onyx_user
+      - DATABASE_URL=db:5432
+      - DATABASE_NAME=onyx_database
+      - BIOMETRIC_RP_ID=localhost
+      - BIOMETRIC_RP_NAME=Onyx Finance Management
+      - BIOMETRIC_ORIGIN=http://localhost:5173 
+      - ORIGINS_ALLOWED=http://localhost:5173
+      - PASSWORD_EMAIL=
+      - API_URL=https://married-deanna-rp11-co-4e3d8779.koyeb.app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./front-end-app
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
+    container_name: onyx_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
