@@ -1,0 +1,37 @@
+name: build-and-push-image-frontend
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      -'front-end-app'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+  steps:
+    - name: clone-code
+      uses: actions/checkout@v4
+
+    - name: setup docker buildx
+      uses: docker/login-action@v3.4.0
+
+    - name: login docker hub
+      uses: docker/login-action@v3.4.0
+      with:
+        username: ${{secrets.DOCKERHUB_USERNAME}}
+        password: ${{secrets.DOCKERHUB_TOKEN}}
+
+    - name: docker image build
+      uses: docker/build-push-action@v5
+      with:
+        context: ./front-end-app
+        file: ./front-end-app/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:v${{ github.run_number }}
+
+    
