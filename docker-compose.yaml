@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   db:
@@ -29,7 +29,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - GEMINI_API_KEY=
+      - GEMINI_API_KEY=keyOfAPI
       - DATABASE_PASSWORD=onyx_password
       - DATABASE_USER=onyx_user
       - DATABASE_URL=db:5432
