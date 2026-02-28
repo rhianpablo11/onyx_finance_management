@@ -1,0 +1,40 @@
+name: test-docker-builds
+
+on:
+  push:
+    branches-ignore:
+      - master
+    pull_request:
+      branches:
+        - master
+        - develop
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: clone code
+        uses: actions/checkout@v4
+
+      - name: setup docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: docker image build backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: false
+          tags: test-backend:latest
+
+      - name: docker image build frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./front-end-app
+          file: ./front-end-app/Dockerfile
+          push: false
+          tags: test-frontend:latest
+          build-args: |
+            VITE_API_URL=http://localhost:8000
+            
