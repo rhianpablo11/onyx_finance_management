@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      -'front-end-app'
+      - 'front-end-app'
 
 jobs:
   build:
