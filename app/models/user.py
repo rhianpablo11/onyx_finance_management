@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from app.core.database import Base
 from sqlalchemy import Boolean, Column, Integer, Numeric, String, DateTime
 from sqlalchemy.sql import func
@@ -13,7 +15,8 @@ class User(Base):
     telephone = Column(String(20), nullable=False, unique=True)
     created_date = Column(DateTime(timezone=True), server_default=func.now())
     subscriber = Column(Boolean, default=False)
-    otp_code = Column(Integer, nullable=True)
+    otp_code_recovery_password = Column(Integer, nullable=True)
+    otp_code_recovery_expires_at = Column(DateTime, nullable=True)
     second_factor_auth = Column(Boolean, nullable=False, default=False)
     balance = Column(Numeric(18, 2), default=0.0)
     current_chalenge = Column(String(255), nullable=True)

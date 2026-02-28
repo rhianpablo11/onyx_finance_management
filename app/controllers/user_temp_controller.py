@@ -16,7 +16,7 @@ def associate_email_with_code(db: Session, email: str, name:str):
         
         code = generate_new_otp()
         print(code)
-        respose = send_email(email, code, name)
+        respose = send_email(email, code, name, isRecovery=False)
         print(respose)
         if(respose == 'ok'):
             stmt = (select(User_temp)
