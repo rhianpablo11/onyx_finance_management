@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - 'app/**'
-      - 'Dockerfile'
+      - 'app/Dockerfile'
       - 'requirements.txt'
 
 jobs:
