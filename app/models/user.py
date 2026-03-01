@@ -16,7 +16,7 @@ class User(Base):
     created_date = Column(DateTime(timezone=True), server_default=func.now())
     subscriber = Column(Boolean, default=False)
     otp_code_recovery_password = Column(Integer, nullable=True)
-    otp_code_recovery_expires_at = Column(DateTime, nullable=True)
+    otp_code_recovery_expires_at = Column(DateTime(timezone=True), nullable=True)
     second_factor_auth = Column(Boolean, nullable=False, default=False)
     balance = Column(Numeric(18, 2), default=0.0)
     current_chalenge = Column(String(255), nullable=True)

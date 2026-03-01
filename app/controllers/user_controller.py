@@ -364,7 +364,7 @@ def delete_biometric_of_device_selected(db: Session, user_id: int, device_id_for
     return False
 
 
-def recovery_password(db: Session, email: str, name_user: str):
+def send_email_recovery_password(db: Session, email: str, name_user: str):
     try:
         code_send = generate_new_otp()
         send_email(email=email, code=code_send, isRecovery=True, name=name_user)
@@ -375,7 +375,7 @@ def recovery_password(db: Session, email: str, name_user: str):
 
 def save_code_of_recovery_password(db: Session, user_id: int, code: int):
     time_now = datetime.now(timezone.utc)
-    time_expires_code = time_now + timedelta(minutes=5)
+    time_expires_code = time_now + timedelta(minutes=1)
 
     stmt = (update(User)
                 .where(User.id == user_id)
@@ -392,9 +392,16 @@ def verify_code_of_recovery_password(db: Session, code: int, user_id: int):
     user_info_found = db.execute(stmt).first()
     if(user_info_found == None):
         raise HTTPException(status_code=404, detail='user not found')
-    
-    if(user_info_found.otp_code_recovery_password == code):
-        if(user_info_found.otp_code_recovery_expires_at > datetime.now(timezone.utc)):
+    print('0000000')
+    print(user_info_found)
+    print('AAAAA')
+    print(user_info_found[0])
+    print('BBBBB')
+    print(datetime.now(timezone.utc))
+    print('CCCCCCCCC')
+    print(user_info_found[0] > datetime.now(timezone.utc))
+    if(user_info_found[1] == code):
+        if(user_info_found[0] > datetime.now(timezone.utc)):
             return True, 'everything ok'
         else:
             return False, 'otp code expires'
@@ -415,11 +422,15 @@ def delete_code_of_recovery_password(db: Session, user_id: int):
 
 def update_password(db: Session, user_id: int, password: str):
     try:
+        print('iqoriqo')
+        print(password)
         stmt = (update(User)
                 .where(User.id == user_id)
                 .values(password = hash_password(password)))
         db.execute(stmt)
+        print('gnkdslgkd')
         db.commit()
+        print('kdgnlagk')
         return
     except:
         raise HTTPException(status_code=400, detail='error in update')

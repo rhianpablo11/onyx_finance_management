@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.controllers.user_temp_controller import associate_email_with_code, verify_code
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user, verify_token
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
-from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, delete_code_of_recovery_password, device_has_biometric_registered, get_challenge, get_credential_by_cred_id, get_credential_used, get_generic_options_biometric, get_options, get_options_biometric_auth, get_user_by_credential_id, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_code_of_recovery_password, save_current_chalenge, update_password, validate_signature, verify_code_of_recovery_password, verify_registration_biometric, verify_user_exist
+from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, delete_code_of_recovery_password, device_has_biometric_registered, get_challenge, get_credential_by_cred_id, get_credential_used, get_generic_options_biometric, get_options, get_options_biometric_auth, get_user_by_credential_id, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_code_of_recovery_password, save_current_chalenge, send_email_recovery_password, update_password, validate_signature, verify_code_of_recovery_password, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
@@ -264,7 +264,7 @@ def recovery_password(email: Optional[str] = None,
     if(user_founded == None):
         raise HTTPException(status_code=404, detail='user not found')
     
-    code_sended = recovery_password(db=db, email=email, name_user=user_founded.name)
+    code_sended = send_email_recovery_password(db=db, email=email, name_user=user_founded.name)
     if(code_sended == None):
         raise HTTPException(status_code=400, detail='error in sending code of verification')
     
@@ -273,7 +273,7 @@ def recovery_password(email: Optional[str] = None,
     return {'message': 'code sended'}
 
 
-@router.get('/verify/recovery-password', status_code=200)
+@router.post('/verify/recovery-password', status_code=200)
 async def verify_recovery_password_code(response: Response,db: Session = Depends(get_db), request: Request = {}):
     payload = await request.json()
     email = payload.get('email')
@@ -289,8 +289,9 @@ async def verify_recovery_password_code(response: Response,db: Session = Depends
         raise HTTPException(status_code=404, detail='user not found')
     
     result  = verify_code_of_recovery_password(db=db, code=code, user_id=user_founded.id)
-
-    if(result):
+    print(result)
+    if(result[0]):
+        
         delete_code_of_recovery_password(db=db, user_id=user_founded.id)
         #passar o cookie q vai permitir cadastrar uma nova senha
         
@@ -306,6 +307,7 @@ async def verify_recovery_password_code(response: Response,db: Session = Depends
             samesite='none',
             max_age=300
         )
+        return {"message": result[1]}
     else:
         raise HTTPException(status_code=400, detail=result[1])
     
@@ -320,6 +322,6 @@ async def update_password_recovered( db: Session = Depends(get_db), request: Req
     if not update_password_token:
         raise HTTPException(status_code=401, detail='não autenticado')
     
-    payload_token = verify_token(update_password_recovered)
+    payload_token = verify_token(update_password_token)
     update_password(db=db, user_id=payload_token['id'], password=new_password)
     return {'message': 'password is updated, please log in'}
