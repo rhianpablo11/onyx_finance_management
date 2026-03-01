@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status, Response
 from sqlalchemy import delete, insert, select, update
-from app.controllers.user_temp_controller import associate_email_with_code
+from app.controllers.user_temp_controller import associate_email_with_code, generate_new_otp
 from app.core.auth import create_access_token, ACCESS_TOKEN_DURATION_TIME
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.core.security import compare_password, hash_password
@@ -13,6 +13,8 @@ from webauthn.helpers.structs import AuthenticatorSelectionCriteria, ResidentKey
 from webauthn.helpers import generate_challenge, bytes_to_base64url
 from app.core.security import BIOMETRIC_ORIGIN, BIOMETRIC_RP_ID, BIOMETRIC_RP_NAME
 import base64
+
+from app.services.mail_service import send_email
 
 def authenticate_user(email:str, password: str ,db: Session, response: Response):
     user = db.query(User).filter(User.email == email).first()
@@ -234,9 +236,15 @@ def remove_current_challenge_of_user(db: Session, user_id: int):
 
 
 def get_user_by_email(db: Session, email:str):
-    stmt = select(User).where(User.email == email)
-    user_found = db.execute(stmt).first()[0]
-    return user_found
+    try:
+        stmt = select(User).where(User.email == email)
+        user_found = db.execute(stmt).first()
+        if(user_found):
+            return user_found[0]
+        else:
+            return None
+    except:
+        return None
 
 
 def get_options_biometric_auth(user: User):
@@ -354,3 +362,75 @@ def delete_biometric_of_device_selected(db: Session, user_id: int, device_id_for
         
         return result
     return False
+
+
+def send_email_recovery_password(db: Session, email: str, name_user: str):
+    try:
+        code_send = generate_new_otp()
+        send_email(email=email, code=code_send, isRecovery=True, name=name_user)
+        return code_send        
+    except:
+        return None
+
+
+def save_code_of_recovery_password(db: Session, user_id: int, code: int):
+    time_now = datetime.now(timezone.utc)
+    time_expires_code = time_now + timedelta(minutes=5)
+
+    stmt = (update(User)
+                .where(User.id == user_id)
+                .values(otp_code_recovery_password=code)
+                .values(otp_code_recovery_expires_at=time_expires_code))
+    db.execute(stmt)
+    db.commit()
+    return
+
+
+def verify_code_of_recovery_password(db: Session, code: int, user_id: int):
+    stmt = (select(User.otp_code_recovery_expires_at, User.otp_code_recovery_password)
+            .where(User.id == user_id))
+    user_info_found = db.execute(stmt).first()
+    if(user_info_found == None):
+        raise HTTPException(status_code=404, detail='user not found')
+    print('0000000')
+    print(user_info_found)
+    print('AAAAA')
+    print(user_info_found[0])
+    print('BBBBB')
+    print(datetime.now(timezone.utc))
+    print('CCCCCCCCC')
+    print(user_info_found[0] > datetime.now(timezone.utc))
+    if(user_info_found[1] == code):
+        if(user_info_found[0] > datetime.now(timezone.utc)):
+            return True, 'everything ok'
+        else:
+            return False, 'otp code expires'
+    else:
+        return False, 'otp code invalid'
+    
+
+def delete_code_of_recovery_password(db: Session, user_id: int):
+
+    stmt = (update(User)
+                .where(User.id == user_id)
+                .values(otp_code_recovery_password=None)
+                .values(otp_code_recovery_expires_at=None))
+    db.execute(stmt)
+    db.commit()
+    return
+
+
+def update_password(db: Session, user_id: int, password: str):
+    try:
+        print('iqoriqo')
+        print(password)
+        stmt = (update(User)
+                .where(User.id == user_id)
+                .values(password = hash_password(password)))
+        db.execute(stmt)
+        print('gnkdslgkd')
+        db.commit()
+        print('kdgnlagk')
+        return
+    except:
+        raise HTTPException(status_code=400, detail='error in update')

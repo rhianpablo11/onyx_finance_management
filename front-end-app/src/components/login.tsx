@@ -62,6 +62,11 @@ function Login(){
         }
     }
 
+
+    const redirectToRecoveryPassword = ()=>{
+        navigate('/forget-password')
+    }
+
     useEffect(()=>{
         //const biometricExist = getCookie('this_device_has_biometric')
         const biometricExist = getBiometricExistence()
@@ -94,6 +99,10 @@ function Login(){
                         </h1>
                         <Input  onChangeInputChildren={onChangeInputFatherPassword} 
                                 type="password"/>
+                        <button onClick={redirectToRecoveryPassword}
+                                className="text-white/70 text-xs pl-1 font-normal underline">
+                            Esqueci a senha
+                        </button>
                     </div>
                     {errorLogin && (
                             <p className="text-red-400 text-xs mt-1 pl-2">E-mail ou senha incorretos</p>

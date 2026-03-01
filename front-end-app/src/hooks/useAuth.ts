@@ -190,3 +190,75 @@ export function useBiometricAuth(){
 
     return {getOptions, registerBiometric, getOptionsLogin, verifyBiometric, existBiometricInDevice, removeBiometricOfDevice, loadingBiometric}
 }
+
+
+export function useRecoveryPassword(){
+    const [loading, setLoading] = useState(false)
+    
+
+    const requestVerifyCode = async (email: string) => {
+        setLoading(true)
+        try{
+            const response = await api.get(`/user/request/recovery-password?email=${email}`)
+            console.log(response)
+            if(response.status == 200){
+                return true
+            } else{
+                return false
+            }
+        } catch(err: any){
+            console.log(err.response.data.detail)
+            throw err
+        } finally{
+            setLoading(false)
+        }
+    }
+
+    const verifyCodeOfRecovery = async (email: string, code: string)=>{
+        setLoading(true)
+        try{
+            const payload = {
+                'email': email,
+                'code': Number(code)
+            }
+
+            const response = await api.post('/user/verify/recovery-password', payload)
+            console.log(response)
+            if(response.status == 200){
+                return true
+            } else{
+                return false
+            }
+        
+        } catch (err: any){
+            throw err
+        } finally{
+            setLoading(false)
+        }
+
+    }
+
+
+    const updatePassword = async (password: string) => {
+        setLoading(true)
+        try{
+            const payload = {
+                'password': password
+            }
+
+            const response = await api.post('/user/update-password', payload)
+
+            if(response.status == 200){
+                return true
+            } else{
+                return false
+            }
+        } catch(err: any){
+            throw err
+        } finally{
+            setLoading(false)
+        }
+    }
+
+    return {requestVerifyCode, verifyCodeOfRecovery, updatePassword, loading}
+}

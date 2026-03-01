@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     scheduler = get_scheduler()
     scheduler.start()
     print('Criando tabelas do bd')
-    Base.metadata.create_all(bind=engine)
+    #Base.metadata.create_all(bind=engine)
     yield
 
     print('shutdown scheduler')
