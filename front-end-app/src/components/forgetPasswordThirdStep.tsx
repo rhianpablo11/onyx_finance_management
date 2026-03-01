@@ -52,7 +52,7 @@ function ForgetPasswordThirdStep(){
 
     return(
             <>
-                <div className="flex flex-col min-w-80 mt-4 justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
+                <div className="flex flex-col  mt-4 justify-center items-center rounded-[40px] bg-white/5 backdrop-blur-2xl">
                     <h1 className="text-white font-medium text-[28px] mt-4">
                         Redefinir senha
                     </h1>
