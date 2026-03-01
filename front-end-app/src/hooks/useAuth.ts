@@ -194,7 +194,7 @@ export function useBiometricAuth(){
 
 export function useRecoveryPassword(){
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    
 
     const requestVerifyCode = async (email: string) => {
         setLoading(true)
