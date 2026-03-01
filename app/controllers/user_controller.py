@@ -375,7 +375,7 @@ def send_email_recovery_password(db: Session, email: str, name_user: str):
 
 def save_code_of_recovery_password(db: Session, user_id: int, code: int):
     time_now = datetime.now(timezone.utc)
-    time_expires_code = time_now + timedelta(minutes=1)
+    time_expires_code = time_now + timedelta(minutes=5)
 
     stmt = (update(User)
                 .where(User.id == user_id)

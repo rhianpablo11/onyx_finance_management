@@ -158,3 +158,13 @@ export interface DashMetricsProps{
     setLegendHeader?: (legend: string) => void
     setTypeToShowHeader?: (typeHeader: string) => void
 }
+
+export interface ForgetPasswordFirstStepProps{
+    setEmailToRecovery: (email: string) => void
+    setFirstStepIsOk: (isOk: boolean) => void
+}
+
+export interface ForgetPasswordSecondStepProps{
+    email: string
+    setSecondStepIsOk: (isOk: boolean) => void
+}

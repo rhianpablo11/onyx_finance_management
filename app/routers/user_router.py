@@ -293,7 +293,6 @@ async def verify_recovery_password_code(response: Response,db: Session = Depends
     if(result[0]):
         
         delete_code_of_recovery_password(db=db, user_id=user_founded.id)
-        #passar o cookie q vai permitir cadastrar uma nova senha
         
         data_user = {'id': user_founded.id}
         update_password_token_expires = timedelta(seconds=300)
