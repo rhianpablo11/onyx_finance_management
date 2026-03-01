@@ -6,6 +6,7 @@ import LoginPage from "../pages/loginPage";
 import InternalPage from "../pages/internalPage";
 import CreateAccountPage from "../pages/createAccountPage";
 import { PublicRoute } from "./publicRoute";
+import RecoveryPasswordPage from "../pages/recoveryPasswordPage";
 
 
 export const router = createBrowserRouter([
@@ -23,6 +24,9 @@ export const router = createBrowserRouter([
             },{
                 path:'/sign-up',
                 element: <CreateAccountPage />
+            },{
+                path: '/forget-password',
+                element: <RecoveryPasswordPage />
             }
         ]
     },
