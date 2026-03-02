@@ -84,13 +84,13 @@ A interface foi organizada baseando-se na separação clara de responsabilidades
 
 ### Backend
 O servidor adota uma arquitetura modular para facilitar a manutenção e escalabilidade:
-* **controllers:** Lida com a lógica de negócio e regras do CRUD para cada entidade.
-* **core:** Núcleo de configurações da aplicação (conexão com o banco, variáveis de ambiente).
-* **models:** Definição das tabelas do banco de dados (SQLAlchemy).
-* **routers:** Endpoints da API expostos para acesso externo.
+* **Controllers:** Lida com a lógica de negócio e regras do CRUD para cada entidade.
+* **Core:** Núcleo de configurações da aplicação (conexão com o banco, variáveis de ambiente).
+* **Models:** Definição das tabelas do banco de dados (SQLAlchemy).
+* **Routers:** Endpoints da API expostos para acesso externo.
 * **schemas:** Modelos Pydantic para validação de dados de entrada e saída (Tipagem das requisições).
-* **services:** Integrações com serviços externos, como envio de e-mails ou chamadas à IA.
-* **utils:** Funções auxiliares de lógicas utilitárias ao longo do código.
+* **Services:** Integrações com serviços externos, como envio de e-mails ou chamadas à IA.
+* **Utils:** Funções auxiliares de lógicas utilitárias ao longo do código.
 
 ## ☁️ Hospedagem
 
@@ -139,12 +139,21 @@ Siga os passos abaixo para rodar a aplicação completa na sua máquina utilizan
 
 ## 🎨 Demonstração
 
-*(Substitua os links das imagens abaixo pelos caminhos corretos dentro da pasta `assets` após salvar as prints no repositório)*
+<div align="center">
+  <img src="./assets/tela_inicial.jpg" alt="Dashboard Preview" width="24%"/>
+  <img src="./assets/tela_login.jpg" alt="Dashboard Preview" width="24%"/>
+  <img src="./assets/tela_cadastro.jpg" alt="Dashboard Preview" width="24%"/>
+
+</div>
 
 <div align="center">
-<img src="./assets/print_login_biometria.png" alt="Tela de Login Biométrico" width="45%"/>
-<img src="./assets/print_dashboard.png" alt="Dashboard Preview" width="45%"/>
+  <img src="./assets/dashboard.jpg" alt="Dashboard Preview" width="24%"/>
+  <img src="./assets/tela_chatbot.jpg" alt="Dashboard Preview" width="24%"/>
+  <img src="./assets/extrato.jpg" alt="Dashboard Preview" width="24%"/>
+  <img src="./assets/detalhes_operacao.jpg" alt="Tela de Login Biométrico" width="24%"/>
 </div>
+
+
 
 ## 👨‍💻 Autor
 
