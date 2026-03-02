@@ -204,7 +204,7 @@ function ExtractPage(props: ExtractPageProps){
                                         useFor='select-period-extract' />
                             </div>
                         </div>
-                        <div className={`mt-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>
+                        <div className={`mt-2.5 h-px w-full bg-linear-to-r from-violet-900 via-white to-violet-900`}></div>
                         <div className="flex items-center justify-start w-full pt-4">
                             <div className="flex flex-col w-1/2">
                                 <h1 className="text-white font-extralight text-sm">
@@ -242,7 +242,7 @@ function ExtractPage(props: ExtractPageProps){
                                 )}
                             </div>
                         </div>
-                        <div className={`mt-4 mb-2.5 h-px w-full bg-linear-to-r from-purple-500 via-white to-purple-500`}></div>
+                        <div className={`mt-4 mb-2.5 h-px w-full bg-linear-to-r from-violet-900 via-white to-violet-900`}></div>
                         <div className="flex flex-col w-full justify-center mb-4">
                             <div className="flex w-full">
                                 <div className="w-2/3">

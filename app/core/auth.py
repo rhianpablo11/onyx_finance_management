@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 from typing import Optional
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from starlette import status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -33,12 +33,16 @@ def create_access_token(data:dict, expires_delta: Optional[timedelta] = None):
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(request: Request, token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciais inválidas",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    # token = request.cookies.get('access_token')
+    # if not token:
+    #     raise credentials_exception
 
     try:
         payload = jwt.decode(token=token, key=SECRET_KEY, algorithms=[ALGORITHM])

@@ -144,6 +144,7 @@ export interface VerifyEmailRegisterProps{
     setOtpCodeUser: (otpCode: string) => void
     setIsAuthorizedNextAfterOTP: (authorization: boolean) => void
     email: string | undefined
+    name: string | undefined
 }
 
 export interface ExtractPageProps{
