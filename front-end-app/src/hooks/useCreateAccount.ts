@@ -50,11 +50,12 @@ export function useCreateAccount(){
     }
 
 
-    const requestNewOtpCode = async (email: string) => {
+    const requestNewOtpCode = async (email: string, name: string) => {
         
         try{
             const payload = {
-                'email': email
+                'email': email,
+                'name': name
             }
             const response = await api.post('/user/register/get-new-otp-code', payload)
             if(response.status == 200 ){

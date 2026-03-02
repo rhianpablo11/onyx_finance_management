@@ -248,9 +248,11 @@ async def verify_otp_received(db: Session = Depends(get_db),  request: Request =
 async def get_new_otp_code(db: Session = Depends(get_db), request: Request = {}):
     payload = await request.json()
     email = payload.get('email')
+    name = payload.get('name')
     if(email):
-        if(associate_email_with_code(db=db, email=email)):
-            return {'message': 'um novo codigo foi enviado'}
+        if(name):
+            if(associate_email_with_code(db=db, email=email, name=name)):
+                return {'message': 'um novo codigo foi enviado'}
         
     raise HTTPException(status_code=400, detail='error')
 

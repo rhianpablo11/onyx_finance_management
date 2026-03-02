@@ -1,13 +1,15 @@
 from datetime import datetime, timezone
 import smtplib
 from email.message import EmailMessage
-from app.core.security import PASSWORD_EMAIL, API_SELF_URL
+from app.core.security import ADDRESS_EMAIL, PASSWORD_EMAIL, API_SELF_URL
 from email.mime.text import MIMEText
 
 
 
 def send_email(email: str, code: int, isRecovery: bool, name: str = ''):
-    remetente = 'noreply.onyxfinancemanagement@gmail.com'
+    print('ate aq ok')
+    remetente = ADDRESS_EMAIL
+    print(remetente)
     destinatario = email
     print('ate aq de boa')
     year = datetime.now(timezone.utc).year

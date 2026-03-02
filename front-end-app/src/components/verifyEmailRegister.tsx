@@ -6,7 +6,7 @@ import Input from "./ui/input"
 
 
 function VerifyEmailRegister(props: VerifyEmailRegisterProps){
-    const {setOtpCodeUser, setIsAuthorizedNextAfterOTP, email} =  props
+    const {setOtpCodeUser, setIsAuthorizedNextAfterOTP, email, name} =  props
     const {loading,  verifyOtpCode, requestNewOtpCode} = useCreateAccount()
     const [otpCodeIn, setOtpCodeIn] = useState('')
     const [inputNotComplete, setInputNotComplete] = useState(true)
@@ -24,8 +24,8 @@ function VerifyEmailRegister(props: VerifyEmailRegisterProps){
     }
 
     const handleNewRequestOtpCode = async () =>{
-        if(email != undefined){
-            await requestNewOtpCode(email)
+        if(email != undefined && name != undefined){
+            await requestNewOtpCode(email, name)
             setTimeLeft(120)
             setIsDisabledButtonNewCode(true)
         } else{
