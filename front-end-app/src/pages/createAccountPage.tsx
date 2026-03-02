@@ -38,7 +38,8 @@ function CreateAccountPage(){
             return(
                 <VerifyEmailRegister setOtpCodeUser={setOtpCodeUser}
                                      setIsAuthorizedNextAfterOTP={setIsAuthorizedNextAfterOTP}
-                                     email={initialDataUser?.email}  />
+                                     email={initialDataUser?.email} 
+                                     name={initialDataUser?.name} />
             )
         } else{
             return(

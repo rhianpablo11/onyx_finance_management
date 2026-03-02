@@ -38,8 +38,9 @@ services:
       - BIOMETRIC_RP_NAME=Onyx Finance Management
       - BIOMETRIC_ORIGIN=http://localhost:5173 
       - ORIGINS_ALLOWED=http://localhost:5173
-      - PASSWORD_EMAIL=
-      - API_URL=https://married-deanna-rp11-co-4e3d8779.koyeb.app
+      - PASSWORD_EMAIL=emailPassword
+      - ADDRESS_EMAIL=email@email.com
+      - API_URL=http://localhost:80
     depends_on:
       db:
         condition: service_healthy

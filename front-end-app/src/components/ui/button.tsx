@@ -113,7 +113,7 @@ function Button(props: ButtonProps){
         return(
             <>
                 <button onClick={() => onClickButtonChildren('')}
-                        className="bg-[#D9D9D9] flex justify-center items-center rounded-[40px] h-16 w-full">
+                        className="bg-[#D9D9D9] flex justify-center items-center rounded-[40px] h-14 w-full">
                     <h1 className="font-medium text-xl text-black">
                         Criar Conta
                     </h1>
@@ -124,7 +124,7 @@ function Button(props: ButtonProps){
         return(
             <>
                 <button onClick={() => onClickButtonChildren('')}
-                        className="bg-[#35333F]/65 flex justify-center items-center rounded-[40px] h-16 w-full">
+                        className="bg-[#35333F]/65 flex justify-center items-center rounded-[40px] h-14 w-full">
                     <h1 className="font-medium text-xl text-white">
                         Login
                     </h1>

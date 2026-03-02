@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from fastapi import HTTPException
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 import random
@@ -16,7 +17,7 @@ def associate_email_with_code(db: Session, email: str, name:str):
         
         code = generate_new_otp()
         print(code)
-        respose = send_email(email, code, name, isRecovery=False)
+        respose = send_email(email=email, code=code, name=name, isRecovery=False)
         print(respose)
         if(respose == 'ok'):
             stmt = (select(User_temp)
@@ -38,10 +39,11 @@ def associate_email_with_code(db: Session, email: str, name:str):
             db.commit()
             return True     
         else:
-            return False
+            raise HTTPException(status_code=400, detail='error in database')
 
-    except:
-        return False
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail='error in database')
     
 
 def verify_code(db: Session, code: int, email: str):
