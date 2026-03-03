@@ -16,6 +16,7 @@ export function setCookie(key:string, token: string){
 
 export function setLongCookie(key:string, token: string){
     Cookies.set(key, token, {
+        expires: 365,
         secure: true,
         sameSite: 'Strict'
     })

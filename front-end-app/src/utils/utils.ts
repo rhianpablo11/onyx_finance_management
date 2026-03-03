@@ -2,7 +2,7 @@ import { endOfMonth } from 'date-fns';
 import {v4 as uuidv4} from 'uuid'
 import { removeCookie } from '../services/cookiesService';
 import { removeToken } from '../services/tokenService';
-import { getIdUser, removeIdUser } from '../services/localStorageService';
+import { getIdUser, removeIdUser, setBiometricExistence } from '../services/localStorageService';
 
 
 export const formatDate = (date: Date): string => {
@@ -89,6 +89,7 @@ export const makeLogout = () => {
     removeCookie('user_name')
     removeCookie('user_email')
     removeCookie('this_device_has_biometric')
+    setBiometricExistence(false)
     const idUserLogged = getIdUser()
     console.log(idUserLogged)
     if(idUserLogged){
