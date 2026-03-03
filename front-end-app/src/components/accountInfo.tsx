@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import Button from "./ui/button"
 import { getCookie } from "../services/cookiesService"
+import { getFitName } from "../utils/utils"
 
 
 function AccountInfo(){
@@ -15,7 +16,7 @@ function AccountInfo(){
         const name = getCookie('user_name')
         const email = getCookie('user_email')
         if(name){
-            setNameUser(name)
+            setNameUser(getFitName(name))
         }
 
         if(email){

@@ -1,6 +1,7 @@
 // component for show response formated of IA 
 
 import type { ChatBubbleProps } from "../interfaces/interfacesComponents"
+import { getFitName } from "../utils/utils"
 
 function ChatBubble(props: ChatBubbleProps){
     const {isSentMessage, name, text, loading=true} = props
@@ -11,7 +12,7 @@ function ChatBubble(props: ChatBubbleProps){
                 <div className="flex flex-col ml-auto items-end w-8/10">
                     <div className="pr-5 pb-1">
                         <h1 className="text-[#8E8D94] font-extralight text-xs">
-                            {name}
+                            {getFitName(name)}
                         </h1>
                     </div>
                     
