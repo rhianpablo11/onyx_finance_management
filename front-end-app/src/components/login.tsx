@@ -1,12 +1,11 @@
 // component for login feature
 
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import Button from "./ui/button"
 import Input from "./ui/input"
 import { useBiometricAuth, useLogin } from "../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 import { startAuthentication } from "@simplewebauthn/browser"
-import { getBiometricExistence } from "../services/localStorageService"
 
 
 
