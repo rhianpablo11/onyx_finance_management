@@ -137,7 +137,7 @@ Siga os passos abaixo para rodar a aplicação completa na sua máquina utilizan
     Abra `http://localhost:5173` no seu navegador para ver o Frontend rodando. A documentação da API (Swagger) estará disponível em `http://localhost:8000/docs`.
 
 
-## 🎨 Demonstração
+## 🎨 Screenshots
 
 <div align="center">
   <img src="./assets/tela_inicial.jpg" alt="Dashboard Preview" width="24%"/>
