@@ -1,13 +1,8 @@
 name: test-docker-builds
 
 on:
-  push:
-    branches-ignore:
-      - 'master'
-      - 'feature/**'
   pull_request:
     branches:
-      - master
       - develop
 
 jobs:

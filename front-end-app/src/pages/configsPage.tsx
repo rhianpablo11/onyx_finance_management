@@ -19,7 +19,8 @@ function ConfigsPage(){
                         <GeneralSettings onClickChildren={onClickFather}/>
                     </div>
                     <div className="flex fixed w-full px-4 left-0 bottom-28">
-                        <InfoApp onClickChildren={onClickFather}/>
+                        {/* <InfoApp onClickChildren={onClickFather}/> */}
+                        <InfoApp />
                     </div>
                 </>
             )
@@ -30,7 +31,8 @@ function ConfigsPage(){
                         <GeneralSettings onClickChildren={onClickFather}/>
                     </div>
                     <div className="flex fixed w-full px-4 left-0 bottom-28">
-                        <InfoApp onClickChildren={onClickFather}/>
+                        {/* <InfoApp onClickChildren={onClickFather}/> */}
+                        <InfoApp />
                     </div>
                 </>
             )

@@ -74,14 +74,14 @@ function GeneralSettings(props: GeneralSettingsProps){
                 <Button type="list-config"
                         onClickButtonChildren={onClickFather}
                         nameConfig={textBiometric} />
-                <div className="border-t border-white/50 mx-3"></div>
-                <Button type="list-config"
+                {/* <div className="border-t border-white/50 mx-3"></div> */}
+                {/* <Button type="list-config"
                         onClickButtonChildren={onClickFather}
                         nameConfig='Alertas e Lembranças' />
                 <div className="border-t border-white/50 mx-3"></div>
                 <Button type="list-config"
                         onClickButtonChildren={onClickFather}
-                        nameConfig='Verificação em 2 etapas' />
+                        nameConfig='Verificação em 2 etapas' /> */}
             </div>
         </>
     )
