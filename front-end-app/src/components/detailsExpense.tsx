@@ -27,8 +27,10 @@ function DetailsExpense(props: DetailsExpenseProps){
 
     const methodPaymentShow = () =>{
         console.log(idExpense)
+        console.log('agmdk')
+        console.log(paymentMethod)
         console.log(description[description.length - 1] == '.' ? '...' : '.')
-        if(paymentMethod == 'Cartão de crédito' || paymentMethod == 'Cartão de debito'){
+        if(paymentMethod.toLowerCase() == 'cartão de crédito' || paymentMethod.toLowerCase() == 'cartão de debito'){
             return(
                 <CreditCard name={getCookie('user_name') || ''}
                             telephone={telephone} />
@@ -36,7 +38,7 @@ function DetailsExpense(props: DetailsExpenseProps){
         } else{
             return(
                 <PaperMoney value={100}
-                            typeMoney={ paymentMethod == 'Físico' ? 'Físico' : 'Pix'} />
+                            typeMoney={ paymentMethod.toLowerCase() == 'dinheiro físico' || paymentMethod.toLowerCase() == 'dinheiro' ? 'Físico' : 'Pix'} />
             )
         }
     }

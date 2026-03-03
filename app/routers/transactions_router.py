@@ -16,35 +16,37 @@ router = APIRouter()
 
 @router.post("/create")
 def create_expense(message:Expense_create, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
-    
-    new_expense_created = create_new_expense(user_id=current_user['user_id'], text_typed=message.message, db=db)
-    category_name = get_expense_category_by_id(id=new_expense_created['data'].category,
-                                               user_id=current_user['user_id'],
-                                               db=db)
-    if(new_expense_created['type'] == 'simple'):
-        return {
-                'category': category_name,
-                'value': new_expense_created['data'].value,
-                'type_expense': new_expense_created['data'].type_expense,
-                'description': new_expense_created['data'].description,
-                'date': new_expense_created['data'].date,
-                'payment_method': new_expense_created['data'].payment_method,
-                'text_response': f'Foi criada uma nova transação com valor de R$ {new_expense_created['data'].value} ela ta na categoria {category_name}, e foi marcada como efetuada na data {new_expense_created['data'].date} e paga utilizando {new_expense_created['data'].payment_method}'
-        }
-    
-    if(new_expense_created['type'] == 'fixed'):
-        charge_type_name = get_charge_type_by_id(id=new_expense_created['data'].charge,
-                                                 db=db)
-        return {
+    try:
+        new_expense_created = create_new_expense(user_id=current_user['user_id'], text_typed=message.message, db=db)
+        category_name = get_expense_category_by_id(id=new_expense_created['data'].category,
+                                                user_id=current_user['user_id'],
+                                                db=db)
+        if(new_expense_created['type'] == 'simple'):
+            return {
                     'category': category_name,
                     'value': new_expense_created['data'].value,
                     'type_expense': new_expense_created['data'].type_expense,
                     'description': new_expense_created['data'].description,
-                    'installments_count': new_expense_created['data'].installments_count,
-                    'charge_type': charge_type_name,
-                    'start_date': new_expense_created['data'].start_date,
-                    'text_response': f'Foi criada uma nova transação com valor de R$ {new_expense_created['data'].value} ela ta na categoria {category_name}, e foi marcada como efetuada na data inicial de {new_expense_created['data'].start_date} e a quantidade de parcelas é de {new_expense_created['data'].installments_count}'
+                    'date': new_expense_created['data'].date,
+                    'payment_method': new_expense_created['data'].payment_method,
+                    'text_response': f'Foi criada uma nova transação com valor de R$ {new_expense_created['data'].value} ela ta na categoria {category_name}, e foi marcada como efetuada na data {new_expense_created['data'].date} e paga utilizando {new_expense_created['data'].payment_method}'
             }
+        
+        if(new_expense_created['type'] == 'fixed'):
+            charge_type_name = get_charge_type_by_id(id=new_expense_created['data'].charge,
+                                                    db=db)
+            return {
+                        'category': category_name,
+                        'value': new_expense_created['data'].value,
+                        'type_expense': new_expense_created['data'].type_expense,
+                        'description': new_expense_created['data'].description,
+                        'installments_count': new_expense_created['data'].installments_count,
+                        'charge_type': charge_type_name,
+                        'start_date': new_expense_created['data'].start_date,
+                        'text_response': f'Foi criada uma nova transação com valor de R$ {new_expense_created['data'].value} ela ta na categoria {category_name}, e foi marcada como efetuada na data inicial de {new_expense_created['data'].start_date} e a quantidade de parcelas é de {new_expense_created['data'].installments_count}'
+                }
+    except:
+        return {'text_response': f'Houve um erro ao realizar o processamento da requisição, por favor tente novamente. Desde já pedimos desculpas pelo incoveniente.'}
     
 
 
