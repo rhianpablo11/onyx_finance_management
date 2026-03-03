@@ -24,11 +24,10 @@ export function useLogin(){
             console.log(response)
             const {access_token} = response.data
             setToken(access_token)
-            setCookie('user_name', response.data.user_data.name)
+            setLongCookie('user_name', response.data.user_data.name)
             
             
             setLongCookie('user_email', response.data.user_data.email)
-
 
             setIdUser(response.data.user_data.id)
             return response.data
