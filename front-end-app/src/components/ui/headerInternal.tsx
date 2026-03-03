@@ -1,7 +1,7 @@
 // component for header of internal pages -> say hello or indicate page
 import { useNavigate } from "react-router-dom"
 import type { HeaderInternalProps } from "../../interfaces/interfacesComponents"
-import { makeLogout } from "../../utils/utils"
+import { getFitName, makeLogout } from "../../utils/utils"
 import { useLogin } from "../../hooks/useAuth"
 
 function HeaderInternal(props: HeaderInternalProps){
@@ -15,8 +15,11 @@ function HeaderInternal(props: HeaderInternalProps){
         await logout()
         navigate('/')
     } 
+    
 
     if(type == 'wellcome'){
+        console.log('kafanlf')
+        console.log(name != undefined ? getFitName(name):'')
         return(
             <>
                 <div className="w-full h-full flex rounded-xl pt-1 justify-between">
@@ -26,7 +29,7 @@ function HeaderInternal(props: HeaderInternalProps){
                                     Olá, 
                                 </h1>
                                 <h2 className="text-white font-normal text-[32px] ">
-                                    {name}
+                                    {name != undefined ? getFitName(name):''}
                                 </h2>
                             </div>
                             <div>

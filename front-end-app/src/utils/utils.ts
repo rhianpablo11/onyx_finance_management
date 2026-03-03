@@ -113,3 +113,18 @@ export const formatDateShow = (date: string | undefined) => {
     
     return `${day}/${month}/${shortYear}`
 }
+
+export function getFitName(fullName: string): string {
+
+  if (!fullName) return "";
+
+
+  const nameParts = fullName.trim().split(/\s+/);
+
+  if (nameParts.length === 1) {
+    return nameParts[0];
+  }
+
+  console.log(`${nameParts[0]} ${nameParts[1]}`)
+  return `${nameParts[0]} ${nameParts[1]}`;
+}

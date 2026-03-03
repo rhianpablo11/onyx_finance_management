@@ -1,4 +1,5 @@
 import type { CreditCardProps } from "../interfaces/interfacesComponents"
+import { getFitName } from "../utils/utils"
 
 
 
@@ -28,7 +29,7 @@ function CreditCard(props: CreditCardProps){
                 </div>
                 <div className="flex flex-col items-center justify-center pr-6">
                     <h4 className="text-white  font-medium text-base">
-                        {name}
+                        {name != undefined ? getFitName(name):''}
                     </h4>
                     <h4 className="text-white font-medium text-xs">
                         {telephone}
