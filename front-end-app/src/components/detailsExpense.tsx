@@ -18,13 +18,16 @@ function DetailsExpense(props: DetailsExpenseProps){
            idExpense,
            typeExpense} = props
     
-    const onClickFather = async () =>{
+    const onClickFather =  () =>{
         console.log(idExpense)
+        console.log(description[description.length - 1] == '.' ? '' : '.')
     }
 
 
 
     const methodPaymentShow = () =>{
+        console.log(idExpense)
+        console.log(description[description.length - 1] == '.' ? '...' : '.')
         if(paymentMethod == 'Cartão de crédito' || paymentMethod == 'Cartão de debito'){
             return(
                 <CreditCard name={getCookie('user_name') || ''}
@@ -60,7 +63,7 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                     <div className='flex pt-5 pb-5'>
                         <h3 className='text-white font-light text-base leading-none'>
-                            {description}.
+                            {description}{description[description.length - 1] == '.' ? '' : '.'}
                         </h3>
                     </div>
 

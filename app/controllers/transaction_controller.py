@@ -497,6 +497,9 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
         nameCategory = get_expense_category_by_id(id=item.category,
                                                   user_id=user_id,
                                                   db=db)
+        print(nameCategory)
+        print(item.category)
+        print(user_id)
         formatted_list.append({
             'typeExpense': item.type_expense,
             'category': nameCategory,
