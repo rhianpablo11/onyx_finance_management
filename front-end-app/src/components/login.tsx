@@ -15,7 +15,6 @@ function Login(){
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [existBiometric, setExistBiometric] = useState(false)
     const [errorLogin, setErrorLogin] = useState(false)
     const [textError, setTextError] = useState('')
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
@@ -67,17 +66,7 @@ function Login(){
         navigate('/forget-password')
     }
 
-    useEffect(()=>{
-        //const biometricExist = getCookie('this_device_has_biometric')
-        const biometricExist = getBiometricExistence()
-        
-        if(biometricExist){
-            setExistBiometric(true)
-        } else{
-            setExistBiometric(false)
-        }
-        
-    },[])
+    
 
     return(
         <>
@@ -114,18 +103,16 @@ function Login(){
                             type="login"
                             loading={loading} />
                 </div>
-                {existBiometric ? (
-                    <>
-                        <div className=" px-2 mt-1 mb-4">
-                            <Button onClickButtonChildren={onClickFatherBiometric}
-                                    type="login-biometric"
-                                    loading={loadingBiometric} />
-                            {errorLoginBiometric && (
-                                <p className="text-red-400 text-xs mt-1 pl-2">Erro ao fazer login com biometria. Detalhes do erro: {textError}</p>
-                            )}
-                        </div>
-                    </>
-                ) : null}
+                
+                <div className=" px-2 mt-1 mb-4">
+                    <Button onClickButtonChildren={onClickFatherBiometric}
+                            type="login-biometric"
+                            loading={loadingBiometric} />
+                    {errorLoginBiometric && (
+                        <p className="text-red-400 text-xs mt-1 pl-2">Erro ao fazer login com biometria. Detalhes do erro: {textError}</p>
+                    )}
+                </div>
+                    
                 
             </div>
         </>

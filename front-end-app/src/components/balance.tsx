@@ -36,14 +36,22 @@ function Balance(props: BalanceProps){
                         <div className="flex-col justify-end pt-1">
                             {loading ? (
                                 <div className="flex justify-end items-baseline h-12">
-                                    <h1 className="text-white text-end font-extralight text-5xl">
+                                    <h1 className="text-white text-end font-extralight text-2xl">
                                         R$
                                     </h1>
                                     <SkeletonLoader className="h-8/10 w-30" />
                                 </div>
-                            ) : (<h1 className="text-white text-end font-extralight text-5xl">
-                                R$ <AnimatedCounter value={value} duration={800}/> 
-                            </h1>)}
+                            ) : (
+                                <>
+                                    <div className='flex items-baseline justify-end'>
+                                        <h1 className='text-white text-end font-thin text-2xl pr-2'>
+                                            R$
+                                        </h1>
+                                        <h1 className="text-white text-end font-extralight text-[44px]">
+                                            <AnimatedCounter value={value} duration={800}/> 
+                                        </h1>
+                                    </div>
+                                </>)}
                             
                                 {loading ? (
                                         <div className='flex justify-end mt-2 h-4'>
@@ -51,7 +59,7 @@ function Balance(props: BalanceProps){
                                         </div>
                                     ) : (
                                         <>
-                                            <h1 className="flex justify-end text-white text-end font-extralight text-xs pt-2">
+                                            <h1 className="flex justify-end text-white text-end font-extralight text-xs">
                                                 {incoming ? upIcon : downIcon} {legend}
                                             </h1>
                                         </>
@@ -60,7 +68,7 @@ function Balance(props: BalanceProps){
                             
                         </div>
                     </div>
-                    <div className='flex-col flex'>
+                    <div className='flex-col flex pb-3'>
                         <h1 className="text-white font-extralight text-base">
                             Saldo geral:
                         </h1>

@@ -171,7 +171,7 @@ function Button(props: ButtonProps){
             <>
                 <button disabled={true}
                         onClick={() => onClickButtonChildren('')}
-                        className="bg-[#D9D9D9] px-3 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        className="bg-[#888888] px-3 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
                         
                         <h1 className="font-normal text-sm text-black">
                             Editar movimentação
