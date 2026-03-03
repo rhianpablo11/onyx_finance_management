@@ -112,10 +112,10 @@ Siga os passos abaixo para rodar a aplicação completa na sua máquina utilizan
 
 1. **Clone o repositório:**
    ```bash
-   git clone https://github.com/rhianpablo11/finance_management.git
+   git clone https://github.com/rhianpablo11/onyx_finance_management.git
    ```
    ```bash
-   cd finance_management
+   cd onyx_finance_management
    ```
 
 
