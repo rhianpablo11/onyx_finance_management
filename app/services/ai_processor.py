@@ -80,7 +80,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     - "installments_count": int (número de parcelas. 1 se for à vista).
     - "is_recurrent": boolean (true se for assinatura tipo Netflix).
     - "type": True se for uma entrada de dinheiro ou False se for uma saida.
-    - "category": Sugestão de categoria, veja primeiramente se esse texto se encaixa dentro de alguma categoria ja existente, as existentes são: [{categorias_str}].
+    - "category": Sugestão de categoria, veja primeiramente se esse texto se encaixa dentro de alguma categoria ja existente, as existentes são: [{categorias_str}], caso não encaixe nomeie uma nova categoria, bem como se a lista estiver vazia, dê um nome para essa nova categoria. Vale ressaltar que só porque existe uma categoria com o nome "Outros" tudo se encaixa lá.
     - "description": Resumo, com no maximo de 255 caracteres, e no minimo 70 caracteres, tem que caber no banco de dados.
     - "first_payment_date": Data do PRIMEIRO pagamento (YYYY-MM-DD). Calcule baseado no contexto ("hoje", "mês que vem").
     - "payment_method": Se o usuario informar algo sobre o metodo de pagamento como credito, ou debito, ou dinheiro, ou pix, ou outros. Caso ele nao informe o padrão será dinheiro fisico. Os nomes para os metodos padrão são: "Cartão de crédito", "Cartão de debito", "Dinheiro Físico", "PIX", ao realizar a seleção utilize esses nomes da mesma forma que foi escrito entre aspas.
@@ -92,7 +92,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     try:
         # 4. Chama a IA
         response = client.models.generate_content(
-                                                model="gemini-3-flash-preview",
+                                                model="gemini-2.5-flash",
                                                 contents=prompt,
                                                 config={
                                                     'response_mime_type': 'application/json'

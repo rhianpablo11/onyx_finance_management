@@ -15,6 +15,7 @@ def expense_category_analysis(categorys_of_user, user_id: int, db: Session, cate
         db.add(new_category)
         db.commit()
         db.refresh(new_category)
+        return new_category.id
     elif(category_for_verification not in categorys_of_user):
         new_category = Expense_category(
             user_id=user_id,
@@ -23,7 +24,8 @@ def expense_category_analysis(categorys_of_user, user_id: int, db: Session, cate
         db.add(new_category)
         db.commit()
         db.refresh(new_category)
-    category_id = db.query(Expense_category.id).filter(Expense_category.name == category_for_verification).first()[0]
+        return new_category.id
+    category_id = db.query(Expense_category.id).filter(Expense_category.name == category_for_verification).filter(Expense_category.user_id == user_id).first()[0]
 
     return category_id
 
