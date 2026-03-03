@@ -20,14 +20,16 @@
 
 ## 📋 Índice
  - [Sobre o Projeto](#-sobre-o-projeto)
+ - [Status do Projeto](#-status-do-projeto)
  - [Principais Funcionalidades](#-principais-funcionalidades)
  - [Objetivo e Motivação](#-objetivo-e-motivação)
  - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
  - [ChatBot Inteligente](#-chatbot-inteligente)
  - [Estrutura do Projeto](#-estrutura-do-projeto)
  - [Hospedagem](#-hospedagem)
+ - [CI/CD e Imagens Docker](#cicd)
  - [Como Executar Localmente](#-como-executar-localmente)
- - [Demonstração](#-demonstração)
+ - [Screenshots](#-screenshots)
  - [Autor](#-autor)
 
 ## 📖 Sobre o Projeto
@@ -35,6 +37,11 @@
 O **Onyx - Finance Management** é uma aplicação Full-Stack de gerenciamento financeiro pessoal projetada para oferecer uma experiência de usuário fluida e intuitiva. Combinando um design moderno com uma arquitetura robusta de segurança, o sistema permite a adição de transações sem a necessidade de preencher longos formulários, graças à integração de um ChatBot inteligente.
 
 O projeto também inova ao eliminar a fricção das senhas tradicionais, utilizando a tecnologia WebAuthn para logins biométricos (como FaceID e TouchID) através de passkeys.
+
+## 🚧 Status do Projeto
+
+**Em desenvolvimento ativo.** O projeto está em fase de testes contínuos e implementação de novas features em busca de atingir o funcionamento completo do projeto. Atualizações da interface e do backend e refinamentos nos workflows estão sendo realizados.
+
 
 ## ✨ Principais Funcionalidades
 
@@ -88,17 +95,32 @@ O servidor adota uma arquitetura modular para facilitar a manutenção e escalab
 * **Core:** Núcleo de configurações da aplicação (conexão com o banco, variáveis de ambiente).
 * **Models:** Definição das tabelas do banco de dados (SQLAlchemy).
 * **Routers:** Endpoints da API expostos para acesso externo.
-* **schemas:** Modelos Pydantic para validação de dados de entrada e saída (Tipagem das requisições).
+* **Schemas:** Modelos Pydantic para validação de dados de entrada e saída (Tipagem das requisições).
 * **Services:** Integrações com serviços externos, como envio de e-mails ou chamadas à IA.
 * **Utils:** Funções auxiliares de lógicas utilitárias ao longo do código.
 
 ## ☁️ Hospedagem
 
-O projeto foi disponibilizado online (deploy) utilizando uma arquitetura em nuvem distribuída e gratuita:
+O projeto foi disponibilizado online (deploy) utilizando uma arquitetura em nuvem distribuída e gratuíta:
 
 * **[Netlify](https://www.netlify.com/):** Hospedagem da aplicação Frontend (React/Vite).
 * **[Koyeb](https://www.koyeb.com/):** Hospedagem e execução do container do Backend (FastAPI).
 * **[Neon](https://neon.com/):** Banco de dados PostgreSQL serverless.
+
+
+## <a id="cicd"></a>⚙️ CI/CD e Imagens Docker
+
+A arquitetura do projeto foi pensada para ser escalável e de fácil distribuição. O fluxo de integração e entrega contínua (CI/CD) é automatizado através do **GitHub Actions**. Dessa forma é possível atualizar a imagem do backend e requisitar ao [Koyeb](https://www.koyeb.com/) o deploy da nova imagem. Para o frontend, a propria [Netlify](https://www.netlify.com/) atualiza ao perceber um novo commit na branch master.
+
+### Workflows Implementados:
+1. **Smoke Tests (Integração):** Sempre que um Pull Request é aberto para a branch develop, um ambiente Docker temporário é construído. O frontend e o backend são inicializados em background, adjunto o container do banco de dados, conforme especificado no arquivo [docker-compose.yaml](https://github.com/rhianpablo11/onyx_finance_management/blob/master/docker-compose.yaml) e testes de saúde (Health Checks) são executados para garantir que o sistema consegue iniciar sem problemas. Isso impede de realizar um merge de uma branch que contém erros para a branch de deploy. Ademais, ao perceber o erro, é possível, antes de fechar o Pull Request, corrigir e atualizar a branch que será feito o merge.
+2. **Deploy Automático:** Ao realizar o merge na branch `master`, o GitHub Actions constrói as imagens oficiais da aplicação, realiza o push para o Docker Hub e aciona o webhook para atualizar o backend na nuvem automaticamente, enquanto o frontend é atualizado automaticamente pela plataforma [Netlify](https://www.netlify.com/).
+
+### Repositórios no Docker Hub:
+Você pode baixar as imagens prontas e conteinerizadas do Onyx diretamente do Docker Hub:
+* 🌐 **Frontend:** [`docker pull rhianpablo11/finance-management-frontend`](https://hub.docker.com/r/rhianpablo11/finance-management-frontend)
+* ⚙️ **Backend:** [`docker pull rhianpablo11/finance-management-backend`](https://hub.docker.com/r/rhianpablo11/finance-management-backend)
+
 
 ## 🚀 Como Executar Localmente
 
