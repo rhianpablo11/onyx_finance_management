@@ -70,7 +70,6 @@ def create_user(user: UserCreate, db: Session, response: Response):
         email=user.email,
         telephone=user.telephone,
         subscriber=False,
-        otp_code = None,
         second_factor_auth = False
     )
     try:
