@@ -44,7 +44,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     Recebe o texto do usuário e retorna um dicionário com os dados estruturados.
     """
     
-    # 2. Prepara a lista de categorias para ajudar a IA (opcional, mas recomendado)
+   
     categorias_str = None
     if user_categories:
         categorias_str = ", ".join(user_categories)
@@ -58,7 +58,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
 
     today_date = date.today().isoformat()
 
-    # 3. O Prompt (A instrução mestre)
+    
     prompt = f"""
     Você é um assistente financeiro. Hoje é {today_date}.
     Analise a frase: "{text}"
@@ -81,28 +81,28 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     - "is_recurrent": boolean (true se for assinatura tipo Netflix).
     - "type": True se for uma entrada de dinheiro ou False se for uma saida.
     - "category": Sugestão de categoria, veja primeiramente se esse texto se encaixa dentro de alguma categoria ja existente, as existentes são: [{categorias_str}], caso não encaixe nomeie uma nova categoria, bem como se a lista estiver vazia, dê um nome para essa nova categoria. Vale ressaltar que só porque existe uma categoria com o nome "Outros" tudo se encaixa lá.
-    - "description": Resumo, com no maximo de 255 caracteres, e no minimo 70 caracteres, tem que caber no banco de dados.
+    - "description": Resumo, com no MAXIMO de 255 caracteres, e no minimo 60 caracteres, tem que caber no banco de dados.
     - "first_payment_date": Data do PRIMEIRO pagamento (YYYY-MM-DD). Calcule baseado no contexto ("hoje", "mês que vem").
     - "payment_method": Se o usuario informar algo sobre o metodo de pagamento como credito, ou debito, ou dinheiro, ou pix, ou outros. Caso ele nao informe o padrão será dinheiro fisico. Os nomes para os metodos padrão são: "Cartão de crédito", "Cartão de debito", "Dinheiro Físico", "PIX", ao realizar a seleção utilize esses nomes da mesma forma que foi escrito entre aspas.
     - "last_payment_date": Data do ULTIMO pagamento (YYYY-MM-DD). Calcule baseado no contexto,
     - "type_of_installment": Indica se o parcelamento é mensal, quinzenal, ou outro tipo. Por padrão se não for informado é mensal, já essa lista no banco de dados, [{charge_types}], veja se o que usuario digitou se encaixa em alguma delas.
     - "name": Indica um nome curto para aquele gasto, ou entrada de dinheiro, contendo no maximo 2 palavras
     """
-    #tem um prob, categorias de pagamento tao se repetindo com nomes diferentes, mas sendo a mesma coisa
+    
     try:
-        # 4. Chama a IA
+        
         response = client.models.generate_content(
-                                                model="gemini-2.5-flash",
+                                                model="gemini-3.1-flash-lite-preview",
                                                 contents=prompt,
                                                 config={
                                                     'response_mime_type': 'application/json'
                                                 }
                                             )
         
-        # 5. Limpeza (Às vezes a IA manda ```json ... ```)
+        
         cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
         
-        # 6. Converte texto para Dicionário Python
+       
         transaction_data = json.loads(cleaned_text)
         final_data = validate_and_fix_json(transaction_data)
        
