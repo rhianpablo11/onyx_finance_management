@@ -25,15 +25,19 @@ export function DateRangePicker<T extends DateValue>(
   return (
     <AriaDateRangePicker {...props} className={composeTailwindRenderProps(props.className, 'group flex flex-col gap-1 font-sans max-w-full')}>
       {label && <Label>{label}</Label>}
-      <FieldGroup className="min-w-52 w-auto cursor-text disabled:cursor-default">
-        <div className="flex-1 w-fit flex items-center overflow-x-auto overflow-y-clip [scrollbar-width:none]">
-          <DateInput slot="start" className="ps-3 pe-2 text-sm" />
-          <span aria-hidden="true" className="text-neutral-800 dark:text-neutral-200 forced-colors:text-[ButtonText] group-disabled:text-neutral-200 dark:group-disabled:text-neutral-600 forced-colors:group-disabled:text-[GrayText]">–</span>
-          <DateInput slot="end" className="flex-1 ps-2 pe-3 text-sm" />
+      <FieldGroup className=" w-full h-auto min-h-10 cursor-text disabled:cursor-default">
+  
+        {/* py-3 dá um respiro de 12px em cima e embaixo, gap-1 afasta um texto do outro */}
+        <div className="flex-1 flex flex-col justify-center py-1  overflow-x-auto overflow-y-clip [scrollbar-width:none]">
+          <DateInput slot="start" className="px-3 text-sm font-medium" />
+          <DateInput slot="end" className="px-3 text-sm text-neutral-500 dark:text-neutral-400" />
         </div>
-        <FieldButton className="w-6 mr-1 outline-offset-0">
+        
+        {/* Coloquei um flex e items-center aqui pro ícone continuar bem no meio da caixa */}
+        <FieldButton className="w-6 mr-2 outline-offset-0 flex items-center justify-center">
           <CalendarIcon aria-hidden className="w-4 h-4" />
         </FieldButton>
+
       </FieldGroup>
       {description && <Description>{description}</Description>}
       <FieldError>{errorMessage}</FieldError>
