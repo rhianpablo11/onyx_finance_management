@@ -92,7 +92,7 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     try:
         
         response = client.models.generate_content(
-                                                model="gemini-3.1-flash-lite-preview",
+                                                model="gemini-2.5-flash-lite",
                                                 contents=prompt,
                                                 config={
                                                     'response_mime_type': 'application/json'

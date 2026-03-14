@@ -141,12 +141,14 @@ def update_balance(db: Session, user_id: int, value: float, type: bool):
     try:
         now_balance = float(get_balance_user(db=db, user_id=user_id))
         new_value = 0
-        
+        print(now_balance)
+        print(value)
         if(type):
             new_value = now_balance + value
         else:
             new_value = now_balance - value
 
+        print(new_value)
         stmt = (update(User)
                 .where(User.id == user_id)
                 .values(balance=new_value))
@@ -154,6 +156,9 @@ def update_balance(db: Session, user_id: int, value: float, type: bool):
         result = db.execute(stmt)
 
         db.commit()
+
+        stmt = (select(User).where(User.id == user_id))
+        print(db.execute(stmt).first()[0].balance)
 
         
     except Exception as e:

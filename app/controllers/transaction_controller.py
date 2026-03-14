@@ -490,7 +490,10 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
                     .where(Expense.user_id == user_id)
                     .where(Expense.date.between(start_date, end_date)))
     list_transactions = db.execute(stmt_get).all()
-
+    print('TRANSACTIONS IN PERIOD')
+    print(list_transactions)
+    print(start_date)
+    print(end_date)
     formatted_list = []
     
     for item in list_transactions:
