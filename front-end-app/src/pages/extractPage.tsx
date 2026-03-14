@@ -7,6 +7,10 @@ import { formatValue, getDateRangeByOption } from "../utils/utils"
 import SkeletonLoader from "../components/ui/skeletonLoader"
 import backgroundExtractPage from '../assets/Group 8.svg?url'
 import DetailsExpense from "../components/detailsExpense"
+import { DateRangePicker } from "../components/react-aria/DateRangePicker"
+import { type RangeValue} from "react-aria"
+import { type CalendarDate } from "@internationalized/date";
+
 
 function ExtractPage(props: ExtractPageProps){
     const {setCustomBackAction, setLegendHeader, setTitleHeader} = props
@@ -21,6 +25,7 @@ function ExtractPage(props: ExtractPageProps){
     const {getExtract, loading} = useExtract()
     const [idSelectedTransactionToSeeDetails, setIdSelectedTransactionToSeeDetails] = useState<number | null>(null)
     const [transactionSelected, setTransactionSelected] = useState<ListTransactionProps | undefined>()
+    const [customRange, setCustomRange] = useState<RangeValue<CalendarDate> | null>(null)
 
     const categorysOfSearch = [
         { label: "Este mês", value: "1" },
@@ -41,10 +46,14 @@ function ExtractPage(props: ExtractPageProps){
 
     const fetchExtractData = async (start: string, end: string) =>{
             try{
+                console.log('alouuuu')
+                console.log(start, end)
                 const data = await getExtract(start, end)
-                console.log(data.transactions[0].date)
-                console.log(typeof(data.transactions[0].date))
+                console.log(data)
+                
+                
                 console.log(currentRange, showDatePicker)
+                
                 setBalanceValueInPeriod(data.balance_value_in_period)
                 setListOfTransaction(data.transactions)
                 setValueReceivedInPeriod(data.value_received)
@@ -202,6 +211,29 @@ function ExtractPage(props: ExtractPageProps){
                                         onChange={handleCategoryChange}
                                         initialValue="1"
                                         useFor='select-period-extract' />
+                                {showDatePicker && (
+                                    <div className="w-full flex justify-end mt-2">
+                                        <div className=" rounded-xl backdrop-blur-md border border-white/10">
+                                            <DateRangePicker
+                                                aria-label="Selecione o período personalizado"
+                                                value={customRange}
+                                                onChange={(range) => {
+                                                    setCustomRange(range);
+                                                    
+                                                    // Se o usuário selecionou as duas datas, já faz a busca automático!
+                                                    if (range?.start && range?.end) {
+                                                        const startStr = range.start.toString(); // Vira 'YYYY-MM-DD'
+                                                        const endStr = range.end.toString();
+                                                        
+                                                        setCurrentRange({ start: startStr, end: endStr });
+                                                        fetchExtractData(startStr, endStr);
+                                                        setShowDatePicker(false)
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className={`mt-2.5 h-px w-full bg-linear-to-r from-violet-900 via-white to-violet-900`}></div>
