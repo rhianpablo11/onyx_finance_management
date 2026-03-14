@@ -10,7 +10,7 @@ import DetailsExpense from "../components/detailsExpense"
 import { DateRangePicker } from "../components/react-aria/DateRangePicker"
 import { type RangeValue} from "react-aria"
 import { type CalendarDate } from "@internationalized/date";
-
+import { I18nProvider } from 'react-aria-components';
 
 function ExtractPage(props: ExtractPageProps){
     const {setCustomBackAction, setLegendHeader, setTitleHeader} = props
@@ -174,7 +174,7 @@ function ExtractPage(props: ExtractPageProps){
             <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
                 <div className="w-full h-full px-2.5 flex flex-col  backdrop-blur-3xl  rounded-[28px] overflow-hidden bg-cover  bg-center bg-no-repeat" style={{backgroundImage: `url("${backgroundExtractPage}")`}}>
                     <div className="shrink-0">
-                        <div className="flex items-center justify-between w-full pt-5">
+                        <div className="flex items-start justify-between w-full pt-5">
                             <div className="flex flex-col">
                                 <h1 className="text-base text-white font-extralight">
                                     Saldo no perído:
@@ -205,34 +205,31 @@ function ExtractPage(props: ExtractPageProps){
                                     </svg>
                                 </div>
                             </div> */}
-                            <div className="w-4/8">
+                            <div className="w-4/8 flex flex-col gap-2 px-2">
                                 <SelectionComp options={categorysOfSearch}
                                         placeholder={'Selecione o per.'}
                                         onChange={handleCategoryChange}
                                         initialValue="1"
                                         useFor='select-period-extract' />
                                 {showDatePicker && (
-                                    <div className="w-full flex justify-end mt-2">
-                                        <div className=" rounded-xl backdrop-blur-md border border-white/10">
-                                            <DateRangePicker
-                                                aria-label="Selecione o período personalizado"
-                                                value={customRange}
-                                                onChange={(range) => {
-                                                    setCustomRange(range);
-                                                    
-                                                    // Se o usuário selecionou as duas datas, já faz a busca automático!
-                                                    if (range?.start && range?.end) {
-                                                        const startStr = range.start.toString(); // Vira 'YYYY-MM-DD'
-                                                        const endStr = range.end.toString();
-                                                        
-                                                        setCurrentRange({ start: startStr, end: endStr });
-                                                        fetchExtractData(startStr, endStr);
-                                                        setShowDatePicker(false)
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
+                                    
+                                            <I18nProvider locale="pt-BR">
+                                                <DateRangePicker
+                                                    className="w-full text-white"
+                                                    aria-label="Selecione o período"
+                                                    value={customRange}
+                                                    onChange={(range) => {
+                                                        setCustomRange(range);
+                                                        if (range?.start && range?.end) {
+                                                            const startStr = range.start.toString();
+                                                            const endStr = range.end.toString();
+                                                            setCurrentRange({ start: startStr, end: endStr });
+                                                            fetchExtractData(startStr, endStr);
+                                                        }
+                                                    }}
+                                                />
+                                            </I18nProvider>
+                                        
                                 )}
                             </div>
                         </div>
