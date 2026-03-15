@@ -92,10 +92,10 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
             comp_with_months = (data_return['month_balance'] / data_return['month_balance']) * 100
     text = ''
     is_incoming = False
-    if(comp_with_months < 0):
+    if(comp_with_months < 100):
         text = 'a menos que o mês anterior'
         is_incoming = False
-    elif(comp_with_months == 0):
+    elif(comp_with_months == 100):
         text = 'igualando ao mês anterior'
         is_incoming = False
     else:
