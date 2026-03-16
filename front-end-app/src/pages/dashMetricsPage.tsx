@@ -25,6 +25,7 @@ function DashMetricsPage(props: DashMetricsProps){
             const fetchDashboardData = async () => {
                 try {
                     const data = await getMetrics();
+                    console.log(data)
                     setBalanceMonth(data['month_balance'])
                     setListOfTransactionsOut(data['expenses_out'])
                     setListOfTransactionsIn(data['expenses_in_on_month'])

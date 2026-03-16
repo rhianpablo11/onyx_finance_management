@@ -44,10 +44,13 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
         if(ia_response['is_recurrent'] == False and ia_response['is_installment'] == False):
             #work with table of Expense
 
-            update_balance(db=db,
-                           user_id=user_id,
-                           value=ia_response['amount'],
-                           type=ia_response['type'])
+            expense_date = date.fromisoformat(str(ia_response['first_payment_date']))
+            today = date.today()
+            
+            # Se a data for no futuro, nasce desativado (não mexe no saldo agora)
+            is_active = True
+            if expense_date > today:
+                is_active = False 
 
             new_expense = Expense(
                 user_id=user_id,
@@ -55,25 +58,36 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
                 value=ia_response['amount'],
                 type_expense=ia_response['type'],
                 description=ia_response['description'],
-                date=ia_response['first_payment_date'],
+                date=expense_date,
                 payment_method=ia_response['payment_method'],
-                is_activated=True,
+                is_activated=is_active,
                 name=ia_response['name']
             )
             db.add(new_expense)
+            
+            # SÓ TIRA DO SALDO SE O DIA JÁ CHEGOU
+            if is_active:
+                update_balance(db=db, user_id=user_id, value=ia_response['amount'], type=ia_response['type'])
+            
             db.commit()
             db.refresh(new_expense)
-            return {'type': 'simple',
-                    'data': new_expense}
+            return {'type': 'simple', 'data': new_expense}
         else:
             #work with table of Expense_fixed
             charge_id = get_charge_type_id(ia_response['type_of_installment'], charge_types_existing, db)
+            
+            # --- VACINA 1: NETFLIX INFINITA ---
+            end_date_val = ia_response.get('last_payment_date')
+            # Se for assinatura recorrente (mas não parcelado), forçamos o end_date para NULO (infinito)
+            if ia_response.get('is_recurrent') and not ia_response.get('is_installment'):
+                end_date_val = None
+
             new_expense_fixed = Expenses_fixed(
                 user_id=user_id,
                 name=ia_response['name'],
                 value=ia_response['amount'],
                 start_date=ia_response['first_payment_date'],
-                end_date=ia_response['last_payment_date'],
+                end_date=end_date_val, # Variável tratada
                 charge=charge_id,
                 category=category_id,
                 payment_date=ia_response['first_payment_date'],
@@ -89,6 +103,18 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
             today = date.today()
             # Converte string pra date se necessário, ou usa direto se já for date
             first_payment = date.fromisoformat(str(ia_response['first_payment_date'])) 
+
+            """
+            logica:
+                1. verificar quantidade de parcelas
+                2. criar a mesma quantidade de parcelas em despesas normal
+                    2.1 vai ficar cada despesa normal com o valor da parcela e datas separadas
+                    2.2 cada parcela vai ficar indexada a despesa fixa
+                3. o delete da despesa terá 2 opções:
+                    3.1 deletar toda a despesa fixa
+                    3.2 deletar a parcela atual e as proximas
+            """
+
 
             if first_payment == today:
                 print(f"Despesa fixa começa hoje! Realizando débito imediato...")
@@ -278,7 +304,7 @@ def get_day_and_last_transactions(db: Session, user_id: int):
             "description": item.description,
             "paymentMethod": item.payment_method,
             "typeExpense": item.type_expense,
-            "date": item.date
+            "date": item.start_date
         })
 
     return formatted_list
@@ -344,33 +370,20 @@ def get_monthly_receives(db: Session, user_id: int):
 
 #pegar os proximos pagamentos a ser feitos
 def get_next_payments(db: Session, user_id: int):
-    #pegar as depesas fixas que estão para proxima data
     today = date.today()
-    stmt = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id, Expenses_fixed.type_expense, Expenses_fixed.start_date, Expenses_fixed.payment_method, Expenses_fixed.description)
-            .where(Expenses_fixed.user_id == user_id)
-            .where(Expenses_fixed.start_date > today))
+    # Aumentado para 45 dias para NUNCA perder a parcela do mês que vem
+    end_date_search = today + timedelta(days=45) 
     
-    list_next_payments = db.execute(stmt).all()
-    list_formatted = []
-
-
-    for item in list_next_payments:
-        nameCategory = get_expense_category_by_id(id=item.category,
-                                                  user_id=user_id,
-                                                  db=db)
-        list_formatted.append({
-            "nameExpense": item.name,
-            "value": item.value,
-            "category": nameCategory,
-            "id": item.id,
-            "type": False,
-            "description": item.description,
-            "paymentMethod": item.payment_method,
-            "typeExpense": item.type_expense,
-            "date": item.date
-        })
-
-    return list_formatted
+    projected_list = process_fixed_expenses_in_period(
+        db=db, 
+        user_id=user_id, 
+        start_date=today, 
+        end_date=end_date_search
+    )
+    
+    # Ordena da data mais próxima para a mais distante e devolve 5
+    projected_list.sort(key=lambda x: x['date'])
+    return projected_list[:5]
 
 
 
@@ -402,46 +415,42 @@ def get_balance_in_period(db: Session, user_id: int,start_date: date, end_date: 
     
 
 
-
+# locgical of this function need alteration
 def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date, end_date: date):
-    # 1. Busca todas as fixas ativas do usuário que começaram ANTES do fim da busca
     stmt = (select(Expenses_fixed, Charge_type.name.label('charge_name'))
             .join(Charge_type, Expenses_fixed.charge == Charge_type.id)
             .where(Expenses_fixed.user_id == user_id)
             .where(Expenses_fixed.activated == True)
-            .where(Expenses_fixed.start_date <= end_date) # Começou antes do fim do filtro
-            .where(or_(Expenses_fixed.end_date == None, Expenses_fixed.end_date >= start_date)) # Não acabou antes do inicio
-           )
+            .where(Expenses_fixed.start_date <= end_date) 
+            .where(or_(Expenses_fixed.end_date == None, Expenses_fixed.end_date >= start_date)))
     
-    # Retorna tuplas (Expenses_fixed, NomeDoTipo)
     results = db.execute(stmt).all() 
 
-    # 2. BUSCA INTELIGENTE: Pega os IDs das fixas que JÁ foram pagas neste período
-    # Isso evita ir no banco dentro do loop (Performance)
     stmt_paid = (select(Expense.fixed_expense_id, Expense.date)
                  .where(Expense.user_id == user_id)
                  .where(Expense.date.between(start_date, end_date))
                  .where(Expense.fixed_expense_id != None))
-    
-    # Cria um conjunto de assinaturas "ID_DA_FIXA + DATA" para checagem rápida
-    # Ex: {'15_2026-02-15', '18_2026-02-10'}
     paid_map = {f"{row.fixed_expense_id}_{row.date}" for row in db.execute(stmt_paid).all()}
     
     projected_transactions = []
 
     for expense, charge_name in results:
-        current_check_date = start_date
+        # CORREÇÃO DE TEMPO: Só começa a checar a partir de quando a despesa realmente nasceu
+        current_check_date = max(start_date, expense.start_date)
         
-        while current_check_date <= end_date:
-            should_add = False
+        actual_end_date = end_date
+        if expense.end_date and expense.end_date < end_date:
+            actual_end_date = expense.end_date
             
-            # --- Lógica de Data (Mensal) ---
-            if charge_name.lower() == 'mensal':
+        while current_check_date <= actual_end_date:
+            should_add = False
+            charge_lower = charge_name.lower()
+            
+            # CORREÇÃO IA: Aceita mensal, parcelado, parcelada, etc.
+            if charge_lower in ['mensal', 'parcelado', 'parcelada']:
                 try:
-                    # Ajuste fino para datas como dia 31
                     target_day = expense.payment_date.day
                     last_day_of_month = (date(current_check_date.year, current_check_date.month, 1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-                    
                     check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
                     
                     if current_check_date.day == check_day:
@@ -449,26 +458,33 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
                 except ValueError:
                     pass
 
-            # --- Lógica Semanal, etc... ---
-            elif charge_name.lower() == 'semanal':
+            elif charge_lower == 'semanal':
                  delta = current_check_date - expense.start_date
                  if delta.days >= 0 and delta.days % 7 == 0:
                     should_add = True
 
             if should_add:
-                # 3. VERIFICAÇÃO DE DUPLICIDADE
-                # Se já existe um pagamento registrado para essa fixa nesta data, NÃO PROJETA
                 key = f"{expense.id}_{current_check_date}"
-                
                 if key not in paid_map:
+                    # Formata Categoria
+                    cat_name = get_expense_category_by_id(id=expense.category, user_id=user_id, db=db)
+                    
+                    # CORREÇÃO MATEMÁTICA: Divide o valor se for parcelado (ex: Relógio)
+                    div = expense.installments_count if expense.installments_count and expense.installments_count > 0 else 1
+                    parcel_value = float(expense.value) / div
+
+                    desc = expense.description if expense.description else ""
+
                     projected_transactions.append({
                         "id": f"fixed_{expense.id}_{current_check_date}", 
                         "nameExpense": expense.name,
-                        "value": expense.value,
-                        "category": expense.category, 
+                        "value": parcel_value,
+                        "category": cat_name, 
                         "typeExpense": expense.type_expense,
                         "date": current_check_date,
-                        "is_fixed": True
+                        "is_fixed": True,
+                        "paymentMethod": expense.payment_method,
+                        "description": f"Agendado: {desc}" 
                     })
 
             current_check_date += timedelta(days=1)
@@ -478,31 +494,17 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
 
 #pegar as movimentações dentro de um periodo
 def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_date: date = None):
-    if(end_date):
-        stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
-                    .where(Expense.user_id == user_id)
-                    .where(Expense.date.between(start_date, end_date)))
-    # else:
-    #     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category)
-    #             .where(Expense.user_id == user_id)
-    #             .where(Expense.date > start_date))
+    if not end_date:
+        end_date = date.today()
+        
     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
                     .where(Expense.user_id == user_id)
                     .where(Expense.date.between(start_date, end_date)))
     list_transactions = db.execute(stmt_get).all()
-    print('TRANSACTIONS IN PERIOD')
-    print(list_transactions)
-    print(start_date)
-    print(end_date)
-    formatted_list = []
     
+    formatted_list = []
     for item in list_transactions:
-        nameCategory = get_expense_category_by_id(id=item.category,
-                                                  user_id=user_id,
-                                                  db=db)
-        print(nameCategory)
-        print(item.category)
-        print(user_id)
+        nameCategory = get_expense_category_by_id(id=item.category, user_id=user_id, db=db)
         formatted_list.append({
             'typeExpense': item.type_expense,
             'category': nameCategory,
@@ -515,12 +517,15 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
             'description': item.description
         })
     
-    # list_fixed = process_fixed_expenses_in_period(db=db,
-    #                                               user_id=user_id, 
-    #                                               start_date=start_date,
-    #                                               end_date=end_date)
-    #full_extract = formatted_list + list_fixed
-    full_extract = formatted_list
+    # LIGA A ENGENHARIA DE PROJEÇÃO NO EXTRATO AQUI!
+    list_fixed_projected = process_fixed_expenses_in_period(
+        db=db,
+        user_id=user_id, 
+        start_date=start_date,
+        end_date=end_date
+    )
+    
+    full_extract = formatted_list + list_fixed_projected
     full_extract.sort(key=lambda x: x['date'], reverse=True)
 
     return full_extract
