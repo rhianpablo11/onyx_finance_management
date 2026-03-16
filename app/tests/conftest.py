@@ -2,8 +2,6 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import date
-
-# Importe a Base do seu banco e os Models para ele saber quais tabelas criar
 from app.core.database import Base
 from app.models.user import User
 from app.models.expense import Expense
@@ -69,7 +67,7 @@ def test_user(db_session):
         Charge_type(name="Semanal"),   # 3
         Charge_type(name="Anual"),     # 4
         Charge_type(name="Parcelado"), # 5
-        Charge_type(name="Diário")     # 6 <-- ADICIONE ESSA LINHA!
+        Charge_type(name="Diário")     # 6
     ])
     
     db_session.commit()
