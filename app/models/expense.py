@@ -14,4 +14,4 @@ class Expense(Base):
     date = Column(Date, nullable=False)
     payment_method = Column(String(200))
     is_activated = Column(Boolean, nullable=False)
-    fixed_expense_id = Column(Integer, ForeignKey('expenses_fixed.id'), nullable=True)
+    fixed_expense_id = Column(Integer, ForeignKey('expenses_fixed.id', ondelete="SET NULL"), nullable=True)
