@@ -25,6 +25,9 @@ jobs:
       - name: test frontend health
         run: curl -f http://localhost:5173 || exit 1
 
+      - name: run automated tests (pytest)
+        run: docker compose exec -T backend pytest -v
+
       - name: show logs on failure
         if: failure()
         run: docker compose logs
