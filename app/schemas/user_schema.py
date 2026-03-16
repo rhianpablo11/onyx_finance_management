@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Json
+from pydantic import BaseModel, ConfigDict, EmailStr, Json
 from datetime import datetime
 from typing import Optional
 
@@ -17,8 +17,7 @@ class UserResponse(UserBase):
     subscriber: bool
     created_date: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserResponseLogin(BaseModel):
