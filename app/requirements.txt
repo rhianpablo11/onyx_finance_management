@@ -9,3 +9,6 @@ google-genai
 python-dateutil
 webauthn
 apscheduler
+pytest
+httpx
+freezegun
