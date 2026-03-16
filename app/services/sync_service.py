@@ -40,26 +40,47 @@ def sync_user_finances(db: Session, user_id: int):
 
         while current_check_date <= limit_date:
             should_charge = False
-            charge_lower = charge_name.lower()
+            charge_lower = charge_name.lower().strip() if charge_name else ""
             
-            if charge_lower in ['mensal', 'parcelado', 'parcelada']:
-                try:
+            # O mesmo roteamento da API
+            freq = 'mensal'
+            if 'diari' in charge_lower or 'diári' in charge_lower:
+                freq = 'diario'
+            elif 'semanal' in charge_lower or 'semana' in charge_lower:
+                freq = 'semanal'
+            elif 'quinzenal' in charge_lower or 'quinzena' in charge_lower or '15 dias' in charge_lower:
+                freq = 'quinzenal'
+            elif 'anual' in charge_lower or 'ano' in charge_lower:
+                freq = 'anual'
+            
+            # A mesma matemática exata
+            if freq == 'diario':
+                should_charge = True
+            elif freq == 'semanal':
+                delta = current_check_date - fixed.start_date
+                if delta.days >= 0 and delta.days % 7 == 0:
+                    should_charge = True
+            elif freq == 'quinzenal':
+                delta = current_check_date - fixed.start_date
+                if delta.days >= 0 and delta.days % 15 == 0:
+                    should_charge = True
+            elif freq == 'anual':
+                if current_check_date.month == fixed.payment_date.month:
                     target_day = fixed.payment_date.day
                     next_month = current_check_date.replace(day=28) + timedelta(days=4)
                     last_day_of_month = next_month - timedelta(days=next_month.day)
-                    
                     check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
-                    
                     if current_check_date.day == check_day:
                         should_charge = True
-                except ValueError:
-                    pass
-            
-            elif charge_lower == 'semanal':
-                 delta = current_check_date - fixed.start_date
-                 if delta.days >= 0 and delta.days % 7 == 0:
+            else:
+                target_day = fixed.payment_date.day
+                next_month = current_check_date.replace(day=28) + timedelta(days=4)
+                last_day_of_month = next_month - timedelta(days=next_month.day)
+                check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
+                if current_check_date.day == check_day:
                     should_charge = True
-            
+
+            # Lógica de salvar a parcela que faltava
             if should_charge:
                 existing_expense = db.execute(
                     select(Expense).where(

@@ -116,7 +116,7 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
             """
 
 
-            if first_payment == today:
+            if first_payment <= today:
                 print(f"Despesa fixa começa hoje! Realizando débito imediato...")
                 
                 # 1. Atualiza Saldo
@@ -435,44 +435,75 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
     projected_transactions = []
 
     for expense, charge_name in results:
-        # CORREÇÃO DE TEMPO: Só começa a checar a partir de quando a despesa realmente nasceu
         current_check_date = max(start_date, expense.start_date)
-        
         actual_end_date = end_date
         if expense.end_date and expense.end_date < end_date:
             actual_end_date = expense.end_date
             
         while current_check_date <= actual_end_date:
             should_add = False
-            charge_lower = charge_name.lower()
+            charge_lower = charge_name.lower().strip() if charge_name else ""
             
-            # CORREÇÃO IA: Aceita mensal, parcelado, parcelada, etc.
-            if charge_lower in ['mensal', 'parcelado', 'parcelada']:
-                try:
-                    target_day = expense.payment_date.day
-                    last_day_of_month = (date(current_check_date.year, current_check_date.month, 1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-                    check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
+            # =======================================================
+            # 🧠 ROTEAMENTO INTELIGENTE DE FREQUÊNCIA (Filtro Anti-IA)
+            # =======================================================
+            freq = 'mensal' # Padrão blindado
+            if 'diari' in charge_lower or 'diári' in charge_lower:
+                freq = 'diario'
+            elif 'semanal' in charge_lower or 'semana' in charge_lower:
+                freq = 'semanal'
+            elif 'quinzenal' in charge_lower or 'quinzena' in charge_lower or '15 dias' in charge_lower:
+                freq = 'quinzenal'
+            elif 'anual' in charge_lower or 'ano' in charge_lower:
+                freq = 'anual'
+
+            # =======================================================
+            # 🧮 MATEMÁTICA DO TEMPO (Cálculo Exato)
+            # =======================================================
+            if freq == 'diario':
+                # Cobra todo santo dia
+                should_add = True
+                
+            elif freq == 'semanal':
+                # A cada 7 dias exatos a partir da data de início
+                delta = current_check_date - expense.start_date
+                if delta.days >= 0 and delta.days % 7 == 0:
+                    should_add = True
                     
+            elif freq == 'quinzenal':
+                # A cada 15 dias exatos a partir da data de início
+                delta = current_check_date - expense.start_date
+                if delta.days >= 0 and delta.days % 15 == 0:
+                    should_add = True
+                    
+            elif freq == 'anual':
+                # Mesmo dia, no mesmo mês (Ex: IPVA, Anuidade do Cartão)
+                if current_check_date.month == expense.payment_date.month:
+                    target_day = expense.payment_date.day
+                    next_month = current_check_date.replace(day=28) + timedelta(days=4)
+                    last_day_of_month = next_month - timedelta(days=next_month.day)
+                    check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
                     if current_check_date.day == check_day:
                         should_add = True
-                except ValueError:
-                    pass
-
-            elif charge_lower == 'semanal':
-                 delta = current_check_date - expense.start_date
-                 if delta.days >= 0 and delta.days % 7 == 0:
+                        
+            else: # freq == 'mensal'
+                # Mesmo dia, todo mês (Proteção contra mês de 28/30/31 dias)
+                target_day = expense.payment_date.day
+                next_month = current_check_date.replace(day=28) + timedelta(days=4)
+                last_day_of_month = next_month - timedelta(days=next_month.day)
+                check_day = target_day if target_day <= last_day_of_month.day else last_day_of_month.day
+                if current_check_date.day == check_day:
                     should_add = True
 
+            # =======================================================
+            # SALVANDO A PROJEÇÃO NA LISTA
+            # =======================================================
             if should_add:
                 key = f"{expense.id}_{current_check_date}"
                 if key not in paid_map:
-                    # Formata Categoria
                     cat_name = get_expense_category_by_id(id=expense.category, user_id=user_id, db=db)
-                    
-                    # CORREÇÃO MATEMÁTICA: Divide o valor se for parcelado (ex: Relógio)
                     div = expense.installments_count if expense.installments_count and expense.installments_count > 0 else 1
                     parcel_value = float(expense.value) / div
-
                     desc = expense.description if expense.description else ""
 
                     projected_transactions.append({
