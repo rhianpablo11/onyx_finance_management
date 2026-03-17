@@ -131,41 +131,37 @@ def get_extract(current_user: dict = Depends(get_current_user),
 
     if not start_date_search or not end_date_search:
         today = date.today()
-        start_date = date(today.year, today.month, 1)
-        end_date = today # ou ultimo dia do mes
+        start_date_search = date(today.year, today.month, 1)
+        end_date_search = today # ou ultimo dia do mes
 
-    # pegar o valor gasto naquela data
-    # get_total_spent_on_the_date -> retorna o valor gasto
-    value_spent = get_total_spent_on_the_date(db=db,
-                                              user_id=current_user['user_id'],
-                                              start_date=start_date_search,
-                                              end_date=end_date_search)
-
-    # pegar o valor recebido naquela data
-    # get_total_received_on_the_date -> retorna o valor recebido
-    value_received = get_total_received_on_the_date(db=db,
-                                              user_id=current_user['user_id'],
-                                              start_date=start_date_search,
-                                              end_date=end_date_search)
-
-    # pegar o saldo naquela data
-    #get_balance_in_period -> retorna o saldo do periodo
-    balance_data_period = get_balance_in_period(db=db,
-                                                user_id=current_user['user_id'],
-                                                start_date=start_date_search,
-                                                end_date=end_date_search)
-    # pegar a lista de transações em um periodo
-    # get_transactions_in_period -> retorna uma lista de transações
-    list_transactions = get_transactions_in_period(db=db,
-                                                    user_id=current_user['user_id'],
-                                                    start_date=start_date_search,
-                                                    end_date=end_date_search)
+    list_transactions = get_transactions_in_period(
+        db=db,
+        user_id=current_user['user_id'],
+        start_date=start_date_search,
+        end_date=end_date_search
+    )
     
+    
+    total_received = 0.0
+    total_spent = 0.0
+    
+    for t in list_transactions:
+        val = float(t['value'])
+        # typeExpense == True significa que é Receita (Entrada)
+        if t['typeExpense'] == True:
+            total_received += val
+        # typeExpense == False significa que é Despesa (Saída)
+        else:
+            total_spent += val
+
+    # O Saldo do período é simplesmente Entrada - Saída
+    balance_period = total_received - total_spent
     
     data_return = {
-        'balance_value_in_period': balance_data_period['value'],
+        'balance_value_in_period': balance_period,
         'transactions': list_transactions,
-        'value_received': value_received['value'],
-        'value_spent': value_spent['value']
+        'value_received': total_received,
+        'value_spent': total_spent
     }
+    
     return data_return
