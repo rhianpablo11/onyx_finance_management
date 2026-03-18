@@ -1,7 +1,6 @@
 import pytest
 from datetime import date
 from freezegun import freeze_time
-# from app.controllers.transaction_controller import process_fixed_expenses_in_period
 from app.controllers.transaction_controller import process_fixed_expenses_in_period
 from app.services.sync_service import sync_user_finances
 from app.models.expenses_fixed import Expenses_fixed
@@ -434,3 +433,86 @@ def test_negocio_projecao_dashboard_segura(db_session, test_user):
 
         # O MAIS IMPORTANTE: Garantir que a função visual NÃO roubou dinheiro do usuário
         assert test_user.balance == 0.0
+
+
+# ==========================================
+# TESTES DE EXTREMOS TEMPORAIS (EDGE CASES)
+# ==========================================
+
+def test_sync_temporal_virada_de_ano(db_session, test_user):
+    # Assinatura feita no estouro do champanhe!
+    with freeze_time("2026-12-31"):
+        spotify = Expenses_fixed(
+            user_id=test_user.id, name="Spotify Reveillon", value=20,
+            start_date=date(2026, 12, 31), payment_date=date(2026, 12, 31),
+            charge=2, category=1, type_expense=False, activated=True
+        )
+        db_session.add(spotify)
+        db_session.commit()
+        
+        test_user.balance -= 20
+        db_session.add(Expense(user_id=test_user.id, category=1, value=20, type_expense=False, date=date(2026, 12, 31), is_activated=True, fixed_expense_id=spotify.id, name="Spotify Reveillon", description="Dezembro"))
+        db_session.commit()
+        
+    # Mudou o ANO para 2027!
+    with freeze_time("2027-01-31"): 
+        sync_user_finances(db=db_session, user_id=test_user.id)
+        db_session.refresh(test_user)
+        
+        # Tem que ter cobrado Janeiro certinho!
+        assert test_user.balance == -40
+
+
+def test_sync_temporal_ano_bissexto(db_session, test_user):
+    # 2024 é um ano bissexto! Tem dia 29 de Fevereiro.
+    with freeze_time("2024-02-29"):
+        seguro = Expenses_fixed(
+            user_id=test_user.id, name="Seguro Anual", value=1000,
+            start_date=date(2024, 2, 29), payment_date=date(2024, 2, 29),
+            charge=4, category=1, type_expense=False, activated=True # Charge 4 = Anual
+        )
+        db_session.add(seguro)
+        db_session.commit()
+        
+        test_user.balance -= 1000
+        db_session.add(Expense(user_id=test_user.id, category=1, value=1000, type_expense=False, date=date(2024, 2, 29), is_activated=True, fixed_expense_id=seguro.id, name="Seguro Anual", description="Ano 2024"))
+        db_session.commit()
+
+    # O ano de 2025 NÃO é bissexto. Fevereiro só vai até o dia 28.
+    # O motor do Onyx precisa ser inteligente para descer a cobrança pro dia 28.
+    with freeze_time("2025-02-28"): 
+        sync_user_finances(db=db_session, user_id=test_user.id)
+        db_session.refresh(test_user)
+        
+        # Cobrou a anuidade de 2025!
+        assert test_user.balance == -2000
+
+
+def test_sync_temporal_stress_test_anual(db_session, test_user):
+    # O usuário cria uma despesa DIÁRIA (ex: Transporte)
+    with freeze_time("2026-01-01"):
+        onibus = Expenses_fixed(
+            user_id=test_user.id, name="Passagem de Ônibus", value=5,
+            start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1),
+            charge=6, category=1, type_expense=False, activated=True # Charge 6 = Diário
+        )
+        db_session.add(onibus)
+        db_session.commit()
+        
+        test_user.balance -= 5
+        db_session.add(Expense(user_id=test_user.id, category=1, value=5, type_expense=False, date=date(2026, 1, 1), is_activated=True, fixed_expense_id=onibus.id, name="Passagem de Ônibus", description="Dia 1"))
+        db_session.commit()
+
+    # O usuário sofre um apagão e abandona o app o ano inteiro (saltamos para a véspera de ano novo)
+    with freeze_time("2026-12-31"):
+        # Quando ele abrir o app, o `sync_user_finances` vai rodar loucamente.
+        sync_user_finances(db=db_session, user_id=test_user.id)
+        db_session.refresh(test_user)
+        
+        # O sistema tem que aguentar processar 364 dias de atraso de uma vez só.
+        # O Saldo tem que ser R$ 5 x 365 dias = R$ -1825
+        assert test_user.balance == -1825
+        
+        # Verifica se ele inseriu EXATAMENTE 365 linhas no banco de dados de uma vez (A 1ª + 364 atrasadas)
+        transacoes = db_session.query(Expense).filter(Expense.fixed_expense_id == onibus.id).all()
+        assert len(transacoes) == 365
