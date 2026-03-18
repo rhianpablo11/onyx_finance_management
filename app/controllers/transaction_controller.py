@@ -327,7 +327,7 @@ def get_monthly_receives(db: Session, user_id: int):
 
     stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id, Expenses_fixed.type_expense, Expenses_fixed.start_date, Expenses_fixed.payment_method, Expenses_fixed.description)
                       .where(Expenses_fixed.user_id == user_id)
-                      .where(Expense.date.between(start_date, end_date))
+                      .where(Expenses_fixed.start_date.between(start_date, end_date))
                       .where(Expenses_fixed.type_expense == True))
     list_receiveds_fixed = db.execute(stmt_get_fixed).all()
     

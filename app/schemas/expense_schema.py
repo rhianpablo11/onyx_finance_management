@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Json
+from pydantic import BaseModel, EmailStr, Field, Json
 from datetime import datetime
 from typing import Optional
 
@@ -7,7 +7,7 @@ class Expense_create(BaseModel):
 
 class Expense_response_base(BaseModel):
     category: str
-    value: float
+    value: float = Field(..., gt=0)
     type_expense: bool
     description: str
     date: datetime

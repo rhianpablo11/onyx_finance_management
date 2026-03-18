@@ -32,9 +32,17 @@ def validate_and_fix_json(data: dict):
                 data[key] = default_value
 
     try:
-        data['installments_count'] == int(data["installments_count"])
+        data['installments_count'] = int(data["installments_count"])
+        if data['installments_count'] < 1:
+            data['installments_count'] = 1
     except:
         data["installments_count"] = 1
+
+    # 2. PROTEÇÃO DE VALOR (Nunca negativo)
+    try:
+        data['amount'] = abs(float(data['amount'])) 
+    except:
+        data['amount'] = 0.0
 
     return data
 
