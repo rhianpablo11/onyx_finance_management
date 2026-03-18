@@ -10,6 +10,11 @@ from app.models.expense_category import Expense_category
 from app.models.charge_type import Charge_type
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.dialects.postgresql import JSONB
+from fastapi.testclient import TestClient
+from app.main import app
+from app.core.database import get_db
+from app.core.auth import get_current_user
+from sqlalchemy.pool import StaticPool
 
 @compiles(JSONB, 'sqlite')
 def compile_jsonb_sqlite(type_, compiler, **kw):
@@ -19,7 +24,7 @@ def compile_jsonb_sqlite(type_, compiler, **kw):
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -74,3 +79,36 @@ def test_user(db_session):
     db_session.refresh(user)
     
     return user
+
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    """
+    Cria um cliente falso para testar as rotas da API.
+    A mágica aqui é o 'dependency_overrides': ele avisa pro FastAPI que,
+    toda vez que uma rota pedir o banco de dados (get_db), ele deve entregar
+    o nosso banco de testes (db_session) que está na memória RAM!
+    """
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    
+    with TestClient(app) as c:
+        yield c
+        
+    app.dependency_overrides.clear()
+
+@pytest.fixture(scope="function")
+def auth_client(client, test_user):
+    """
+    Um cliente que já "nasce" logado. 
+    Ele engana o sistema de autenticação (JWT) para não precisarmos 
+    gerar token real em todo santo teste.
+    """
+    app.dependency_overrides[get_current_user] = lambda: {
+        "user_id": test_user.id, 
+        "email": test_user.email
+    }
+    yield client
+    app.dependency_overrides.pop(get_current_user, None)
