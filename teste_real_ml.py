@@ -16,10 +16,10 @@ def executar_previsao_real():
     # 1. CONEXÃO COM O BANCO DE DADOS
     # ==========================================
     db = SessionLocal()
-    user_id_teste = 1  # 🚨 COLOQUE O SEU ID REAL AQUI!
+    user_id_teste = 7  # 🚨 COLOQUE O SEU ID REAL AQUI!
     
     # Pegando dados de 1º de Janeiro até Hoje
-    data_inicio = date(2026, 2, 25)
+    data_inicio = date(2026, 1, 1)
     data_fim = date.today()
 
     print("🔍 Buscando transações reais no banco...")
@@ -38,6 +38,16 @@ def executar_previsao_real():
     if not transacoes:
         print("❌ Nenhuma transação encontrada para esse usuário.")
         return
+
+    contador_externo = 0
+    for transacao in transacoes:
+        print(f'Valor: {transacao.value}. Tipo: {transacao.type_expense}. Data: {transacao.date}')
+        if(transacao.type_expense):
+            contador_externo += transacao.value
+        else:
+            contador_externo -= transacao.value
+        print(f'Saldo no momento: {contador_externo}')
+
 
     # ==========================================
     # 2. ENGENHARIA DE DADOS (Transformando em Saldo)
@@ -70,7 +80,17 @@ def executar_previsao_real():
     # 3. TREINANDO A INTELIGÊNCIA ARTIFICIAL
     # ==========================================
     print("\n🧠 Treinando o Prophet com a sua vida financeira...")
-    modelo = Prophet(daily_seasonality=True)
+    # 1. Desligamos a sazonalidade diária (não faz sentido para saldos)
+    # 2. Enfraquecemos a sazonalidade semanal para ele parar de achar que toda segunda é dia de salário
+    modelo = Prophet(
+        daily_seasonality=False, # Ninguém gasta de hora em hora de forma previsível no saldo
+        weekly_seasonality=True, # LIGADO DE NOVO! (Para pegar o efeito "gasto de final de semana" ou "Uber")
+        seasonality_prior_scale=0.1 # O TRUQUE: Deixa as variações mais suaves, evita que a IA surte com coincidências
+    )
+    
+    # Adicionamos a sazonalidade mensal firme e forte (Para o salário CLT não falhar)
+    modelo.add_seasonality(name='monthly', period=30.5, fourier_order=5, prior_scale=10.0)
+    
     modelo.fit(df_diario)
 
     # ==========================================
@@ -93,8 +113,13 @@ def executar_previsao_real():
     print("\n🔮 PREVISÃO PARA O RESTO DO MÊS:")
     for index, linha in tabela_detalhada.iterrows():
         data_formatada = linha['ds'].strftime('%d/%m/%Y')
+        
+        # Arredondando para 2 casas decimais porque é dinheiro
         oficial = round(linha['yhat'], 2)
-        print(f"📅 {data_formatada} | Aposta: R$ {oficial}")
+        pior_cenario = round(linha['yhat_lower'], 2)
+        melhor_cenario = round(linha['yhat_upper'], 2)
+        
+        print(f"📅 {data_formatada} | Aposta: R$ {oficial} -> (Pode variar de R$ {pior_cenario} até R$ {melhor_cenario})")
 
     fig = modelo.plot(previsao)
     plt.title("Previsão Real do Saldo - Onyx")

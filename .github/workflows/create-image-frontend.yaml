@@ -34,3 +34,4 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:v${{ github.run_number }}
 
+
