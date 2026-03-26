@@ -64,5 +64,5 @@ app.mount('/static', StaticFiles(directory='app/static'), name='static')
 @app.get('/')
 def root():
     return {
-        'message': 'API is working'
+        'message': 'Hello, Onyx API is working'
     }

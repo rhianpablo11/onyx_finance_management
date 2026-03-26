@@ -17,7 +17,6 @@ function Login(){
     const [errorLogin, setErrorLogin] = useState(false)
     const [textError, setTextError] = useState('')
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
-    //const {login, loading, error} = useLogin()
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
