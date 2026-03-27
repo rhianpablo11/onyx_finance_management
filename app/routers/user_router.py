@@ -139,43 +139,46 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
     saved_challenge = request.cookies.get('biometric_challenge')
     if not saved_challenge:
         raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
-    
-    credential_received_in_request = body_requisition.get('credential')
-    
-    credential_id = credential_received_in_request['id']
+    try:
+        credential_received_in_request = body_requisition.get('credential')
+        
+        credential_id = credential_received_in_request['id']
 
 
-    expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
+        expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
 
-    credential_founded = get_credential_by_cred_id(credential_id, db)
-    
+        credential_founded = get_credential_by_cred_id(credential_id, db)
+        
 
-    user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
-    
-    verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
+        user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
+        
+        verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
 
-    credential_founded.sign_count = verification_returned.new_sign_count
+        credential_founded.sign_count = verification_returned.new_sign_count
 
-    data_user = {'id': user_founded.id}
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
-    access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
+        data_user = {'id': user_founded.id}
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+        access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
 
-    refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
-    refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
-    response.set_cookie(
-        key='refresh_token',
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite='none',
-        max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
-    )
+        refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
+        refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite='none',
+            max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
+        )
 
-    return {
-        'access_token': access_token,
-        'token_type': 'bearer',
-        'user_data': user_founded
-    }
+        return {
+            'access_token': access_token,
+            'token_type': 'bearer',
+            'user_data': user_founded
+        }
+    except Exception as e:
+        print(f'ERROR BIOMETRIA VERIFICAÇÃO: {e}')
+        raise HTTPException(status_code=400, detail='Erro ao verificar a biometria')
 
 
 @router.post('/biometric/delete', status_code=201)
