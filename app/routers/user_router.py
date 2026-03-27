@@ -58,8 +58,9 @@ def verify_user(db: Session = Depends(get_db),
 
 
 @router.get('/register/options-biometric', status_code=201)
-def get_options_for_biometric(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def get_options_for_biometric(response: Response, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     try:    
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         user_now = get_user_by_id(db=db, user_id = current_user['user_id'])
         
         (options, options_json) = get_options(user_id_now=user_now.id,
@@ -119,6 +120,7 @@ async def get_options_for_biometric_login(db: Session = Depends(get_db), request
 @router.get('/login/options-generic-biometric', status_code=201)
 def get_generic_options_for_biometric(response: Response):
     try:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         (challenge_generated, challenge_generated_str) = get_challenge()
         (options, options_json) = get_generic_options_biometric(challenge=challenge_generated)
         response.set_cookie(
@@ -141,6 +143,7 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
     print("\n" + "="*40)
     print("🕵️‍♂️ MODO DETETIVE: BIOMETRIA (CELULAR VS PC)")
     print("="*40)
+    
     
     # 1. O que a API acha que é a verdade (Variáveis de Ambiente)
     print(f"👉 ORIGIN Esperado (.env): '{BIOMETRIC_ORIGIN}'")
