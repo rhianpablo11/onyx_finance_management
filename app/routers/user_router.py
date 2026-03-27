@@ -5,11 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from app.controllers.user_temp_controller import associate_email_with_code, verify_code
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user, verify_token
+from app.core.security import BIOMETRIC_ORIGIN, BIOMETRIC_RP_ID
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
 from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, delete_code_of_recovery_password, device_has_biometric_registered, get_challenge, get_credential_by_cred_id, get_credential_used, get_generic_options_biometric, get_options, get_options_biometric_auth, get_user_by_credential_id, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_code_of_recovery_password, save_current_chalenge, send_email_recovery_password, update_password, validate_signature, verify_code_of_recovery_password, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
+import traceback
 
 router = APIRouter()
 
@@ -136,6 +138,18 @@ def get_generic_options_for_biometric(response: Response):
 @router.post('/login/verify-biometric', status_code=201)
 async def verify_biometric(response: Response, request: Request = {}, db: Session = Depends(get_db)):
     body_requisition = await request.json()
+    print("\n" + "="*40)
+    print("🕵️‍♂️ MODO DETETIVE: BIOMETRIA (CELULAR VS PC)")
+    print("="*40)
+    
+    # 1. O que a API acha que é a verdade (Variáveis de Ambiente)
+    print(f"👉 ORIGIN Esperado (.env): '{BIOMETRIC_ORIGIN}'")
+    print(f"👉 RP_ID Esperado (.env): '{BIOMETRIC_RP_ID}'")
+    
+    # 2. O que o NGINX/Cloudflare entregou de verdade nos cabeçalhos
+    print(f"👉 Origin recebido no Header: '{request.headers.get('origin')}'")
+    print(f"👉 Host recebido no Header: '{request.headers.get('host')}'")
+    
     saved_challenge = request.cookies.get('biometric_challenge')
     if not saved_challenge:
         raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
@@ -178,6 +192,12 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
         }
     except Exception as e:
         print(f'ERROR BIOMETRIA VERIFICAÇÃO: {e}')
+        print("\n🚨 A EXPLOSÃO ACONTECEU AQUI:")
+        print(f"Erro cru: {repr(e)}")
+        print("\n🔍 RASTRO COMPLETO DO ERRO (TRACEBACK):")
+        traceback.print_exc() # Isso vai cuspir a linha exata da biblioteca WebAuthn que barrou
+        
+        print("="*40 + "\n")
         raise HTTPException(status_code=400, detail='Erro ao verificar a biometria')
 
 
