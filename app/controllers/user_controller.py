@@ -281,7 +281,9 @@ def get_generic_options_biometric(challenge):
 
 def get_challenge():
     challenge = generate_challenge()
-    return (challenge, base64.b64encode(challenge).decode('utf-8'))
+    
+    challenge_str = base64.urlsafe_b64encode(challenge).decode('utf-8').rstrip("=")
+    return (challenge, challenge_str)
 
 
 

@@ -12,6 +12,7 @@ from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
 import traceback
+from webauthn.helpers import base64url_to_bytes
 
 router = APIRouter()
 
@@ -162,8 +163,8 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
         credential_id = credential_received_in_request['id']
 
 
-        expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
-
+        #expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
+        expected_challenge = base64url_to_bytes(saved_challenge)
         credential_founded = get_credential_by_cred_id(credential_id, db)
         
 
