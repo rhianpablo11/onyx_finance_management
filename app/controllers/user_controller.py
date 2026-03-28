@@ -220,6 +220,8 @@ def verify_registration_biometric(body, challenge_str):
 def add_new_credential(db: Session, user_id: int, device_id: str, verification):
     
     credencial_id_text = bytes_to_base64url(verification.credential_id)
+    print('add new credential - credencial id: ' + credencial_id_text)
+    print('credencial id text: ' + credencial_id_text)
     new_credential = User_crendentials(
         user_id=user_id,
         credential_id=credencial_id_text,

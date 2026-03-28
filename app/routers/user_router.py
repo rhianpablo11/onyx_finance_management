@@ -86,6 +86,9 @@ async def register_biometric(db: Session = Depends(get_db), current_user: dict =
     if not user_now.current_chalenge:
         raise HTTPException(status_code=400, detail='nenhum desafio foi encontrado')
 
+    print("\n" + "="*40)
+    print("🕵️‍♂️ MODO DETETIVE: REGISTRO")
+    print('CHALLENGE ATUAL DO USUÁRIO: ' + str(user_now.current_chalenge))
     print(user_now.current_chalenge)
     verification_return = verify_registration_biometric(body=body_requisition['dataBiometric'],
                                                         challenge_str=user_now.current_chalenge)
