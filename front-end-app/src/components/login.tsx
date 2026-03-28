@@ -34,6 +34,7 @@ function Login(){
     
     const onClickFather = async (buttonClicked:string) =>{
         try{
+            console.log(buttonClicked)
             await login({email, password})
             setErrorLogin(false)
             navigate('/dashboard')
