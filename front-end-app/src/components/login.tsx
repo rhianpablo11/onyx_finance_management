@@ -65,6 +65,7 @@ function Login(){
             const authResp = await startAuthentication({'optionsJSON': currentOptions});
             const responseVerifyBiometric = await verifyBiometric(authResp);
             console.log(responseVerifyBiometric);
+            setCachedOptions(null)
             navigate('/dashboard');
             
         } catch(err: any){

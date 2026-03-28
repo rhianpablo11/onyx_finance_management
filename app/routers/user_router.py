@@ -193,7 +193,7 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
         print(f"   - New Sign Count: {verification_returned}")
         print("="*40)
         credential_founded.sign_count = verification_returned.new_sign_count
-
+        db.commit()
         data_user = {'id': user_founded.id}
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
         access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
