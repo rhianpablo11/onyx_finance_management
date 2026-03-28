@@ -316,7 +316,8 @@ def get_credential_by_cred_id(cred_id, db: Session) -> User_crendentials:
         cred = db.execute(stmt).first()[0]
         print(cred)
         return cred
-    except:
+    except Exception as e:
+        print('ERRO AO BUSCAR CREDENCIAL PELO ID: ' + str(e))
         raise HTTPException(status_code=400, detail='credencial nao encontrada')
     
 
@@ -326,7 +327,8 @@ def get_user_by_credential_id(db: Session, cred_id_user):
                 .where(User.id == cred_id_user))
         user_founded = db.execute(stmt).first()[0]
         return user_founded
-    except:
+    except Exception as e:
+        print('ERRO AO BUSCAR USUARIO PELO ID: ' + str(e))  
         raise HTTPException(status_code=400, detail='usuario nao encontrado')
 
 def validate_signature(credential_received, expected_challenge_received, credential_found):

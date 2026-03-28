@@ -165,6 +165,7 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
     saved_challenge = request.cookies.get('biometric_challenge')
     print('=================================')
     print('👉 Challenge salvo no cookie: ' + str(saved_challenge))
+    print("="*40)
     if not saved_challenge:
         raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
     try:
@@ -178,12 +179,19 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
         #expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
         expected_challenge = base64url_to_bytes(saved_challenge)
         credential_founded = get_credential_by_cred_id(credential_id, db)
-        
+        print('=================================')
+        print(f"👉 Credential encontrada no banco de dados para o ID '{credential_id}': " + str(credential_founded))
+        print('=================================')
 
         user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
         
         verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
-
+        print("="*40)
+        print("✅ VERIFICAÇÃO BEM SUCEDIDA! DADOS OBTIDOS:")
+        print(f"   - User ID: {user_founded.id}")
+        print(f"   - Credential ID: {credential_founded.id}")
+        print(f"   - New Sign Count: {verification_returned}")
+        print("="*40)
         credential_founded.sign_count = verification_returned.new_sign_count
 
         data_user = {'id': user_founded.id}
