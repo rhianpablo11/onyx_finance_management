@@ -6,7 +6,7 @@ import { useLogin } from "../../hooks/useAuth"
 
 function HeaderInternal(props: HeaderInternalProps){
     const {type, legend, title, name, onClickChildren} = props
-    const navigate = useNavigate()
+    //const navigate = useNavigate()
     console.log(name)
     const {logout} = useLogin()
     //function temporary for logout
