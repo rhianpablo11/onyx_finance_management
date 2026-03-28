@@ -78,18 +78,17 @@ function Login(){
             
             if (err.response?.data?.detail) {
                 setTextError(err.response.data.detail);
+                // Backend recusou (ex: cookie expirou). Apagamos o cache para pedir um novo na próxima.
+                sessionStorage.removeItem('bio_challenge_cache');
             } 
             else if (err.name === 'NotAllowedError') {
-                setTextError('Autenticação cancelada. Limpando ambiente seguro...');
-                
-                // BOMBA NUCLEAR 2: Se cancelar o Samsung Pass, recarrega a página 
-                // em 1 segundo e meio para matar o cache do Android.
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
+                setTextError('Autenticação cancelada. Tente novamente.');
+                // MÁGICA CONTRA A SAMSUNG AQUI: 
+                // NÃO apagamos o sessionStorage! O celular vai reaproveitar a chave no próximo clique.
             } 
             else {
                 setTextError(err.message || 'Erro desconhecido ao tentar biometria.');
+                sessionStorage.removeItem('bio_challenge_cache');
             }
             
             setErrorLoginBiometric(true);
