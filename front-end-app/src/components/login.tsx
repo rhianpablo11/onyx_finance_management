@@ -18,7 +18,7 @@ function Login(){
     const [textError, setTextError] = useState('')
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
     const [isAuthenticating, setIsAuthenticating] = useState(false)
-    const [cachedOptions, setCachedOptions] = useState<any>(null)
+    //const [cachedOptions, setCachedOptions] = useState<any>(null)
     const isAuthenticatingRef = useRef(false)
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
@@ -49,32 +49,24 @@ function Login(){
     }
 
     const onClickFatherBiometric = async ()=>{
-        // Se a fechadura estiver trancada, ignora qualquer clique fantasma!
+        // Blindagem contra duplo clique ansioso
         if (isAuthenticatingRef.current) return;
         
-        isAuthenticatingRef.current = true; // Tranca instantaneamente (síncrono)
-        setIsAuthenticating(true); // Atualiza a interface (assíncrono)
+        isAuthenticatingRef.current = true;
+        setIsAuthenticating(true);
         setErrorLoginBiometric(false);
 
         try{
-            let currentOptions = cachedOptions;
-            
-            if (!currentOptions) {
-                currentOptions = await getOptionsLogin();
-                setCachedOptions(currentOptions);
-            }
+            // 1. Busca um desafio NOVO do backend a cada tentativa
+            const freshOptions = await getOptionsLogin();
 
-            const authResp = await startAuthentication({'optionsJSON': currentOptions});
-            
-            // MÁGICA: O prompt fechou e temos a assinatura. 
-            // Limpamos o cache AQUI para garantir que o próximo login (após logout) venha limpo!
-            setCachedOptions(null);
+            // 2. A MÁGICA ESTÁ AQUI: Passamos a variável DIRETAMENTE! Sem embrulhar em chaves.
+            const authResp = await startAuthentication(freshOptions);
 
+            // 3. Envia para o backend validar
             const responseVerifyBiometric = await verifyBiometric(authResp);
             console.log(responseVerifyBiometric);
             
-            // Se tudo correr bem, vamos para o dashboard. 
-            // Não destrancamos a fechadura aqui para evitar ações enquanto a página muda.
             navigate('/dashboard');
             
         } catch(err: any){
@@ -82,20 +74,17 @@ function Login(){
             
             if (err.response?.data?.detail) {
                 setTextError(err.response.data.detail);
-                setCachedOptions(null); // Backend recusou (ex: expirou), precisamos de um novo desafio na próxima
             } 
             else if (err.name === 'NotAllowedError') {
                 setTextError('Autenticação cancelada. Tente novamente.');
-                // NÃO limpamos o cache. O Android vai precisar dele para a próxima tentativa!
             } 
             else {
                 setTextError(err.message || 'Erro desconhecido ao tentar biometria.');
-                setCachedOptions(null);
             }
             
             setErrorLoginBiometric(true);
             
-            // Só destrancamos se houver um erro, para o utilizador poder tentar de novo
+            // Destranca o botão para o usuário poder tentar de novo
             isAuthenticatingRef.current = false;
             setIsAuthenticating(false);
         }
