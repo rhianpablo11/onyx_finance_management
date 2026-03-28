@@ -1,5 +1,5 @@
 // component for header of internal pages -> say hello or indicate page
-import { useNavigate } from "react-router-dom"
+//import { useNavigate } from "react-router-dom"
 import type { HeaderInternalProps } from "../../interfaces/interfacesComponents"
 import { getFitName, makeLogout } from "../../utils/utils"
 import { useLogin } from "../../hooks/useAuth"
