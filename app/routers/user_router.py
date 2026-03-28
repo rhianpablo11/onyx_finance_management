@@ -125,7 +125,7 @@ def get_generic_options_for_biometric(response: Response):
         (challenge_generated, challenge_generated_str) = get_challenge()
         (options, options_json) = get_generic_options_biometric(challenge=challenge_generated)
         print('OPTIONS GENERIC : ')
-        print('OPTIONS CRU: '+challenge_generated)
+        #print('OPTIONS CRU: '+challenge_generated)
         print('OPTIONS STRING: '+challenge_generated_str)
         print('====================================')
         response.set_cookie(
@@ -137,7 +137,8 @@ def get_generic_options_for_biometric(response: Response):
             max_age=120
         )
         return json.loads(options_json)
-    except:
+    except Exception as e:
+        print('ERRO AO PEGAR OPÇÕES GENERICAS: ' + str(e))
         raise HTTPException(status_code=400, detail='erro ao pegar as opções')
 
     

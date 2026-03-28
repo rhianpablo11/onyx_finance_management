@@ -271,19 +271,26 @@ def get_options_biometric_auth(user: User):
 
 
 def get_generic_options_biometric(challenge):
-    
-    options = generate_authentication_options(
-        rp_id=BIOMETRIC_RP_ID,
-        challenge=challenge
-    )
-    return (options, options_to_json(options))
+    try:
+        options = generate_authentication_options(
+            rp_id=BIOMETRIC_RP_ID,
+            challenge=challenge
+        )
+        return (options, options_to_json(options))
+    except Exception as e:
+        print('ERRO AO GERAR OPTIONS GENERIC: ' + str(e))
+        raise HTTPException(status_code=400, detail='error in generate options')
 
 
 def get_challenge():
-    challenge = generate_challenge()
-    
-    challenge_str = base64.urlsafe_b64encode(challenge).decode('utf-8').rstrip("=")
-    return (challenge, challenge_str)
+    try:
+        challenge = generate_challenge()
+        challenge_str = base64.urlsafe_b64encode(challenge).decode('utf-8').rstrip("=")
+        return (challenge, challenge_str)
+    except Exception as e:
+        print('ERRO AO GERAR CHALLENGE: ' + str(e))
+        raise HTTPException(status_code=400, detail='error in generate challenge')
+
 
 
 
