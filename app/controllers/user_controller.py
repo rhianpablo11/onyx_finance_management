@@ -314,7 +314,7 @@ def get_credential_by_cred_id(cred_id, db: Session) -> User_crendentials:
         stmt = (select(User_crendentials)
                 .where(User_crendentials.credential_id == cred_id))
         cred = db.execute(stmt).first()[0]
-        print(cred)
+        #print(cred)
         return cred
     except Exception as e:
         print('ERRO AO BUSCAR CREDENCIAL PELO ID: ' + str(e))

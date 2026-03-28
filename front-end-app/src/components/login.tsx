@@ -17,6 +17,7 @@ function Login(){
     const [errorLogin, setErrorLogin] = useState(false)
     const [textError, setTextError] = useState('')
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
+    const [isAuthenticating, setIsAuthenticating] = useState(false)
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
@@ -46,16 +47,37 @@ function Login(){
     }
 
     const onClickFatherBiometric = async ()=>{
+        // Se já estiver processando, bloqueia cliques fantasmas/duplos
+        if (isAuthenticating) return;
+        
+        setIsAuthenticating(true);
+        setErrorLoginBiometric(false);
+
         try{
-            const optionsJson = await getOptionsLogin()
-            const authResp = await startAuthentication({'optionsJSON':optionsJson})
-            const responseVerifyBiometric = await verifyBiometric(authResp)
-            console.log(responseVerifyBiometric)
-            navigate('/dashboard')
+            const optionsJson = await getOptionsLogin();
+            const authResp = await startAuthentication({'optionsJSON':optionsJson});
+            const responseVerifyBiometric = await verifyBiometric(authResp);
+            console.log(responseVerifyBiometric);
+            navigate('/dashboard');
         } catch(err: any){
-            setTextError(err.response.data.detail)
-            setErrorLoginBiometric(true)
-            console.log('error')
+            console.log('Erro capturado na biometria:', err);
+            
+            // Se o erro for do backend (Axios)
+            if (err.response?.data?.detail) {
+                setTextError(err.response.data.detail);
+            } 
+            // Se o usuário fechou/cancelou o prompt do celular
+            else if (err.name === 'NotAllowedError') {
+                setTextError('Autenticação cancelada. Se trocou de aplicativo (Google/Samsung), tente novamente.');
+            } 
+            // Qualquer outro erro bizarro
+            else {
+                setTextError(err.message || 'Erro desconhecido ao tentar biometria.');
+            }
+            
+            setErrorLoginBiometric(true);
+        } finally {
+            setIsAuthenticating(false); // Libera o botão APENAS quando tudo terminar (ou falhar de vez)
         }
     }
 
@@ -105,7 +127,7 @@ function Login(){
                 <div className=" px-2 mt-1 mb-4">
                     <Button onClickButtonChildren={onClickFatherBiometric}
                             type="login-biometric"
-                            loading={loadingBiometric} />
+                            loading={isAuthenticating || loadingBiometric} />
                     {errorLoginBiometric && (
                         <p className="text-red-400 text-xs mt-1 pl-2">Erro ao fazer login com biometria. Detalhes do erro: {textError}</p>
                     )}
