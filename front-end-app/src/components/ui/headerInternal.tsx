@@ -13,7 +13,7 @@ function HeaderInternal(props: HeaderInternalProps){
     const onClickLogout = async () => {
         makeLogout()
         await logout()
-        navigate('/')
+        //navigate('/')
     } 
     
 

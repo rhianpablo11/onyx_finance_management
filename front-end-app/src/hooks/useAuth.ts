@@ -44,6 +44,7 @@ export function useLogin(){
         try{
             const response = await api.get('/user/logout')
             if(response.data.message == 'usuario deslogado e token removido!' ){
+                window.location.href = '/'
                 return true
             }
             return false
