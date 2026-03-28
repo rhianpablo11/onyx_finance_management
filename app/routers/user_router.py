@@ -121,7 +121,7 @@ async def get_options_for_biometric_login(db: Session = Depends(get_db), request
     return json.loads(options_return_json)
 
 
-@router.get('/login/options-generic-biometric', status_code=201)
+@router.post('/login/options-generic-biometric', status_code=201)
 def get_generic_options_for_biometric(response: Response):
     try:
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

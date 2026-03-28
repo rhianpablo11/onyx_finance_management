@@ -125,7 +125,7 @@ export function useBiometricAuth(){
             const idUser = true
             if(idUser){
                 //const dataToSend = {'id': idUser}
-                const response = await api.get(`/user/login/options-generic-biometric?t=${new Date().getTime()}`)
+                const response = await api.post(`/user/login/options-generic-biometric?t=${new Date().getTime()}`)
                 return response.data
             } else{
                 throw new Error("Email do usuário não encontrado nos cookies.")
