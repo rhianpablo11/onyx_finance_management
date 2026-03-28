@@ -336,6 +336,8 @@ def validate_signature(credential_received, expected_challenge_received, credent
         
         return verification
     except Exception as e:
+        print('VALIDATE SIGNATURE - ERRO: ' + str(e))
+        
         
         raise HTTPException(status_code=400, detail='falha na autenticação - validação da assinatura')
     

@@ -124,6 +124,10 @@ def get_generic_options_for_biometric(response: Response):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         (challenge_generated, challenge_generated_str) = get_challenge()
         (options, options_json) = get_generic_options_biometric(challenge=challenge_generated)
+        print('OPTIONS GENERIC : ')
+        print('OPTIONS CRU: '+challenge_generated)
+        print('OPTIONS STRING: '+challenge_generated_str)
+        print('====================================')
         response.set_cookie(
             key='biometric_challenge',
             value=challenge_generated_str,
@@ -155,11 +159,15 @@ async def verify_biometric(response: Response, request: Request = {}, db: Sessio
     print(f"👉 Host recebido no Header: '{request.headers.get('host')}'")
     
     saved_challenge = request.cookies.get('biometric_challenge')
+    print('=================================')
+    print('👉 Challenge salvo no cookie: ' + str(saved_challenge))
     if not saved_challenge:
         raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
     try:
         credential_received_in_request = body_requisition.get('credential')
-        
+        print('=================================')
+        print('👉 Credential recebida no corpo da requisição: ' + str(credential_received_in_request))
+        print('=================================')
         credential_id = credential_received_in_request['id']
 
 
