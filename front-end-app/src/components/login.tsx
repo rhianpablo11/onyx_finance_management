@@ -18,6 +18,7 @@ function Login(){
     const [textError, setTextError] = useState('')
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
     const [isAuthenticating, setIsAuthenticating] = useState(false)
+    const [cachedOptions, setCachedOptions] = useState<any>(null)
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
@@ -47,37 +48,45 @@ function Login(){
     }
 
     const onClickFatherBiometric = async ()=>{
-        // Se já estiver processando, bloqueia cliques fantasmas/duplos
         if (isAuthenticating) return;
         
         setIsAuthenticating(true);
         setErrorLoginBiometric(false);
 
         try{
-            const optionsJson = await getOptionsLogin();
-            const authResp = await startAuthentication({'optionsJSON':optionsJson});
+            let currentOptions = cachedOptions;
+            
+            // Só faz o GET no backend se não tivermos um desafio guardado
+            if (!currentOptions) {
+                currentOptions = await getOptionsLogin();
+                setCachedOptions(currentOptions);
+            }
+
+            const authResp = await startAuthentication({'optionsJSON': currentOptions});
             const responseVerifyBiometric = await verifyBiometric(authResp);
             console.log(responseVerifyBiometric);
             navigate('/dashboard');
+            
         } catch(err: any){
             console.log('Erro capturado na biometria:', err);
             
-            // Se o erro for do backend (Axios)
             if (err.response?.data?.detail) {
                 setTextError(err.response.data.detail);
+                // Se o backend der erro (ex: cookie expirou após 2 min), limpamos o cache para pegar um novo na próxima
+                setCachedOptions(null); 
             } 
-            // Se o usuário fechou/cancelou o prompt do celular
             else if (err.name === 'NotAllowedError') {
-                setTextError('Autenticação cancelada. Se trocou de aplicativo (Google/Samsung), tente novamente.');
+                setTextError('Autenticação cancelada. Tente novamente e selecione o Samsung Pass.');
+                // AQUI ESTÁ A MÁGICA: Não limpamos o cache! Na próxima tentativa, ele usa o mesmo desafio.
             } 
-            // Qualquer outro erro bizarro
             else {
                 setTextError(err.message || 'Erro desconhecido ao tentar biometria.');
+                setCachedOptions(null);
             }
             
             setErrorLoginBiometric(true);
         } finally {
-            setIsAuthenticating(false); // Libera o botão APENAS quando tudo terminar (ou falhar de vez)
+            setIsAuthenticating(false);
         }
     }
 
