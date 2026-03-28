@@ -1,6 +1,6 @@
 // component for login feature
 
-import {  useState } from "react"
+import {  useRef, useState } from "react"
 import Button from "./ui/button"
 import Input from "./ui/input"
 import { useBiometricAuth, useLogin } from "../hooks/useAuth"
@@ -19,6 +19,7 @@ function Login(){
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
     const [isAuthenticating, setIsAuthenticating] = useState(false)
     const [cachedOptions, setCachedOptions] = useState<any>(null)
+    const isAuthenticatingRef = useRef(false)
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
     const onChangeInputFatherEmail = (value: string) => {
@@ -48,24 +49,32 @@ function Login(){
     }
 
     const onClickFatherBiometric = async ()=>{
-        if (isAuthenticating) return;
+        // Se a fechadura estiver trancada, ignora qualquer clique fantasma!
+        if (isAuthenticatingRef.current) return;
         
-        setIsAuthenticating(true);
+        isAuthenticatingRef.current = true; // Tranca instantaneamente (síncrono)
+        setIsAuthenticating(true); // Atualiza a interface (assíncrono)
         setErrorLoginBiometric(false);
 
         try{
             let currentOptions = cachedOptions;
             
-            // Só faz o GET no backend se não tivermos um desafio guardado
             if (!currentOptions) {
                 currentOptions = await getOptionsLogin();
                 setCachedOptions(currentOptions);
             }
 
             const authResp = await startAuthentication({'optionsJSON': currentOptions});
+            
+            // MÁGICA: O prompt fechou e temos a assinatura. 
+            // Limpamos o cache AQUI para garantir que o próximo login (após logout) venha limpo!
+            setCachedOptions(null);
+
             const responseVerifyBiometric = await verifyBiometric(authResp);
             console.log(responseVerifyBiometric);
-            setCachedOptions(null)
+            
+            // Se tudo correr bem, vamos para o dashboard. 
+            // Não destrancamos a fechadura aqui para evitar ações enquanto a página muda.
             navigate('/dashboard');
             
         } catch(err: any){
@@ -73,12 +82,11 @@ function Login(){
             
             if (err.response?.data?.detail) {
                 setTextError(err.response.data.detail);
-                // Se o backend der erro (ex: cookie expirou após 2 min), limpamos o cache para pegar um novo na próxima
-                setCachedOptions(null); 
+                setCachedOptions(null); // Backend recusou (ex: expirou), precisamos de um novo desafio na próxima
             } 
             else if (err.name === 'NotAllowedError') {
-                setTextError('Autenticação cancelada. Tente novamente e selecione o Samsung Pass.');
-                // AQUI ESTÁ A MÁGICA: Não limpamos o cache! Na próxima tentativa, ele usa o mesmo desafio.
+                setTextError('Autenticação cancelada. Tente novamente.');
+                // NÃO limpamos o cache. O Android vai precisar dele para a próxima tentativa!
             } 
             else {
                 setTextError(err.message || 'Erro desconhecido ao tentar biometria.');
@@ -86,11 +94,12 @@ function Login(){
             }
             
             setErrorLoginBiometric(true);
-        } finally {
+            
+            // Só destrancamos se houver um erro, para o utilizador poder tentar de novo
+            isAuthenticatingRef.current = false;
             setIsAuthenticating(false);
         }
     }
-
 
     const redirectToRecoveryPassword = ()=>{
         navigate('/forget-password')
