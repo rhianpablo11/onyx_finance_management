@@ -12,3 +12,6 @@ apscheduler
 pytest
 httpx
 freezegun
+pandas
+prophet
+matplotlib
