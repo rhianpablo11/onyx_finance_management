@@ -77,12 +77,12 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
                                                              user_id=current_user['user_id'])['value']
     before_month, before_year = get_previous_month_data()
 
-    print(before_month, before_year)
+    #print(before_month, before_year)
     balance_previous_month = get_monthly_balance_value(db=db,
                                                        user_id=current_user['user_id'],
                                                        month=before_month,
                                                        year=before_year)
-    print(balance_previous_month)
+    #print(balance_previous_month)
     comp_with_months = 0.0
     if(balance_previous_month['value']!=0):
         

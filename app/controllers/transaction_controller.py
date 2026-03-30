@@ -93,7 +93,8 @@ def create_new_expense(user_id: int, text_typed: str, db: Session):
                 payment_date=ia_response['first_payment_date'],
                 activated=True,
                 type_expense=ia_response['type'],
-                installments_count=ia_response['installments_count']
+                installments_count=ia_response['installments_count'],
+                description=ia_response['description']
             )
 
             db.add(new_expense_fixed)
@@ -415,7 +416,7 @@ def get_balance_in_period(db: Session, user_id: int,start_date: date, end_date: 
     
 
 
-# locgical of this function need alteration
+
 def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date, end_date: date):
     stmt = (select(Expenses_fixed, Charge_type.name.label('charge_name'))
             .join(Charge_type, Expenses_fixed.charge == Charge_type.id)
