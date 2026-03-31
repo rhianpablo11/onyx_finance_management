@@ -44,6 +44,7 @@ export function useLogin(){
         try{
             const response = await api.get('/user/logout')
             if(response.data.message == 'usuario deslogado e token removido!' ){
+                window.location.href = '/'
                 return true
             }
             return false
@@ -87,7 +88,7 @@ export function useBiometricAuth(){
     const getOptions = async () =>{
         setLoadingBiometric(true)
         try{
-            const response = await api.get('/user/register/options-biometric')
+            const response = await api.get(`/user/register/options-biometric?t=${new Date().getTime()}`)
             console.log(response)
             return response.data
         } catch (err: any) {
@@ -125,7 +126,7 @@ export function useBiometricAuth(){
             const idUser = true
             if(idUser){
                 //const dataToSend = {'id': idUser}
-                const response = await api.get('/user/login/options-generic-biometric')
+                const response = await api.post(`/user/login/options-generic-biometric?t=${new Date().getTime()}`)
                 return response.data
             } else{
                 throw new Error("Email do usuário não encontrado nos cookies.")

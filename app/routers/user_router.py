@@ -5,11 +5,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from app.controllers.user_temp_controller import associate_email_with_code, verify_code
 from app.core.auth import ACCESS_TOKEN_DURATION_TIME, create_access_token, get_current_user, verify_token
+from app.core.security import BIOMETRIC_ORIGIN, BIOMETRIC_RP_ID
 from app.schemas.user_schema import UserCreate, UserResponse, UserResponseLogin
 from app.controllers.user_controller import add_new_credential, create_user, authenticate_user, delete_biometric_of_device_selected, delete_code_of_recovery_password, device_has_biometric_registered, get_challenge, get_credential_by_cred_id, get_credential_used, get_generic_options_biometric, get_options, get_options_biometric_auth, get_user_by_credential_id, get_user_by_email, get_user_by_id, remove_current_challenge_of_user, save_code_of_recovery_password, save_current_chalenge, send_email_recovery_password, update_password, validate_signature, verify_code_of_recovery_password, verify_registration_biometric, verify_user_exist
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
+import traceback
+from webauthn.helpers import base64url_to_bytes
 
 router = APIRouter()
 
@@ -56,8 +59,9 @@ def verify_user(db: Session = Depends(get_db),
 
 
 @router.get('/register/options-biometric', status_code=201)
-def get_options_for_biometric(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def get_options_for_biometric(response: Response, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     try:    
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         user_now = get_user_by_id(db=db, user_id = current_user['user_id'])
         
         (options, options_json) = get_options(user_id_now=user_now.id,
@@ -82,6 +86,9 @@ async def register_biometric(db: Session = Depends(get_db), current_user: dict =
     if not user_now.current_chalenge:
         raise HTTPException(status_code=400, detail='nenhum desafio foi encontrado')
 
+    print("\n" + "="*40)
+    print("🕵️‍♂️ MODO DETETIVE: REGISTRO")
+    print('CHALLENGE ATUAL DO USUÁRIO: ' + str(user_now.current_chalenge))
     print(user_now.current_chalenge)
     verification_return = verify_registration_biometric(body=body_requisition['dataBiometric'],
                                                         challenge_str=user_now.current_chalenge)
@@ -114,11 +121,16 @@ async def get_options_for_biometric_login(db: Session = Depends(get_db), request
     return json.loads(options_return_json)
 
 
-@router.get('/login/options-generic-biometric', status_code=201)
+@router.post('/login/options-generic-biometric', status_code=201)
 def get_generic_options_for_biometric(response: Response):
     try:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         (challenge_generated, challenge_generated_str) = get_challenge()
         (options, options_json) = get_generic_options_biometric(challenge=challenge_generated)
+        print('OPTIONS GENERIC : ')
+        #print('OPTIONS CRU: '+challenge_generated)
+        print('OPTIONS STRING: '+challenge_generated_str)
+        print('====================================')
         response.set_cookie(
             key='biometric_challenge',
             value=challenge_generated_str,
@@ -128,7 +140,8 @@ def get_generic_options_for_biometric(response: Response):
             max_age=120
         )
         return json.loads(options_json)
-    except:
+    except Exception as e:
+        print('ERRO AO PEGAR OPÇÕES GENERICAS: ' + str(e))
         raise HTTPException(status_code=400, detail='erro ao pegar as opções')
 
     
@@ -136,46 +149,80 @@ def get_generic_options_for_biometric(response: Response):
 @router.post('/login/verify-biometric', status_code=201)
 async def verify_biometric(response: Response, request: Request = {}, db: Session = Depends(get_db)):
     body_requisition = await request.json()
+    print("\n" + "="*40)
+    print("🕵️‍♂️ MODO DETETIVE: BIOMETRIA (CELULAR VS PC)")
+    print("="*40)
+    
+    
+    # 1. O que a API acha que é a verdade (Variáveis de Ambiente)
+    print(f"👉 ORIGIN Esperado (.env): '{BIOMETRIC_ORIGIN}'")
+    print(f"👉 RP_ID Esperado (.env): '{BIOMETRIC_RP_ID}'")
+    
+    # 2. O que o NGINX/Cloudflare entregou de verdade nos cabeçalhos
+    print(f"👉 Origin recebido no Header: '{request.headers.get('origin')}'")
+    print(f"👉 Host recebido no Header: '{request.headers.get('host')}'")
+    
     saved_challenge = request.cookies.get('biometric_challenge')
+    print('=================================')
+    print('👉 Challenge salvo no cookie: ' + str(saved_challenge))
+    print("="*40)
     if not saved_challenge:
         raise HTTPException(status_code=400, detail='Sessão de login expirada ou invalida')
-    
-    credential_received_in_request = body_requisition.get('credential')
-    
-    credential_id = credential_received_in_request['id']
+    try:
+        credential_received_in_request = body_requisition.get('credential')
+        print('=================================')
+        print('👉 Credential recebida no corpo da requisição: ' + str(credential_received_in_request))
+        print('=================================')
+        credential_id = credential_received_in_request['id']
 
 
-    expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
+        #expected_challenge = base64.urlsafe_b64decode(saved_challenge + '==')
+        expected_challenge = base64url_to_bytes(saved_challenge)
+        credential_founded = get_credential_by_cred_id(credential_id, db)
+        print('=================================')
+        print(f"👉 Credential encontrada no banco de dados para o ID '{credential_id}': " + str(credential_founded))
+        print('=================================')
 
-    credential_founded = get_credential_by_cred_id(credential_id, db)
-    
+        user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
+        
+        verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
+        print("="*40)
+        print("✅ VERIFICAÇÃO BEM SUCEDIDA! DADOS OBTIDOS:")
+        print(f"   - User ID: {user_founded.id}")
+        print(f"   - Credential ID: {credential_founded.id}")
+        print(f"   - New Sign Count: {verification_returned}")
+        print("="*40)
+        credential_founded.sign_count = verification_returned.new_sign_count
+        db.commit()
+        data_user = {'id': user_founded.id}
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+        access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
 
-    user_founded = get_user_by_credential_id(db, credential_founded.user_id)    
-    
-    verification_returned = validate_signature(credential_received=credential_received_in_request, expected_challenge_received=expected_challenge, credential_found=credential_founded)
+        refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
+        refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite='none',
+            max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
+        )
 
-    credential_founded.sign_count = verification_returned.new_sign_count
-
-    data_user = {'id': user_founded.id}
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
-    access_token = create_access_token(data=data_user, expires_delta=access_token_expires)
-
-    refresh_token_expires = timedelta(days=ACCESS_TOKEN_DURATION_TIME)
-    refresh_token = create_access_token(data=data_user, expires_delta=refresh_token_expires)
-    response.set_cookie(
-        key='refresh_token',
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite='none',
-        max_age=ACCESS_TOKEN_DURATION_TIME * 24 * 60 * 60
-    )
-
-    return {
-        'access_token': access_token,
-        'token_type': 'bearer',
-        'user_data': user_founded
-    }
+        return {
+            'access_token': access_token,
+            'token_type': 'bearer',
+            'user_data': user_founded
+        }
+    except Exception as e:
+        print(f'ERROR BIOMETRIA VERIFICAÇÃO: {e}')
+        print("\n🚨 A EXPLOSÃO ACONTECEU AQUI:")
+        print(f"Erro cru: {repr(e)}")
+        print("\n🔍 RASTRO COMPLETO DO ERRO (TRACEBACK):")
+        traceback.print_exc() # Isso vai cuspir a linha exata da biblioteca WebAuthn que barrou
+        
+        print("="*40 + "\n")
+        raise HTTPException(status_code=400, detail='Erro ao verificar a biometria')
 
 
 @router.post('/biometric/delete', status_code=201)

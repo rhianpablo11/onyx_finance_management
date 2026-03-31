@@ -1,14 +1,14 @@
 // component for login feature
 
-import {  useState } from "react"
+import { useState } from "react"
 import Button from "./ui/button"
 import Input from "./ui/input"
 import { useBiometricAuth, useLogin } from "../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 import { startAuthentication } from "@simplewebauthn/browser"
 
-
-
+// 1. A trava global continua aqui fora, blindada contra re-renders do React
+let isAuthenticatingGlobal = false;
 
 function Login(){
     const navigate = useNavigate()
@@ -19,6 +19,7 @@ function Login(){
     const [errorLoginBiometric, setErrorLoginBiometric] = useState(false)
     const {login, loading} = useLogin()
     const {getOptionsLogin, verifyBiometric, loadingBiometric} = useBiometricAuth()
+
     const onChangeInputFatherEmail = (value: string) => {
         setEmail(value)
         setErrorLogin(false)
@@ -32,39 +33,73 @@ function Login(){
     }
     
     const onClickFather = async (buttonClicked:string) =>{
-        console.log(buttonClicked)
         try{
+            console.log(buttonClicked)
             await login({email, password})
-            console.log('deu bom')
             setErrorLogin(false)
             navigate('/dashboard')
         } catch(err){
-            console.log('deu erro')
             setErrorLogin(true)
-            console.error('falha')
         }
     }
 
     const onClickFatherBiometric = async ()=>{
+        if (isAuthenticatingGlobal) return;
+        
+        isAuthenticatingGlobal = true; 
+        setErrorLoginBiometric(false);
+
         try{
-            const optionsJson = await getOptionsLogin()
-            const authResp = await startAuthentication({'optionsJSON':optionsJson})
-            const responseVerifyBiometric = await verifyBiometric(authResp)
-            console.log(responseVerifyBiometric)
-            navigate('/dashboard')
+            let optionsToUse;
+            const cachedOptionsStr = sessionStorage.getItem('bio_challenge_cache');
+            
+            // 2. Se o usuário cancelou na tentativa anterior, o desafio salvo será reaproveitado.
+            // Isso impede que o backend gere um cookie novo e dessincronize do Samsung Pass!
+            if (cachedOptionsStr) {
+                optionsToUse = JSON.parse(cachedOptionsStr);
+            } else {
+                optionsToUse = await getOptionsLogin();
+                sessionStorage.setItem('bio_challenge_cache', JSON.stringify(optionsToUse));
+            }
+
+            // 3. Inicia a biometria
+            const authResp = await startAuthentication(optionsToUse);
+            const responseVerifyBiometric = await verifyBiometric(authResp);
+            
+            console.log(responseVerifyBiometric);
+            
+            // 4. SUCESSO TOTAL! Destrói o cache para que, quando o usuário fizer Logout,
+            // o próximo login não tente usar lixo antigo.
+            sessionStorage.removeItem('bio_challenge_cache');
+            navigate('/dashboard');
+            
         } catch(err: any){
-            setTextError(err.response.data.detail)
-            setErrorLoginBiometric(true)
-            console.log('error')
+            console.log('Erro capturado na biometria:', err);
+            
+            if (err.response?.data?.detail) {
+                setTextError(err.response.data.detail);
+                // Backend recusou (ex: cookie expirou). Apagamos o cache para pedir um novo na próxima.
+                sessionStorage.removeItem('bio_challenge_cache');
+            } 
+            else if (err.name === 'NotAllowedError') {
+                setTextError('Autenticação cancelada. Tente novamente.');
+                // MÁGICA CONTRA A SAMSUNG AQUI: 
+                // NÃO apagamos o sessionStorage! O celular vai reaproveitar a chave no próximo clique.
+            } 
+            else {
+                setTextError(err.message || 'Erro desconhecido ao tentar biometria.');
+                sessionStorage.removeItem('bio_challenge_cache');
+            }
+            
+            setErrorLoginBiometric(true);
+        } finally {
+            isAuthenticatingGlobal = false;
         }
     }
-
 
     const redirectToRecoveryPassword = ()=>{
         navigate('/forget-password')
     }
-
-    
 
     return(
         <>
@@ -107,7 +142,7 @@ function Login(){
                             type="login-biometric"
                             loading={loadingBiometric} />
                     {errorLoginBiometric && (
-                        <p className="text-red-400 text-xs mt-1 pl-2">Erro ao fazer login com biometria. Detalhes do erro: {textError}</p>
+                        <p className="text-red-400 text-xs mt-1 pl-2">Erro: {textError}</p>
                     )}
                 </div>
                     
@@ -116,6 +151,5 @@ function Login(){
         </>
     )
 }
-
 
 export default Login
