@@ -119,3 +119,50 @@ def analyze_transaction_text(text: str, user_categories: list[str] = None, charg
     except Exception as e:
         print(f"Erro na IA: {e}")
         return None
+
+
+
+def generate_behavioral_insights(regras_batch: list[dict]):
+    """
+    Recebe um lote de regras matemáticas do Apriori e pede para o Gemini 
+    traduzir tudo em insights humanos de uma vez só.
+    """
+    if not regras_batch:
+        return []
+
+    prompt = f"""
+    Você é a IA de insights do aplicativo de finanças Onyx. Seu tom é amigável, direto e focado em educação financeira.
+    
+    Aqui está um JSON com regras de comportamento estatístico descobertas pelo nosso algoritmo para vários usuários. 
+    A regra (ex: "Farmácia -> Ifood") indica que quando o usuário gasta com a primeira categoria, 
+    ele tem uma probabilidade altíssima de gastar com a segunda categoria no mesmo dia.
+    
+    Dados de Entrada:
+    {json.dumps(regras_batch, ensure_ascii=False)}
+    
+    Sua tarefa: Gere um insight curto (máximo de 2 linhas) para cada regra, dando um toque 
+    comportamental para o usuário refletir sobre esse hábito.
+    
+    Retorne uma lista JSON de objetos com as chaves "user_id" e "insight".
+    """
+    
+    try:
+        # Usando exatamente o seu padrão de chamada!
+        response = client.models.generate_content(
+            # Aqui podemos usar o flash normal ou o lite. Para textos reflexivos, o flash puro costuma ter um vocabulário melhor.
+            model="gemini-2.5-flash", 
+            contents=prompt,
+            config={
+                'response_mime_type': 'application/json'
+            }
+        )
+        
+        # A sua limpeza de segurança anti-markdown (perfeita)
+        cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
+        
+        insights_gerados = json.loads(cleaned_text)
+        return insights_gerados
+        
+    except Exception as e:
+        print(f"Erro na IA ao gerar insights em lote: {e}")
+        return []
