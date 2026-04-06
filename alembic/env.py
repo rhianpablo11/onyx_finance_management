@@ -48,6 +48,7 @@ from app.models.expense import Expense
 from app.models.expenses_fixed import Expenses_fixed
 from app.models.user_crendentials import User_crendentials
 from app.models.user_temp import User_temp
+from app.models.ia_insights import Ia_insights
 from app.core.database import Base 
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
