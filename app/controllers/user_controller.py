@@ -220,6 +220,8 @@ def verify_registration_biometric(body, challenge_str):
 def add_new_credential(db: Session, user_id: int, device_id: str, verification):
     
     credencial_id_text = bytes_to_base64url(verification.credential_id)
+    print('add new credential - credencial id: ' + credencial_id_text)
+    print('credencial id text: ' + credencial_id_text)
     new_credential = User_crendentials(
         user_id=user_id,
         credential_id=credencial_id_text,
@@ -271,17 +273,26 @@ def get_options_biometric_auth(user: User):
 
 
 def get_generic_options_biometric(challenge):
-    
-    options = generate_authentication_options(
-        rp_id=BIOMETRIC_RP_ID,
-        challenge=challenge
-    )
-    return (options, options_to_json(options))
+    try:
+        options = generate_authentication_options(
+            rp_id=BIOMETRIC_RP_ID,
+            challenge=challenge
+        )
+        return (options, options_to_json(options))
+    except Exception as e:
+        print('ERRO AO GERAR OPTIONS GENERIC: ' + str(e))
+        raise HTTPException(status_code=400, detail='error in generate options')
 
 
 def get_challenge():
-    challenge = generate_challenge()
-    return (challenge, base64.b64encode(challenge).decode('utf-8'))
+    try:
+        challenge = generate_challenge()
+        challenge_str = base64.urlsafe_b64encode(challenge).decode('utf-8').rstrip("=")
+        return (challenge, challenge_str)
+    except Exception as e:
+        print('ERRO AO GERAR CHALLENGE: ' + str(e))
+        raise HTTPException(status_code=400, detail='error in generate challenge')
+
 
 
 
@@ -303,9 +314,10 @@ def get_credential_by_cred_id(cred_id, db: Session) -> User_crendentials:
         stmt = (select(User_crendentials)
                 .where(User_crendentials.credential_id == cred_id))
         cred = db.execute(stmt).first()[0]
-        print(cred)
+        #print(cred)
         return cred
-    except:
+    except Exception as e:
+        print('ERRO AO BUSCAR CREDENCIAL PELO ID: ' + str(e))
         raise HTTPException(status_code=400, detail='credencial nao encontrada')
     
 
@@ -315,7 +327,8 @@ def get_user_by_credential_id(db: Session, cred_id_user):
                 .where(User.id == cred_id_user))
         user_founded = db.execute(stmt).first()[0]
         return user_founded
-    except:
+    except Exception as e:
+        print('ERRO AO BUSCAR USUARIO PELO ID: ' + str(e))  
         raise HTTPException(status_code=400, detail='usuario nao encontrado')
 
 def validate_signature(credential_received, expected_challenge_received, credential_found):
@@ -334,6 +347,8 @@ def validate_signature(credential_received, expected_challenge_received, credent
         
         return verification
     except Exception as e:
+        print('VALIDATE SIGNATURE - ERRO: ' + str(e))
+        
         
         raise HTTPException(status_code=400, detail='falha na autenticação - validação da assinatura')
     

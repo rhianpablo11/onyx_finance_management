@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getToken, removeToken, setToken } from './tokenService';
 
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
 export const api = axios.create({
     baseURL: apiUrl, 

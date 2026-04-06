@@ -34,4 +34,10 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/finance-management-frontend:v${{ github.run_number }}
 
-
+  deploy:
+    name: deploy frontend vps amd
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: runs script to update api running
+        run: cd /home/ubuntu/scripts_CI_CD && ./deploy_frontend.sh

@@ -43,3 +43,11 @@ jobs:
         run: |
           curl -X POST https://app.koyeb.com/v1/services/${{ secrets.KOYEB_ID_SERVICE }}/redeploy \
             -H "Authorization: Bearer ${{ secrets.KOYEB_API_TOKEN }}"
+            
+  deploy:
+    name: deploy api vps amd
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: runs script to update api running
+        run: cd /home/ubuntu/scripts_CI_CD && ./deploy_api.sh
