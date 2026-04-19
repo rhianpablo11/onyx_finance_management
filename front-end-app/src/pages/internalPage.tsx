@@ -8,11 +8,12 @@ import backgroundInternalPage from '../assets/bg-internalPage.svg?url'
 import { getCookie } from "../services/cookiesService"
 import ConfigsPage from "./configsPage"
 import { getGreting } from "../utils/utils"
+import InsightsPage from "./insightsPage"
 
 
 
 function InternalPage(){
-    const [pageSelected, setPageSelected] = useState<string>('home')
+    const [pageSelected, setPageSelected] = useState<string>('insights')
     const [typeToShowHeader, setTypeToShowHeader] = useState<string>('wellcome')
     const [legendHeader, setLegendHeader] = useState<string>('')
     const [titleHeader, setTitleHeader] = useState<string>('')
@@ -28,7 +29,7 @@ function InternalPage(){
         if(customBackAction){
             customBackAction()
         }else{
-            setPageSelected('home')
+            setPageSelected('insights')
         }
         
     }
@@ -58,7 +59,7 @@ function InternalPage(){
             )
         } else if(pageSelected == 'insights'){
             return(
-                <></>
+                <InsightsPage />
             )
         }
     }

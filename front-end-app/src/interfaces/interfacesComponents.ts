@@ -169,3 +169,12 @@ export interface ForgetPasswordSecondStepProps{
     email: string
     setSecondStepIsOk: (isOk: boolean) => void
 }
+
+export interface FinanceComportmentProps{
+    title: string
+    description: string
+}
+
+export interface CategoryOfExpensesProps{
+    title: string
+}
