@@ -29,6 +29,7 @@
     "react-countup": "^6.5.3",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",
+    "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
     "tailwind-variants": "^3.2.2",
     "tailwindcss": "^4.1.18",

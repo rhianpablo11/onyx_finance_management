@@ -1,4 +1,5 @@
 import backgroundExtractPage from '../assets/Group 8.svg?url'
+import GraphicBalance from './ui/graphicBalance'
 
 function BalanceMonthsBarChart(){
 
@@ -11,7 +12,9 @@ function BalanceMonthsBarChart(){
                   Gastos nos ult. 3 meses
               </h1>
               <div className={`mt-1 h-px w-full bg-linear-to-r from-violet-900/30 via-white/30 to-violet-900/30`}></div>
-              
+              <div className='w-full flex mt-3'>
+                  <GraphicBalance />
+              </div>
           </div>
       </div>
 
