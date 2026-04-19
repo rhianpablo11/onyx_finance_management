@@ -1,38 +1,71 @@
-import { Card, ProgressCircle, Text } from '@tremor/react';
+import { ProgressCircle } from './ui/progressCircle'; 
+import { Utensils, Car, TrendingUp } from 'lucide-react'; // Importando ícones
 
-// Dados fictícios simulando o que virá do Backend
 const topCategories = [
-  { name: 'Alimentação', value: 75, color: 'rose', amount: 'R$ 850' },
-  { name: 'Transporte', value: 45, color: 'amber', amount: 'R$ 320' },
-  { name: 'Moradia', value: 90, color: 'indigo', amount: 'R$ 1.500' },
-];
+  { 
+    name: 'Alimentação', 
+    value: 50, 
+    variant: 'ifood', 
+    amount: 'R$ 850', 
+    icon: Utensils,
+    iconColor: 'text-ifood-red-500' 
+  },
+  { 
+    name: 'Transporte', 
+    value: 45, 
+    variant: 'uber', 
+    amount: 'R$ 320', 
+    icon: Car,
+    iconColor: 'text-gray-900' 
+  },
+  { 
+    name: 'Investimento', 
+    value: 90, 
+    variant: 'onyx', 
+    amount: 'R$ 1.500', 
+    icon: TrendingUp,
+    iconColor: 'text-onyx-green-500' 
+  },
+] as const;
 
-export function TopSpendingCircles() {
+function CategorysCircles() {
   return (
-    <Card className="max-w-3xl mx-auto mt-6">
-      <Text className="text-lg font-semibold text-gray-700 mb-6">Top 3 Categorias (Mês)</Text>
-      
-      <div className="flex flex-wrap justify-center gap-8 sm:gap-12">
+    
+    <div className='flex w-full items-center justify-center'>
+      <div className="grid grid-cols-3 gap-4">
         {topCategories.map((cat) => (
-          <div key={cat.name} className="flex flex-col items-center justify-center">
+          <div key={cat.name} className="flex flex-col items-center">
+            
             <ProgressCircle 
               value={cat.value} 
-              size="lg" // Tamanho do círculo (sm, md, lg, xl)
-              color={cat.color as any} 
-              strokeWidth={8} // Grossura da linha
+              radius={45} 
+              strokeWidth={6}
+              variant={cat.variant as any} 
+              className="mb-2"
             >
-              <span className="text-sm font-medium text-gray-700">
-                {cat.value}%
-              </span>
+              <div className="flex flex-col items-center justify-center">
+                {/* <cat.icon size={18} className={cat.iconColor} /> */}
+                <span className="text-sm font-medium text-white/70 ">
+                  {cat.value}%
+                </span>
+              </div>
             </ProgressCircle>
             
-            <div className="text-center mt-3">
-              <p className="text-sm font-medium text-gray-800">{cat.name}</p>
-              <p className="text-xs text-gray-500">{cat.amount}</p>
+            <div className="text-center">
+              <p className="text-sm font-normal text-white  tracking-wider">
+                {cat.name}
+              </p>
+              <p className="text-sm font-normal text-white/60">
+                {cat.amount}
+              </p>
             </div>
+            
           </div>
         ))}
       </div>
-    </Card>
-  );
+    </div>
+  )
 }
+
+
+export default CategorysCircles

@@ -1,6 +1,6 @@
 import backgroundExtractPage from '../assets/Group 8.svg?url'
 import type { CategoryOfExpensesProps } from '../interfaces/interfacesComponents';
-import { TopSpendingCircles } from './categorysCircles';
+import CategorysCircles from './categorysCircles';
 
 
 function CategoryOfExpenses(props: CategoryOfExpensesProps) {
@@ -13,9 +13,9 @@ function CategoryOfExpenses(props: CategoryOfExpensesProps) {
                      <h1 className='text-white font-normal text-2xl'>
                         {title}
                     </h1>
-                    <div className={`mt-1 h-px w-full bg-linear-to-r from-violet-900/30 via-white/30 to-violet-900/30`}></div>
-                    <div className='w-full flex h-full'>
-                        <TopSpendingCircles />
+                    <div className={`mt-2 h-px w-full bg-linear-to-r from-violet-900/30 via-white/30 to-violet-900/30`}></div>
+                    <div className='w-full flex h-full mt-3'>
+                        <CategorysCircles />
                     </div>
                 </div>
             </div>
