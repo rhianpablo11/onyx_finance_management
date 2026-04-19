@@ -96,7 +96,7 @@ def training_model():
             for item in insights_text:
                 add_new_insight_investigator(
                     user_id=item['user_id'],
-                    title="Insight de Comportamento Financeiro",
+                    title="Comportamento Financeiro",
                     text_content=item['insight'],
                     db=db
                 )
