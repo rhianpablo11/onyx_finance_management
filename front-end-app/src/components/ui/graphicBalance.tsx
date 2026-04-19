@@ -9,16 +9,10 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
+import type { GraphicBalanceProps } from '../../interfaces/interfacesComponents';
 
 // Dados simulados (Depois vamos puxar do seu FastAPI!)
-const monthlyData = [
-  { name: 'Nov', Entradas: 4200, Saídas: 3800 },
-  { name: 'Dez', Entradas: 5100, Saídas: 4900 },
-  { name: 'Jan', Entradas: 4800, Saídas: 3200 },
-  { name: 'Fev', Entradas: 3900, Saídas: 4100 }, 
-  { name: 'Mar', Entradas: 6200, Saídas: 4500 },
-  { name: 'Abr', Entradas: 5500, Saídas: 3100 },
-];
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -39,8 +33,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-function GraphicBalance() {
-  
+function GraphicBalance(props: GraphicBalanceProps) {
+  const {monthlyData} = props;
   const [activeLegend, setActiveLegend] = useState<string | null>(null);
 
   // Função que roda ao clicar na legenda

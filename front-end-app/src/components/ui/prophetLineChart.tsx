@@ -9,49 +9,13 @@ import {
   ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
+import type { ProphetLineChartProps } from '../../interfaces/interfacesComponents';
 
 // 🔥 DADOS SIMULADOS (Como o seu FastAPI deve devolver)
 // O segredo é o dia "15 Abr" (Hoje). Ele tem o saldo real E a previsão para as linhas se conectarem!
 // 🔥 DADOS SIMULADOS (MÊS COMPLETO)
 // Treinou do dia 01 ao dia 15. Prevê do dia 16 ao dia 30.
-const prophetData = [
-  // --- PASSADO (DADOS REAIS) ---
-  { date: '01 Abr', real: 3100, prev: null, band: null },
-  { date: '02 Abr', real: 2900, prev: null, band: null },
-  { date: '03 Abr', real: 2950, prev: null, band: null },
-  { date: '04 Abr', real: 3400, prev: null, band: null },
-  { date: '05 Abr', real: 3200, prev: null, band: null },
-  { date: '06 Abr', real: 3800, prev: null, band: null },
-  { date: '07 Abr', real: 3600, prev: null, band: null },
-  { date: '08 Abr', real: 3450, prev: null, band: null },
-  { date: '09 Abr', real: 3900, prev: null, band: null },
-  { date: '10 Abr', real: 4100, prev: null, band: null },
-  { date: '11 Abr', real: 3800, prev: null, band: null },
-  { date: '12 Abr', real: 4300, prev: null, band: null },
-  { date: '13 Abr', real: 4000, prev: null, band: null },
-  { date: '14 Abr', real: 4000, prev: 4000, band: [4150, 4150] },
-  
-  // --- PONTO DE CONEXÃO (HOJE) ---
-  { date: '15 Abr', real: null, prev: 4150, band: [4150, 4150] }, 
-  
-  // --- FUTURO (PREVISÃO DA IA) ---
-  // Repare como a banda (margem de erro) vai ficando cada vez mais larga!
-  { date: '16 Abr', real: null, prev: 4000, band: [3800, 4200] },
-  { date: '17 Abr', real: null, prev: 3900, band: [3600, 4200] },
-  { date: '18 Abr', real: null, prev: 4100, band: [3700, 4500] },
-  { date: '19 Abr', real: null, prev: 3800, band: [3300, 4300] },
-  { date: '20 Abr', real: null, prev: 4200, band: [3600, 4800] },
-  { date: '21 Abr', real: null, prev: 4500, band: [3800, 5200] },
-  { date: '22 Abr', real: null, prev: 4300, band: [3500, 5100] },
-  { date: '23 Abr', real: null, prev: 4700, band: [3800, 5600] },
-  { date: '24 Abr', real: null, prev: 4600, band: [3600, 5600] },
-  { date: '25 Abr', real: null, prev: 4900, band: [3800, 6000] },
-  { date: '26 Abr', real: null, prev: 4800, band: [3600, 6000] },
-  { date: '27 Abr', real: null, prev: 5100, band: [3800, 6400] },
-  { date: '28 Abr', real: null, prev: 5300, band: [3900, 6700] },
-  { date: '29 Abr', real: null, prev: 5000, band: [3500, 6500] },
-  { date: '30 Abr', real: null, prev: 5400, band: [3700, 7100] },
-];
+
 
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -99,7 +63,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-function ProphetLineChart() {
+function ProphetLineChart(props: ProphetLineChartProps) {
+    const { prophetData } = props;
     const todayItem = [...prophetData].reverse().find(item => item.real !== null);
     const todayLabel = todayItem ? todayItem.date : undefined;
 

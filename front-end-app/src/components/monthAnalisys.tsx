@@ -1,7 +1,12 @@
 import backgroundExtractPage from '../assets/Group 8.svg?url'
+import type { ProphetLineChartProps } from '../interfaces/interfacesComponents';
 import ProphetLineChart from './ui/prophetLineChart';
 
-function MonthAnalisys() {
+
+
+function MonthAnalisys(props: ProphetLineChartProps) {
+    const { prophetData } = props;
+
     return(
         <>
             <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px">
@@ -13,7 +18,7 @@ function MonthAnalisys() {
                     <p className='text-white font-light text-base mt-1 leading-4.5 pl-2 pb-2'>
                         Com base no seu estilo financeiro, você deverá chegar ao final do mês com saldo positivo. O saldo previsto é de R$ 5.000,00. 
                     </p>
-                    <ProphetLineChart />
+                    <ProphetLineChart prophetData={prophetData}/>
                 </div>
             </div>
 

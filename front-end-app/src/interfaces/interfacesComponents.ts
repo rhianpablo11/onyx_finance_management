@@ -175,6 +175,35 @@ export interface FinanceComportmentProps{
     description: string
 }
 
-export interface CategoryOfExpensesProps{
-    title: string
+
+export interface CategorieExpense{
+    name: string
+    value: number
+    amount: string
+    variant: string
+}
+
+export interface CategorysCirclesProps{
+    data: CategorieExpense[]
+}
+
+export interface monthlyBalanceData{
+    name: string
+    Entradas: number
+    Saídas: number
+}
+
+export interface GraphicBalanceProps{
+    monthlyData: monthlyBalanceData[]
+}
+
+export interface ProphetData{
+    date: string
+    real: number | null
+    prev: number | null
+    band: [number, number] | null
+}
+
+export interface ProphetLineChartProps{
+    prophetData: ProphetData[]
 }
