@@ -17,9 +17,10 @@ function InsightsPage(){
                 /> */}
                 {/* <CategoryOfExpenses title="Onde você gasta:" /> */}
                 <BalanceMonthsBarChart />
+                <MonthAnalisys />
             </div>
            
-           <MonthAnalisys />
+           
            
            
         </>

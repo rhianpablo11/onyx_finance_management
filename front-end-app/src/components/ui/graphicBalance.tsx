@@ -23,7 +23,7 @@ const monthlyData = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#18181b] border border-gray-800 p-3 rounded-lg shadow-xl">
+      <div className="bg-[#18181b]/40 backdrop-blur-md border border-gray-800 p-3 rounded-xl shadow-2xl">
         <p className="text-gray-300 font-semibold mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1">
