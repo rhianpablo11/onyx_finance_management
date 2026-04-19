@@ -108,14 +108,14 @@ function GraphicBalance() {
             {/* AS BARRAS (Agora com a opacidade dinâmica) */}
             <Bar 
               dataKey="Entradas" 
-              fill="#10B981" 
+              fill="#A78BFA" 
               fillOpacity={getOpacity("Entradas")}
               radius={[4, 4, 0, 0]} 
               maxBarSize={40} 
             />
             <Bar 
               dataKey="Saídas" 
-              fill="#F43F5E" 
+              fill="#e7befa" 
               fillOpacity={getOpacity("Saídas")}
               radius={[4, 4, 0, 0]} 
               maxBarSize={40} 
