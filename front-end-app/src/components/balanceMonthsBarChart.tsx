@@ -1,4 +1,5 @@
 import backgroundExtractPage from '../assets/Group 8.svg?url'
+import type { GraphicBalanceProps } from '../interfaces/interfacesComponents';
 import GraphicBalance from './ui/graphicBalance'
 
 
