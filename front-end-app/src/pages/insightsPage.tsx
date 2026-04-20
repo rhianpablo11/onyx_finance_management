@@ -41,42 +41,54 @@ const monthlyData = [
 import type { ProphetData } from '../interfaces/interfacesComponents';
 
 const prophetData: ProphetData[] = [
-  // --- PASSADO (DADOS REAIS) ---
-  { date: '01 Abr', real: 3100, prev: null, band: null },
-  { date: '02 Abr', real: 2900, prev: null, band: null },
-  { date: '03 Abr', real: 2950, prev: null, band: null },
-  { date: '04 Abr', real: 3400, prev: null, band: null },
-  { date: '05 Abr', real: 3200, prev: null, band: null },
-  { date: '06 Abr', real: 3800, prev: null, band: null },
-  { date: '07 Abr', real: 3600, prev: null, band: null },
-  { date: '08 Abr', real: 3450, prev: null, band: null },
-  { date: '09 Abr', real: 3900, prev: null, band: null },
-  { date: '10 Abr', real: 4100, prev: null, band: null },
-  { date: '11 Abr', real: 3800, prev: null, band: null },
-  { date: '12 Abr', real: 4300, prev: null, band: null },
-  { date: '13 Abr', real: 4000, prev: null, band: null },
-  { date: '14 Abr', real: 4000, prev: 4000, band: [4150, 4150] },
-  
-  // --- PONTO DE CONEXÃO (HOJE) ---
-  { date: '15 Abr', real: null, prev: 4150, band: [4150, 4150] }, 
-  
-  // --- FUTURO (PREVISÃO DA IA) ---
-  // Repare como a banda (margem de erro) vai ficando cada vez mais larga!
-  { date: '16 Abr', real: null, prev: 4000, band: [3800, 4200] },
-  { date: '17 Abr', real: null, prev: 3900, band: [3600, 4200] },
-  { date: '18 Abr', real: null, prev: 4100, band: [3700, 4500] },
-  { date: '19 Abr', real: null, prev: 3800, band: [3300, 4300] },
-  { date: '20 Abr', real: null, prev: 4200, band: [3600, 4800] },
-  { date: '21 Abr', real: null, prev: 4500, band: [3800, 5200] },
-  { date: '22 Abr', real: null, prev: 4300, band: [3500, 5100] },
-  { date: '23 Abr', real: null, prev: 4700, band: [3800, 5600] },
-  { date: '24 Abr', real: null, prev: 4600, band: [3600, 5600] },
-  { date: '25 Abr', real: null, prev: 4900, band: [3800, 6000] },
-  { date: '26 Abr', real: null, prev: 4800, band: [3600, 6000] },
-  { date: '27 Abr', real: null, prev: 5100, band: [3800, 6400] },
-  { date: '28 Abr', real: null, prev: 5300, band: [3900, 6700] },
-  { date: '29 Abr', real: null, prev: 5000, band: [3500, 6500] },
-  { date: '30 Abr', real: null, prev: 5400, band: [3700, 7100] },
+  // --- HISTÓRICO REAL (Linha Verde) ---
+  { date: '01 Jan', real: 65, prev: null, band: null },
+  { date: '07 Jan', real: 88, prev: null, band: null },
+  { date: '12 Jan', real: -1077, prev: null, band: null },
+  { date: '14 Jan', real: -991, prev: null, band: null },
+  { date: '16 Jan', real: -926, prev: null, band: null },
+  { date: '20 Jan', real: -852, prev: null, band: null },
+  { date: '25 Jan', real: -829, prev: null, band: null },
+  { date: '01 Fev', real: -816, prev: null, band: null },
+  { date: '03 Fev', real: -793, prev: null, band: null },
+  { date: '10 Fev', real: -1793, prev: null, band: null },
+  { date: '12 Fev', real: -1767, prev: null, band: null },
+  { date: '14 Fev', real: -1702, prev: null, band: null },
+  { date: '15 Fev', real: -1663, prev: null, band: null },
+  { date: '20 Fev', real: -1488, prev: null, band: null },
+  { date: '25 Fev', real: -1463, prev: null, band: null },
+  { date: '28 Fev', real: -1447, prev: null, band: null },
+  { date: '05 Mar', real: -1424, prev: null, band: null },
+  { date: '09 Mar', real: -2224, prev: null, band: null },
+  { date: '12 Mar', real: -2141, prev: null, band: null },
+  { date: '16 Mar', real: -2076, prev: null, band: null },
+  { date: '20 Mar', real: -1897, prev: null, band: null },
+  { date: '25 Mar', real: -1757, prev: null, band: null },
+  { date: '04 Abr', real: -1687, prev: null, band: null },
+  { date: '05 Abr', real: -1632, prev: null, band: null },
+  { date: '06 Abr', real: -1757, prev: null, band: null },
+  { date: '09 Abr', real: -2457, prev: null, band: null },
+
+  // --- PONTO DE CONEXÃO (Último dia com saldo real - 11 de Abril) ---
+  // A Costura perfeita: O futuro nasce do valor exato do passado.
+  { date: '11 Abr', real: -2378, prev: -2378, band: [-2378, -2378] },
+
+  // --- FUTURO PREDITO PELA IA (Linha Roxa + Margem de Erro) ---
+  { date: '12 Abr', real: null, prev: -2117, band: [-2553, -1686] },
+  { date: '13 Abr', real: null, prev: -2460, band: [-2916, -2015] },
+  { date: '14 Abr', real: null, prev: -2361, band: [-2795, -1901] },
+  { date: '15 Abr', real: null, prev: -2118, band: [-2560, -1678] },
+  { date: '16 Abr', real: null, prev: -2391, band: [-2837, -1965] },
+  { date: '17 Abr', real: null, prev: -2417, band: [-2832, -1978] },
+  { date: '18 Abr', real: null, prev: -2362, band: [-2811, -1954] },
+  { date: '19 Abr', real: null, prev: -2234, band: [-2666, -1816] },
+  { date: '20 Abr', real: null, prev: -2577, band: [-3017, -2147] },
+  { date: '21 Abr', real: null, prev: -2479, band: [-2936, -2072] },
+  { date: '22 Abr', real: null, prev: -2236, band: [-2677, -1821] },
+  { date: '23 Abr', real: null, prev: -2509, band: [-2974, -2058] },
+  { date: '24 Abr', real: null, prev: -2534, band: [-2963, -2116] },
+  { date: '25 Abr', real: null, prev: -2480, band: [-2895, -2045] },
+  { date: '26 Abr', real: null, prev: -2352, band: [-2785, -1957] }
 ];
 
 

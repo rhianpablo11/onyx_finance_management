@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from app.models.expense_category import Expense_category
 from app.models.ia_insights import Ia_insights
 
 
@@ -82,3 +83,15 @@ def mark_insight_as_read(insight_id: int, user_id: int, db: Session):
     except Exception as e:
         print(f"Error occurred while marking insight as read: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+def get_main_categorys(user_id: int, db: Session):
+    try:
+        stmt = select(Expense_category).where(Expense_category.user_id == user_id)
+        insight = db.execute(stmt).scalars().all()
+        
+        return insight
+
+    except Exception as e:
+        print(f"Error occurred while fetching main category insights: {e}")
+        return []
