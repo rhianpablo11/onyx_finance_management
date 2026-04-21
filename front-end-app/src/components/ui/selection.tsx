@@ -55,8 +55,8 @@ function SelectionComp(props: SelectionProps){
                         </button>
                     
                     {isOpen && (
-                        <div className="absolute right-2.5 z-50 mt-3.5 backdrop-blur-3xl w-48 bg-black/70 rounded-2xl border border-white/50  overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            <ul className="max-h-64 overflow-y-auto py-1 backdrop-blur-3xl">
+                        <div className="absolute right-2.5 z-50 mt-3.5  w-48 bg-[#18181b]/20 backdrop-blur-sm rounded-2xl border border-white/50  overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <ul className="max-h-64 overflow-y-auto py-1 ">
                                 {options.map((option, index) => (
                                     <li key={index}>
                                         <button
@@ -109,8 +109,8 @@ function SelectionComp(props: SelectionProps){
                 </button>
                 {isOpen && (
                     <>
-                        <div className="absolute right-2.5 z-50 mt-2 backdrop-blur-3xl w-40 bg-black/70 rounded-2xl border border-white/50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            <ul className="max-h-64 overflow-y-auto py-1 backdrop-blur-3xl">
+                        <div className="absolute right-2.5 z-50 mt-2 backdrop-blur-xs w-40 bg-[#18181b]/20 rounded-2xl border border-white/50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <ul className="max-h-64 overflow-y-auto py-1 ">
                                 {options.map((option, index) => (
                                     <li key={index}>
                                         <button type="button"
