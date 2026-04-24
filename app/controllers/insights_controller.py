@@ -1,6 +1,9 @@
+from datetime import date, timedelta
+
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from app.models.expense import Expense
 from app.models.expense_category import Expense_category
 from app.models.ia_insights import Ia_insights
 
@@ -87,11 +90,71 @@ def mark_insight_as_read(insight_id: int, user_id: int, db: Session):
 
 def get_main_categorys(user_id: int, db: Session):
     try:
-        stmt = select(Expense_category).where(Expense_category.user_id == user_id)
-        insight = db.execute(stmt).scalars().all()
+
+        total_stmt = select(func.sum(Expense.value)).where(
+            Expense.user_id == user_id,
+            Expense.date >= ninety_days_ago,
+            Expense.type_expense == True,
+            Expense.is_activated == True
+        )
+
+        total_spent = db.execute(total_stmt).scalar() or 0.0 
+        total_spent = float(total_spent)
+        if total_spent == 0:
+            return []
+
+
+        ninety_days_ago = date.today() - timedelta(days=90)
         
-        return insight
+        stmt = (
+            select(
+                Expense_category.name.label('category_name'), 
+                func.sum(Expense.value).label('total_spent')
+            )
+            .join(Expense_category, Expense.category_id == Expense_category.id) 
+            .where(
+                Expense.user_id == user_id,
+                Expense.date >= ninety_days_ago, 
+                Expense.type_expense == True,    
+                Expense.is_activated == True    
+            )
+            .group_by(Expense_category.name)      
+            .order_by(func.sum(Expense.value).desc()) 
+            .limit(3) 
+        )
+
+        results = db.execute(stmt).all()
+        
+        top_categories = []
+        sum_of_top_3_percentage = 0.0
+        sum_of_top_3_amount = 0.0
+
+        for row in results:
+            cat_total = float(row.category_total)
+            percentage = round((cat_total / total_spent) * 100, 0) 
+            
+            sum_of_top_3_percentage += percentage
+            sum_of_top_3_amount += cat_total
+
+            top_categories.append({
+                "name": row.category_name,
+                "amount": cat_total,
+                "percentage": percentage
+            })
+
+        others_percentage = round(100.0 - sum_of_top_3_percentage, 1)
+        if others_percentage > 0.1:
+            others_amount = total_spent - sum_of_top_3_amount
+            top_categories.append({
+                "name": "Outros",
+                "amount": round(others_amount, 2),
+                "percentage": others_percentage
+            })
+
+
+        return top_categories
 
     except Exception as e:
         print(f"Error occurred while fetching main category insights: {e}")
         return []
+
