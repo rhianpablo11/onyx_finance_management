@@ -1,8 +1,11 @@
+import calendar
 from datetime import date, timedelta
 
 from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from app.controllers.transaction_controller import get_total_received_on_the_date, get_total_spent_on_the_date
+from app.controllers.transaction_controller import get_total_received_on_the_date
 from app.models.expense import Expense
 from app.models.expense_category import Expense_category
 from app.models.ia_insights import Ia_insights
@@ -158,3 +161,48 @@ def get_main_categorys(user_id: int, db: Session):
         print(f"Error occurred while fetching main category insights: {e}")
         return []
 
+
+def get_balance_of_last_months(user_id: int, db: Session):
+    try:
+        # por enquanto ainda n tem a tabela de saldos mensais, mas tambem...acho q nem usaria
+        # tem q pegar aquelas funcoes de saldo de entrada e saldo de saida
+        # e passar o periodo q deseja, se tiver o maximo q apresenta é 6 meses, mas pode ser menos
+        # pq o usuario pode ter menos, ent...tem q se atentar a isso
+        results = []
+        today = date.today()
+
+        months_pt_br = ['', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+        
+        for _ in range(6):
+            year = today.year
+            month = today.month
+
+            last_day_of_month = calendar.monthrange(year, month)[1]
+            start_date = date(year, month, 1)
+            end_date = date(year, month, last_day_of_month)
+
+            amount_out = get_total_spent_on_the_date(db, user_id, start_date, end_date)
+            amount_in = get_total_received_on_the_date(db, user_id, start_date, end_date)
+
+            amount_out = amount_out.get('value', 0.0)
+            amount_in = amount_in.get('value', 0.0)
+
+            if(amount_out > 0.0 or amount_in > 0.0):
+                results.append({
+                    "month": months_pt_br[month],
+                    "amount_in": amount_in,
+                    "amount_out": amount_out
+                })
+            
+            current_date = start_date - timedelta(days=1)
+
+        results.reverse()
+
+        print(f"Dados mensais capturados: {results}")
+        return results
+
+        pass
+
+    except Exception as e:
+        print(f"Error occurred while fetching balance insights: {e}")
+        return []

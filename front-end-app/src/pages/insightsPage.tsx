@@ -28,7 +28,7 @@ const data = [
 ] ;
 
 const monthlyData = [
-  { name: 'Nov', Entradas: 4200, Saídas: 3800 },
+  
   { name: 'Dez', Entradas: 5100, Saídas: 4900 },
   { name: 'Jan', Entradas: 4800, Saídas: 3200 },
   { name: 'Fev', Entradas: 3900, Saídas: 4100 }, 
