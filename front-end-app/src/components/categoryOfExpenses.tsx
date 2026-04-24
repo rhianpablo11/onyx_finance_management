@@ -4,7 +4,7 @@ import CategorysCircles from './categorysCircles';
 
 
 
-
+//trocar o tipo das props para categorysCirclesComplement
 function CategoryOfExpenses(props: CategorysCirclesProps) {
     const {data} = props;
 

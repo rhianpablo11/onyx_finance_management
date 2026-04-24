@@ -15,10 +15,13 @@ const progressCircleVariants = tv({
   },
   variants: {
     variant: {
-      default: { background: "stroke-blue-500/20", circle: "stroke-blue-500" },
-      ifood: { background: "stroke-rose-500/20", circle: "stroke-rose-500" },
-      uber: { background: "stroke-slate-600/30", circle: "stroke-slate-300" }, // Cores ajustadas pro Dark Mode
-      onyx: { background: "stroke-emerald-500/20", circle: "stroke-emerald-500" },
+      default: { background: "stroke-slate-600/30", circle: "stroke-slate-500" }, // Cinza pro "Outros"
+      rose: { background: "stroke-rose-500/20", circle: "stroke-rose-500" },
+      emerald: { background: "stroke-emerald-500/20", circle: "stroke-emerald-500" },
+      violet: { background: "stroke-violet-500/20", circle: "stroke-violet-500" },
+      amber: { background: "stroke-amber-500/20", circle: "stroke-amber-500" },
+      cyan: { background: "stroke-cyan-500/20", circle: "stroke-cyan-500" },
+      fuchsia: { background: "stroke-fuchsia-500/20", circle: "stroke-fuchsia-500" },
     },
   },
   defaultVariants: {

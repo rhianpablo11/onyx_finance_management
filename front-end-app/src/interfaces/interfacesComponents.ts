@@ -178,9 +178,8 @@ export interface FinanceComportmentProps{
 
 export interface CategorieExpense{
     name: string
-    value: number
-    amount: string
-    variant: string
+    amount: number
+    percentage: number
 }
 
 export interface CategorysCirclesProps{
@@ -207,3 +206,4 @@ export interface ProphetData{
 export interface ProphetLineChartProps{
     prophetData: ProphetData[]
 }
+

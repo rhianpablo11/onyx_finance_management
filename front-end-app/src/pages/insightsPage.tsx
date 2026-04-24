@@ -6,25 +6,24 @@ import MonthAnalisys from "../components/monthAnalisys"
 
 const data = [
   { 
-    name: 'Alimentação', 
-    value: 50, 
-    variant: 'ifood', 
-    amount: 'R$ 850', 
-    iconColor: 'text-ifood-red-500' 
+    name: 'Alimentação',  
+    amount: 850,
+    percentage: 50
   },
   { 
-    name: 'Transporte', 
-    value: 45, 
-    variant: 'uber', 
-    amount: 'R$ 320', 
-    iconColor: 'text-gray-900' 
+    name: 'Ferramentas e Manutenção',
+    amount: 320, 
+    percentage: 50
   },
   { 
-    name: 'Investimento', 
-    value: 90, 
-    variant: 'onyx', 
-    amount: 'R$ 1.500', 
-    iconColor: 'text-onyx-green-500' 
+    name: 'Serviços de Telecomunicações',
+    amount: 1500, 
+    percentage: 50
+  },
+  { 
+    name: 'Outros',
+    amount: 100, 
+    percentage: 50
   },
 ] ;
 
