@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.controllers.transaction_controller import get_total_received_on_the_date, get_total_spent_on_the_date
 from app.controllers.transaction_controller import get_total_received_on_the_date
+from app.models.balance_forecast import Balance_forecast
 from app.models.expense import Expense
 from app.models.expense_category import Expense_category
 from app.models.ia_insights import Ia_insights
@@ -14,11 +15,40 @@ from app.models.ia_insights import Ia_insights
 def get_prophet_insights(user_id: int, db: Session):
     
     try:
-        stmt = (select(Ia_insights)
-                .where(Ia_insights.user_id == user_id, Ia_insights.type_insight == 'prophet')
-                .order_by(Ia_insights.created_at.desc()))
-        insight = db.execute(stmt).scalars().first()
-        return insight
+        today = date.today()
+        year = today.year
+        month = today.month
+
+        last_day_of_month = calendar.monthrange(year, month)[1]
+        start_date = date(year, month, 1)
+        end_date = date(year, month, last_day_of_month)
+
+        meses_ptbr = ['', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+        stmt = (select(Balance_forecast)
+                .where(Balance_forecast.user_id == user_id,
+                       Balance_forecast.target_date >= start_date,
+                       Balance_forecast.target_date <= end_date)
+                .order_by(Balance_forecast.target_date.asc()))
+
+        results_founded = db.execute(stmt).scalars().all()
+
+        insight_formated = []
+
+        for row in results_founded:
+            date_formated = f"{row.target_date.day:02d} {meses_ptbr[row.target_date.month]}"
+            
+            band_array = None
+            if row.band_min is not None and row.band_max is not None:
+                band_array = [row.band_min, row.band_max]
+            insight_formated.append({
+                "date": date_formated,
+                "real": row.real_balance,
+                "prev": row.predicted_balance,
+                "band": band_array
+            })
+
+        return insight_formated
 
     except Exception as e:
         print(f"Error occurred while fetching Prophet insights: {e}")
