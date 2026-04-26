@@ -1,5 +1,5 @@
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import BalanceMonthsBarChart from "../components/balanceMonthsBarChart"
 import CategoryOfExpenses from "../components/categoryOfExpenses"
 import FinanceComportment from "../components/financeComportment"
