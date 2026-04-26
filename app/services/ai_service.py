@@ -19,7 +19,7 @@ from app.services.ai_processor import generate_behavioral_insights
 
 def get_data_users(db: Session):
     try:
-        stmt = (select(User.id))
+        stmt = (select(User.id).where(User.subscriber == True))
         ids_of_users = db.execute(stmt).scalars().all()
         debug_print(is_show=True, text=f"IDs of users fetched: {ids_of_users}")
         return ids_of_users

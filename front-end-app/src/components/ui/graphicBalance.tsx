@@ -67,7 +67,7 @@ function GraphicBalance(props: GraphicBalanceProps) {
             <CartesianGrid  vertical={false} stroke="#3f3f46" opacity={0.5} />
             
             <XAxis 
-              dataKey="name" 
+              dataKey="month" 
               axisLine={false} 
               tickLine={false} 
               tick={{ fill: '#a1a1aa', fontSize: 12 }} 
@@ -101,16 +101,18 @@ function GraphicBalance(props: GraphicBalanceProps) {
             
             {/* AS BARRAS (Agora com a opacidade dinâmica) */}
             <Bar 
-              dataKey="Entradas" 
+              dataKey="amount_in" 
               fill="#A78BFA" 
-              fillOpacity={getOpacity("Entradas")}
+              name="Entradas"
+              fillOpacity={getOpacity("amount_in")}
               radius={[4, 4, 0, 0]} 
               maxBarSize={40} 
             />
             <Bar 
-              dataKey="Saídas" 
+              dataKey="amount_out" 
               fill="#e7befa" 
-              fillOpacity={getOpacity("Saídas")}
+              name="Saídas"
+              fillOpacity={getOpacity("amount_out")}
               radius={[4, 4, 0, 0]} 
               maxBarSize={40} 
             />

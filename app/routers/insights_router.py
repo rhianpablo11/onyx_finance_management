@@ -2,15 +2,21 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.controllers.insights_controller import get_balance_of_last_months, get_investigator_insights, get_main_categorys, mark_insight_as_read, mark_insight_as_read
 from app.controllers.insights_controller import get_prophet_insights
+from app.controllers.user_controller import get_subscriber_status
 from app.core.auth import get_current_user
 from app.core.database import get_db
 
 
 router = APIRouter()
 
-@router.get("/insights", status_code=200)
+@router.get("/", status_code=200)
 def get_insights(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
+        status_subscriber = get_subscriber_status(db, current_user['user_id'])
+        
+        if not status_subscriber:
+            raise HTTPException(status_code=403, detail="Access denied. Subscription required.")
+        
         insights_prophet = get_prophet_insights(current_user['user_id'], db)
         insights_investigator = get_investigator_insights(current_user['user_id'], db)
         categorys_of_expenses = get_main_categorys(current_user['user_id'], db)

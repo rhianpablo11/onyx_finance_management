@@ -29,8 +29,8 @@ def clean_db_user_temp_table():
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(clean_db_user_temp_table, 'cron', hour=3, minute=0)
-scheduler.add_job(training_model, 'cron', hour=4, minute=0, id='training_model_job', replace_existing=True) # Roda a função de treinamento às 3:30 da manhã
-scheduler.add_job(training_prophet_model, 'cron', hour=0, minute=28, id='training_prophet_model_job', replace_existing=True, misfire_grace_time=120) # Roda a função de treinamento às 15:00 da tarde
+scheduler.add_job(training_model, 'cron', hour=23, minute=30, id='training_model_job', replace_existing=True) # Roda a função de treinamento às 3:30 da manhã
+scheduler.add_job(training_prophet_model, 'cron', hour=23, minute=27, id='training_prophet_model_job', replace_existing=True, misfire_grace_time=120) # Roda a função de treinamento às 15:00 da tarde
 
 def get_scheduler():
     return scheduler

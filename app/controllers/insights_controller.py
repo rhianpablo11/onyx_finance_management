@@ -123,11 +123,11 @@ def mark_insight_as_read(insight_id: int, user_id: int, db: Session):
 
 def get_main_categorys(user_id: int, db: Session):
     try:
-
+        ninety_days_ago = date.today() - timedelta(days=90)
         total_stmt = select(func.sum(Expense.value)).where(
             Expense.user_id == user_id,
             Expense.date >= ninety_days_ago,
-            Expense.type_expense == True,
+            Expense.type_expense == False,
             Expense.is_activated == True
         )
 
@@ -137,27 +137,27 @@ def get_main_categorys(user_id: int, db: Session):
             return []
 
 
-        ninety_days_ago = date.today() - timedelta(days=90)
+        
         
         stmt = (
             select(
                 Expense_category.name.label('category_name'), 
-                func.sum(Expense.value).label('total_spent')
+                func.sum(Expense.value).label('category_total')
             )
-            .join(Expense_category, Expense.category_id == Expense_category.id) 
+            .join(Expense_category, Expense.category == Expense_category.id) 
             .where(
                 Expense.user_id == user_id,
                 Expense.date >= ninety_days_ago, 
-                Expense.type_expense == True,    
+                Expense.type_expense == False,    
                 Expense.is_activated == True    
             )
             .group_by(Expense_category.name)      
             .order_by(func.sum(Expense.value).desc()) 
-            .limit(3) 
+            .limit(3)
         )
 
         results = db.execute(stmt).all()
-        
+        print(results)
         top_categories = []
         sum_of_top_3_percentage = 0.0
         sum_of_top_3_amount = 0.0
@@ -224,14 +224,12 @@ def get_balance_of_last_months(user_id: int, db: Session):
                     "amount_out": amount_out
                 })
             
-            current_date = start_date - timedelta(days=1)
+            today = start_date - timedelta(days=1)
 
         results.reverse()
 
-        print(f"Dados mensais capturados: {results}")
+        
         return results
-
-        pass
 
     except Exception as e:
         print(f"Error occurred while fetching balance insights: {e}")

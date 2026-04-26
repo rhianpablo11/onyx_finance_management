@@ -186,10 +186,11 @@ export interface CategorysCirclesProps{
     data: CategorieExpense[]
 }
 
+// corrigir isso daqui
 export interface monthlyBalanceData{
-    name: string
-    Entradas: number
-    Saídas: number
+    month: string
+    amount_in: number
+    amount_out: number
 }
 
 export interface GraphicBalanceProps{
