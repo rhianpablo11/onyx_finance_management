@@ -13,7 +13,7 @@ import InsightsPage from "./insightsPage"
 
 
 function InternalPage(){
-    const [pageSelected, setPageSelected] = useState<string>('insights')
+    const [pageSelected, setPageSelected] = useState<string>('home')
     const [typeToShowHeader, setTypeToShowHeader] = useState<string>('wellcome')
     const [legendHeader, setLegendHeader] = useState<string>('')
     const [titleHeader, setTitleHeader] = useState<string>('')
@@ -29,7 +29,7 @@ function InternalPage(){
         if(customBackAction){
             customBackAction()
         }else{
-            setPageSelected('insights')
+            setPageSelected('home')
         }
         
     }
@@ -90,7 +90,7 @@ function InternalPage(){
             setTitleHeader('Configurações')
         } else if(pageSelected == 'insights'){
             setTypeToShowHeader('pages-nav')
-            setLegendHeader('Pagina em construção - breve novidades')
+            setLegendHeader('Detalhes do seu financeiro')
             setTitleHeader('Insights')
         }
     }, [pageSelected])
