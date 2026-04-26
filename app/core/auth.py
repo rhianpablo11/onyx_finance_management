@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, Request
 from starlette import status
@@ -19,9 +19,9 @@ def create_access_token(data:dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_DURATION_TIME)
 
     to_encode.update({'exp': expire})
 
