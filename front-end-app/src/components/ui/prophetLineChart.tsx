@@ -7,7 +7,8 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  ReferenceLine
+  ReferenceLine,
+  Label
 } from 'recharts';
 import type { ProphetLineChartProps } from '../../interfaces/interfacesComponents';
 
@@ -121,7 +122,13 @@ function ProphetLineChart(props: ProphetLineChartProps) {
 
             {/* Linha vertical marcando o "HOJE" */}
             <ReferenceLine x={todayLabel} stroke="#52525b" strokeDasharray="8 8">
-               <text x="50%" y="10%" fill="#a1a1aa" fontSize={12} textAnchor="middle">Hoje</text>
+               <Label 
+                value="Hoje" 
+                position="insideTopRight" // Gruda no topo, levemente à direita da linha
+                fill="#a1a1aa" 
+                fontSize={12} 
+                offset={10} // Dá um respiro pra não ficar colado no tracejado
+              />
             </ReferenceLine>
 
           </ComposedChart>

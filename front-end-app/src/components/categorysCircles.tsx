@@ -43,19 +43,19 @@ function CategorysCircles(props: CategorysCirclesProps) {
             <ProgressCircle 
               value={cat.value} 
               radius={30} 
-              strokeWidth={6}
+              strokeWidth={5}
               variant={cat.variant as any} 
-              className="mb-2"
+              className=""
             >
-              <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-col items-center w-full h-full justify-center">
                 {/* <cat.icon size={18} className={cat.iconColor} /> */}
-                <span className="text-sm font-medium text-white/70 ">
+                <span className="text-sm p-0 m-0 leading-0 font-medium text-white/70 ">
                   {cat.value}%
                 </span>
               </div>
             </ProgressCircle>
             
-            <div className="text-center mt-2 w-17">
+            <div className="text-center mt-1 w-17">
               <p 
                 className="text-xs font-normal text-white leading-tight line-clamp-2"
                 title={cat.name} 

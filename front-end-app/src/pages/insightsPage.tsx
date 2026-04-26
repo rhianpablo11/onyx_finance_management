@@ -103,6 +103,7 @@ function InsightsPage(){
     const [financeComportment, setFinanceComportment] = useState<{title: string, text_content: string}>();
     const [monthlyData, setMonthlyData] = useState<monthlyBalanceData[]>([]);
     const [prophetData, setProphetData] = useState<ProphetData[]>([]);
+    const [endMonthBalance, setEndMonthBalance] = useState<number>(0);
     useEffect(() => {
         const fetchInsightsData = async () => {
             try {
@@ -112,7 +113,8 @@ function InsightsPage(){
                     setCategorysOfExpenses(insights_data.categorys_of_expenses || []);
                     setFinanceComportment(insights_data.investigator);
                     setMonthlyData(insights_data.month_expenses_graphic || []);
-                    const rawProphet = insights_data.prophet || [];
+                    setEndMonthBalance(insights_data.prophet.value_predicted_to_end_month || 0);
+                    const rawProphet = insights_data.prophet.graphic_data || [];
                     
                     // 1. Descobre qual é o último índice que tem o "saldo real"
                     let lastRealIndex = -1;
@@ -185,7 +187,8 @@ function InsightsPage(){
                 )}
 
                 {prophetData.length > 0 && (
-                    <MonthAnalisys prophetData={prophetData} />
+                    <MonthAnalisys prophetData={prophetData}
+                                   endMonthBalance={endMonthBalance} />
                 )}
             </div>
         </>

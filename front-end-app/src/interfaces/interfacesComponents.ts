@@ -206,5 +206,6 @@ export interface ProphetData{
 
 export interface ProphetLineChartProps{
     prophetData: ProphetData[]
+    endMonthBalance?: number
 }
 
