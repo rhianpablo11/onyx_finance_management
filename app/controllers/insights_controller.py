@@ -40,7 +40,7 @@ def get_prophet_insights(user_id: int, db: Session):
             
             band_array = None
             if row.band_min is not None and row.band_max is not None:
-                band_array = [row.band_min, row.band_max]
+                band_array = [round(float(row.band_min), 2), round((float(row.band_max)),2)]
             insight_formated.append({
                 "date": date_formated,
                 "real": row.real_balance,
