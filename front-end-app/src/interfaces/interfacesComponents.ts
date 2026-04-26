@@ -169,3 +169,43 @@ export interface ForgetPasswordSecondStepProps{
     email: string
     setSecondStepIsOk: (isOk: boolean) => void
 }
+
+export interface FinanceComportmentProps{
+    title: string
+    description: string
+}
+
+
+export interface CategorieExpense{
+    name: string
+    amount: number
+    percentage: number
+}
+
+export interface CategorysCirclesProps{
+    data: CategorieExpense[]
+}
+
+// corrigir isso daqui
+export interface monthlyBalanceData{
+    month: string
+    amount_in: number
+    amount_out: number
+}
+
+export interface GraphicBalanceProps{
+    monthlyData: monthlyBalanceData[]
+}
+
+export interface ProphetData{
+    date: string
+    real: number | null
+    prev: number | null
+    band: [number, number] | null
+}
+
+export interface ProphetLineChartProps{
+    prophetData: ProphetData[]
+    endMonthBalance?: number
+}
+

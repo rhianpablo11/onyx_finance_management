@@ -453,3 +453,13 @@ def update_password(db: Session, user_id: int, password: str):
         return
     except:
         raise HTTPException(status_code=400, detail='error in update')
+
+
+def get_subscriber_status(db: Session, user_id: int):
+    try:
+        stmt = (select(User.subscriber)
+                .where(User.id == user_id))
+        subscriber_status = db.execute(stmt).scalars().first()
+        return subscriber_status
+    except:
+        raise HTTPException(status_code=400, detail='error in database')
