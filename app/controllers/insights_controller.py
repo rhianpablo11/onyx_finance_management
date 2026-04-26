@@ -44,11 +44,21 @@ def get_prophet_insights(user_id: int, db: Session):
             insight_formated.append({
                 "date": date_formated,
                 "real": row.real_balance,
-                "prev": row.predicted_balance,
+                "prev": round(float(row.predicted_balance),2),
                 "band": band_array
             })
 
-        return insight_formated
+        stmt = (select(Balance_forecast.predicted_balance)
+                .where(Balance_forecast.user_id == user_id,
+                       Balance_forecast.target_date == end_date))
+
+        value_predicted_to_end_month = db.execute(stmt).scalar()
+        
+
+        return {
+            "graphic_data": insight_formated,
+            "value_predicted_to_end_month": round(float(value_predicted_to_end_month),2) if value_predicted_to_end_month is not None else None
+        }
 
     except Exception as e:
         print(f"Error occurred while fetching Prophet insights: {e}")
