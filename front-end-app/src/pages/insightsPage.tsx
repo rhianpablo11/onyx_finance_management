@@ -178,6 +178,11 @@ function InsightsPage(){
                         description={financeComportment.text_content}
                     />
                 )}
+                {prophetData.length > 0 && (
+                    <MonthAnalisys prophetData={prophetData}
+                                   endMonthBalance={endMonthBalance} />
+                )}
+
                 {categorysOfExpenses.length > 0 && (
                     <CategoryOfExpenses data={categorysOfExpenses} />
                 )}
@@ -186,10 +191,7 @@ function InsightsPage(){
                     <BalanceMonthsBarChart monthlyData={monthlyData} />
                 )}
 
-                {prophetData.length > 0 && (
-                    <MonthAnalisys prophetData={prophetData}
-                                   endMonthBalance={endMonthBalance} />
-                )}
+                
             </div>
         </>
     )
