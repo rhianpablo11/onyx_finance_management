@@ -133,7 +133,7 @@ def mark_insight_as_read(insight_id: int, user_id: int, db: Session):
 
 def get_main_categorys(user_id: int, db: Session):
     try:
-        ninety_days_ago = date.today() - timedelta(days=90)
+        ninety_days_ago = date.today() - timedelta(days=30)
         total_stmt = select(func.sum(Expense.value)).where(
             Expense.user_id == user_id,
             Expense.date >= ninety_days_ago,
