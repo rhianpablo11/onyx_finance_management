@@ -57,22 +57,21 @@ function ChatPage(props: ChatPageProps) {
                 const formattedMessages: ChatHistoryMessage[] = []
                 
                 pastMessagesRaw.forEach((row: any) => {
-                    // 1. O balão do USUÁRIO (Lado direito)
+                    // ... (Seu código de separar a msg do user e da ia continua igualzinho aqui) ...
                     if (row.message_user) {
                         formattedMessages.push({
                             id: "user-" + row.id, 
-                            text: row.message_user, // Puxando exatamente a chave do seu banco
-                            sender: 'user',         // Isso garante que alinhe à direita!
+                            text: row.message_user,
+                            sender: 'user',         
                             created_at: row.created_at
                         })
                     }
                     
-                    // 2. O balão da IA (Lado esquerdo)
                     if (row.ai_response) {
                         formattedMessages.push({
                             id: "ia-" + row.id,
-                            text: row.ai_response,  // Puxando a resposta da Gemini do banco
-                            sender: 'ia',           // Garante que alinhe à esquerda
+                            text: row.ai_response,  
+                            sender: 'ia',           
                             created_at: row.created_at
                         })
                     }
@@ -80,8 +79,21 @@ function ChatPage(props: ChatPageProps) {
 
                 // Adiciona as mensagens no topo do chat
                 setMessages(prev => [...formattedMessages, ...prev])
+
+                
+                
+                // CENÁRIO 1: Se o seu getHistory() traz TODO o histórico de uma vez (sem paginação)
+                // Basta forçar o false logo de cara, porque não tem mais o que buscar depois.
+                setHasMore(false) 
+
+                // CENÁRIO 2: Se o seu getHistory() tiver paginação (ex: traz de 50 em 50)
+                // Você comenta a linha de cima e usa essa lógica aqui:
+                // if (pastMessagesRaw.length < 50) { 
+                //     setHasMore(false) 
+                // }
+
             } else {
-                // Acabou o histórico
+                // Acabou o histórico (ou a primeira requisição já veio vazia)
                 setHasMore(false)
             }
             
