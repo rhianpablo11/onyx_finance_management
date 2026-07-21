@@ -1,5 +1,4 @@
-from select import select
-
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.models.chat_logs import Chat_logs
 
