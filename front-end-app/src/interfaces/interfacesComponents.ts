@@ -71,7 +71,8 @@ export interface ChatBubbleProps {
     isSentMessage: boolean //true for user sent message or false for response of API
     name: string
     text: string
-    loading: boolean
+    loading?: boolean
+    createdAt?: string;
 }
 
 export interface ChatPageProps {

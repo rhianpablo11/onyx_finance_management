@@ -4,8 +4,12 @@ import type { ChatBubbleProps } from "../interfaces/interfacesComponents"
 import { getFitName } from "../utils/utils"
 
 function ChatBubble(props: ChatBubbleProps){
-    const {isSentMessage, name, text, loading=true} = props
+    const {isSentMessage, name, text, loading=true, createdAt} = props
     
+    const timeString = createdAt 
+        ? new Date(createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+        : ''
+
     if(isSentMessage){
         return (
             <>
@@ -16,16 +20,18 @@ function ChatBubble(props: ChatBubbleProps){
                         </h1>
                     </div>
                     
-
-                    <div className="bg-[#151515] shadow-white/10 shadow-md  text-white p-3.5 rounded-4xl rounded-br-none ">
+                    <div className="bg-[#151515] shadow-white/10 shadow-md text-white p-3.5 pb-2 rounded-4xl rounded-br-none min-w-[80px]">
                         <div className="space-y-1">
-                            <p className="pl-2 font-light text-base leading-tight mb-2">
+                            <p className="pl-2 font-light text-base leading-tight mb-1">
                                 {text}
                             </p>
+                            <div className="flex justify-end">
+                                <span className="text-[11px] text-white/70 font-light pr-1">
+                                    {timeString}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    
-
                 </div>
             </>
         )
@@ -39,19 +45,26 @@ function ChatBubble(props: ChatBubbleProps){
                         </h1>
                     </div>
                     <div className="relative group ">
-
-                        <div className="bg-[#151515] shadow-white/20 shadow-md  text-white p-3.5 rounded-4xl rounded-bl-none ">
+                        <div className="bg-[#151515] shadow-white/20 shadow-md text-white p-3.5 pb-2 rounded-4xl rounded-bl-none min-w-[80px]">
                             <div className="space-y-1">
                                 {loading ? (
-                                    <div className="flex items-center justify-center space-x-1 h-2.5 px-2">
+                                    <div className="flex items-center justify-center space-x-1 h-2.5 px-2 py-2">
                                         <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                                         <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                                         <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce"></div>
                                     </div>
                                 ) : (
-                                    <p className="pl-2 font-light text-base leading-tight mb-2">
-                                        {text}
-                                    </p>
+                                    <>
+                                        <p className="pl-2 font-light text-base leading-tight mb-1">
+                                            {text}
+                                        </p>
+                                        
+                                        <div className="flex justify-start pt-1">
+                                            <span className="text-[11px] text-white/70 font-light pl-2">
+                                                {timeString}
+                                            </span>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -59,20 +72,17 @@ function ChatBubble(props: ChatBubbleProps){
                         <div className="absolute bottom-0 -left-4.5 w-5 overflow-hidden">
                         <svg
                             viewBox="0 0 20 20"
-                            className="w-full h-full fill-[#151515]" // Mesma cor do background
+                            className="w-full h-full fill-[#151515]" 
                             xmlns="http://www.w3.org/2000/svg"
                         >
-                            {/* Essa curva cria o efeito orgânico de balão de fala */}
                             <path d="M20 0V20H0C8 20 20 12 20 0Z" />
                         </svg>
                     </div>
                     </div>
-
                 </div>
             </>
         )
     }
-    
 }
 
 export default ChatBubble
