@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, UIEvent } from "react"
+import { useState, useRef, useEffect,type UIEvent } from "react"
 import ChatBubble from "../components/chatBubble"
 import Button from "../components/ui/button"
 import Input from "../components/ui/input"
