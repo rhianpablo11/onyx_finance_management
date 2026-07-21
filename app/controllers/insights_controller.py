@@ -133,7 +133,7 @@ def mark_insight_as_read(insight_id: int, user_id: int, db: Session):
 
 def get_main_categorys(user_id: int, db: Session):
     try:
-        ninety_days_ago = date.today() - timedelta(days=90)
+        ninety_days_ago = date.today() - timedelta(days=30)
         total_stmt = select(func.sum(Expense.value)).where(
             Expense.user_id == user_id,
             Expense.date >= ninety_days_ago,
@@ -163,27 +163,52 @@ def get_main_categorys(user_id: int, db: Session):
             )
             .group_by(Expense_category.name)      
             .order_by(func.sum(Expense.value).desc()) 
-            .limit(3)
+            .limit(7)
         )
 
         results = db.execute(stmt).all()
+        print("Menos de 7 categorias encontradas.") 
+        print(total_spent)
         print(results)
+        if len(results) < 7:
+            for row in range(3, len(results)):
+                print(f"Categoria: {results[row].category_name}, Total: {results[row].category_total}")
+                #total_spent -= float(results[row].category_total)
+
+        print("Menos de 7 categorias encontradas.") 
+        print(total_spent)
         top_categories = []
         sum_of_top_3_percentage = 0.0
         sum_of_top_3_amount = 0.0
 
-        for row in results:
-            cat_total = float(row.category_total)
-            percentage = round((cat_total / total_spent) * 100, 0) 
-            
-            sum_of_top_3_percentage += percentage
-            sum_of_top_3_amount += cat_total
+        if(len(results) < 7 ):
+            for i in range(3):
+                print(f'valor de I {i}')
+                cat_total = float(results[i].category_total)
+                percentage = round((cat_total / total_spent) * 100, 0) 
+                
+                sum_of_top_3_percentage += percentage
+                sum_of_top_3_amount += cat_total
 
-            top_categories.append({
-                "name": row.category_name,
-                "amount": cat_total,
-                "percentage": percentage
-            })
+                top_categories.append({
+                    "name": results[i].category_name,
+                    "amount": cat_total,
+                    "percentage": percentage
+                })
+
+        else:
+            for row in results:
+                cat_total = float(row.category_total)
+                percentage = round((cat_total / total_spent) * 100, 0) 
+                
+                sum_of_top_3_percentage += percentage
+                sum_of_top_3_amount += cat_total
+
+                top_categories.append({
+                    "name": row.category_name,
+                    "amount": cat_total,
+                    "percentage": percentage
+                })
 
         others_percentage = round(100.0 - sum_of_top_3_percentage, 1)
         if others_percentage > 0.1:

@@ -15,3 +15,11 @@ export interface LoginResponse {
         email: string
     };
 }
+
+
+export interface ChatHistoryMessage {
+  id: string | number; 
+  text: string;
+  sender: 'user' | 'ia';
+  created_at: string;
+};

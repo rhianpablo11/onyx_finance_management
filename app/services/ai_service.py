@@ -184,11 +184,14 @@ def training_model():
                 continue
 
             if rules.empty:
+                print(f"📉 Usuário {id} não possui padrões de gastos combinados fortes o suficiente. Pulando...")
                 continue
 
             rules = rules.sort_values(by=['lift', 'confidence'], ascending=[False, False])
             best_rule = rules.head(1).iloc[0]
-
+            debug_print(is_show=True, text=f"RULES {rules} USUARIO: {id}")
+            debug_print(is_show=True, text=f"Best rule for user {id}: {best_rule.to_dict()}")
+            debug_print(is_show=True, text=f"Rule details - Support: {rules['support'].max()}, Confidence: {rules['confidence'].max()}, Lift: {rules['lift'].max()}")
             if best_rule['lift'] > 1:
                 cause = list(best_rule['antecedents'])[0]
                 consequence = list(best_rule['consequents'])[0]

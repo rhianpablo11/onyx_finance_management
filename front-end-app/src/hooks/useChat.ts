@@ -26,5 +26,21 @@ export function useChat(){
     }
 
 
-    return {sendMessage, loading, errorMsg}
+    const getHistory = async () => {
+        setLoading(true)
+        setErrorMsg(null)
+        try{
+            const response = await api.get('/chat/get-history')
+            console.log(response.data)
+            return response.data
+        } catch (err:any){
+            const errorMsg = err.response?.data?.detail || 'Erro ao buscar histórico, tente novamente mais tarde.';
+            setErrorMsg(errorMsg)
+        } finally{
+            setLoading(false)
+        }
+    }
+
+
+    return {sendMessage, getHistory, loading, errorMsg}
 }

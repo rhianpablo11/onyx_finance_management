@@ -3,6 +3,7 @@ import {v4 as uuidv4} from 'uuid'
 import { removeCookie } from '../services/cookiesService';
 import { removeToken } from '../services/tokenService';
 import { getIdUser, removeIdUser, setBiometricExistence } from '../services/localStorageService';
+import type { ChatHistoryMessage } from '../interfaces/interfacesHooks';
 
 
 export const formatDate = (date: Date): string => {
@@ -129,3 +130,22 @@ export function getFitName(fullName: string): string {
   console.log(`${nameParts[0]} ${nameParts[1]}`)
   return `${nameParts[0]} ${nameParts[1]}`;
 }
+
+
+export function groupMessagesByDate(messages: ChatHistoryMessage[]) {
+  return messages.reduce((groups: Record<string, ChatHistoryMessage[]>, message) => {
+    // Converte a data para o fuso horário local e pega só a parte do dia
+    const dateObj = new Date(message.created_at);
+    const dateString = dateObj.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    }); // Ex: "20 de julho de 2026"
+
+    if (!groups[dateString]) {
+      groups[dateString] = [];
+    }
+    groups[dateString].push(message);
+    return groups;
+  }, {});
+};
