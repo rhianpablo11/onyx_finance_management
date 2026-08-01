@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime
+from datetime import datetime, date
 import pandas as pd
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select
@@ -48,31 +48,47 @@ def get_expenses_by_user_id(user_id: int, db: Session):
 
 def get_daily_balances_by_user_id(user_id: int, db: Session):
     try:
-        #aprimorar p ver a quantidade de dias de transações q irá pegar, por enq ta pegando td
+        # Aprimorar p ver a quantidade de dias de transações q irá pegar, por enq ta pegando td
         stmt = (select(Expense.date, Expense.value, Expense.type_expense)
                 .where(Expense.user_id == user_id, Expense.is_activated == True)
                 .order_by(Expense.date.asc()))
         transactions = db.execute(stmt).all()
         debug_print(is_show=True, text=f"Fetched {len(transactions)} transactions for daily balance calculation for user {user_id}")
+        
         if not transactions:
             debug_print(is_show=True, text=f"No transactions found for user {user_id}")
             return None
 
         df = pd.DataFrame(transactions, columns=['date', 'value', 'type_expense'])
-        df['date'] = pd.to_datetime(df['date']).dt.date
-        df['real_amount'] = df.apply(lambda row: +row['value'] if row['type_expense'] else -row['value'], axis=1)
+        
+        # 🔥 CORREÇÃO: Usar .dt.normalize() em vez de .dt.date
+        # Isso zera as horas (00:00:00) mas mantém no formato Timestamp do Pandas para não bugar o calendário
+        df['date'] = pd.to_datetime(df['date']).dt.normalize()
+        
+        # Garante que os valores numéricos sejam tratados como float
+        df['real_amount'] = df.apply(lambda row: float(row['value']) if row['type_expense'] else -float(row['value']), axis=1)
 
         daily_summary = df.groupby('date')['real_amount'].sum().reset_index()
+        daily_summary.set_index('date', inplace=True)
+        
+        # 🔥 CORREÇÃO: Usando pd.Timestamp para pegar hoje à meia-noite (alinha perfeitamente com o normalize)
+        last_day = max(daily_summary.index.max(), pd.Timestamp.today().normalize())
+        
+        full_calendar = pd.date_range(start=daily_summary.index.min(), end=last_day, freq='D')
+        daily_summary = daily_summary.reindex(full_calendar)
+        
+        daily_summary['real_amount'] = daily_summary['real_amount'].fillna(0)
         daily_summary['balance'] = daily_summary['real_amount'].cumsum()
+        daily_summary.reset_index(names='date', inplace=True)
 
         df_prophet = daily_summary[['date', 'balance']].rename(columns={'date': 'ds', 'balance': 'y'})
         debug_print(is_show=True, text=f"Daily balances calculated for user {user_id}")
+        
         return df_prophet
 
     except Exception as e:
         print(f"Error occurred while fetching daily balances for user {user_id}: {e}")
         return []
-
 
 def training_prophet_model():
     try:
