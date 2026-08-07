@@ -229,6 +229,7 @@ function ChatPage(props: ChatPageProps) {
                             type="chatpage"
                             onChangeInputChildren={onChangeInputFatherChat}
                             cleanText={controlClearTextInput}
+                            onEnterPress={onClickFather}
                         />
                     </div>
                     <div className="shrink-0">
