@@ -5,7 +5,7 @@ import type { InputProps } from "../../interfaces/interfacesComponents"
 
 
 function Input(props: InputProps){
-    const {type, onChangeInputChildren, cleanText, isError} = props
+    const {type, onChangeInputChildren, cleanText, isError, onEnterPress} = props
     const [valueInputTyped, setValueInputTyped] = useState('')
     const [otp, setOtp] = useState<string[]>(new Array(6).fill(''))
     const inputsRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -64,7 +64,27 @@ function Input(props: InputProps){
         inputsRefs.current[focusIndex]?.focus()
     }
 
+    
+    const handleKeyDownChat = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // Se a tecla for 'Enter' E a tecla 'Shift' NÃO estiver pressionada
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // Impede que o Enter quebre a linha no textarea
+            
+            if (onEnterPress && valueInputTyped.trim() !== '') {
+                onEnterPress(''); // Dispara a função de envio que virá da página pai
+            }
+        }
+    }
 
+    const handleKeyDownStandardInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Evita que a página recarregue se o input estiver dentro de um <form>
+            
+            if (onEnterPress && valueInputTyped.trim() !== '') {
+                onEnterPress(''); // Dispara a função de login/avanço
+            }
+        }
+    }
 
 
     if(type == 'email'){
@@ -168,6 +188,7 @@ function Input(props: InputProps){
                             maxLength={64}
                             onChange={handleInputChange}
                             value={valueInputTyped}
+                            onKeyDown={handleKeyDownStandardInput}
                             >
                     </input>
                     <button onClick={handleShowPassowd}
@@ -186,7 +207,8 @@ function Input(props: InputProps){
                             placeholder='Descreva aqui o seu gasto, ou recebimento, para poder ser adicionado!'
                             className='text-white rounded-[28px] p-3 w-full h-full backdrop-blur-2xl text-left font-extralight text-sm focus:outline-none resize-none  placeholder:text-white/50 '
                             onChange={handleInputChange}
-                            value={valueInputTyped}>
+                            value={valueInputTyped}
+                            onKeyDown={handleKeyDownChat}>
                         </textarea>
                     </div>
                 </div>
