@@ -563,4 +563,11 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
     return full_extract
 
 
-
+def get_transaction_title_by_id(db: Session, transaction_id: int):
+    try:
+        stmt = select(Expense.name).where(Expense.id == transaction_id)
+        result = db.execute(stmt).scalar()
+        return result
+    except Exception as e:
+        print(f"Erro ao buscar título da transação: {e}")
+        return None
