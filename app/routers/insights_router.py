@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.controllers.insights_controller import get_balance_of_last_months, get_investigator_insights, get_main_categorys, mark_insight_as_read, mark_insight_as_read
+from app.controllers.insights_controller import get_anomalie_insights, get_balance_of_last_months, get_investigator_insights, get_main_categorys, mark_insight_as_read, mark_insight_as_read
 from app.controllers.insights_controller import get_prophet_insights
 from app.controllers.user_controller import get_subscriber_status
 from app.core.auth import get_current_user
@@ -21,11 +21,13 @@ def get_insights(current_user: dict = Depends(get_current_user), db: Session = D
         insights_investigator = get_investigator_insights(current_user['user_id'], db)
         categorys_of_expenses = get_main_categorys(current_user['user_id'], db)
         month_expenses_graphic = get_balance_of_last_months(current_user['user_id'], db)
+        insights_anomalie = get_anomalie_insights(current_user['user_id'], db)
         return {
             "prophet": insights_prophet,
             "investigator": insights_investigator,
             "categorys_of_expenses": categorys_of_expenses,
-            "month_expenses_graphic": month_expenses_graphic
+            "month_expenses_graphic": month_expenses_graphic,
+            "anomalie": insights_anomalie
         }
     except Exception as e:
         print(f"Error occurred while fetching insights: {e}")

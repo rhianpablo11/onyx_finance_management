@@ -79,6 +79,19 @@ def get_investigator_insights(user_id: int, db: Session):
         return []
 
 
+def get_anomalie_insights(user_id: int, db: Session):
+    try:
+        stmt = (select(Ia_insights)
+                .where(Ia_insights.user_id == user_id, Ia_insights.type_insight == 'anomalie')
+                .order_by(Ia_insights.created_at.desc()))
+        insight = db.execute(stmt).scalars().first()
+        return insight
+
+    except Exception as e:
+        print(f"Error occurred while fetching Anomalie insights: {e}")
+        return []
+
+
 def add_new_insight_prophet(user_id: int, title: str, text_content: str, db: Session):
     try:
         new_insight = Ia_insights(
