@@ -10,6 +10,7 @@ import type {
     monthlyBalanceData, 
     ProphetData 
 } from '../interfaces/interfacesComponents';
+import Loader from "../components/ui/loader";
 
 // const data = [
 //   { 
@@ -119,7 +120,7 @@ function InsightsPage(){
                     setAnomaliesData(insights_data.anomalie);
 
                     const rawProphet = insights_data.prophet.graphic_data || [];
-                    
+                    console.log(rawProphet)
                     // cleanup data for Recharts: Remove previous AI predictions and connect the last real value to the first AI prediction
                     let lastRealIndex = -1;
                     rawProphet.forEach((item: any, index: number) => {
@@ -158,8 +159,7 @@ function InsightsPage(){
     if (loading) {
         return (
             <div className="flex flex-col w-full h-full items-center justify-center">
-                {/* Aqui você pode colocar um spinner bonitão do Tailwind se quiser */}
-                <p className="text-violet-400 font-medium animate-pulse">Analisando seu financeiro...</p>
+                <Loader />
             </div>
         );
     }
