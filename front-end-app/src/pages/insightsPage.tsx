@@ -10,6 +10,7 @@ import type {
     monthlyBalanceData, 
     ProphetData 
 } from '../interfaces/interfacesComponents';
+import Loader from "../components/ui/loader";
 
 // const data = [
 //   { 
@@ -104,6 +105,8 @@ function InsightsPage(){
     const [monthlyData, setMonthlyData] = useState<monthlyBalanceData[]>([]);
     const [prophetData, setProphetData] = useState<ProphetData[]>([]);
     const [endMonthBalance, setEndMonthBalance] = useState<number>(0);
+    const [anomaliesData, setAnomaliesData] = useState<{title: string, text_content: string}>();
+
     useEffect(() => {
         const fetchInsightsData = async () => {
             try {
@@ -114,9 +117,11 @@ function InsightsPage(){
                     setFinanceComportment(insights_data.investigator);
                     setMonthlyData(insights_data.month_expenses_graphic || []);
                     setEndMonthBalance(insights_data.prophet.value_predicted_to_end_month || 0);
+                    setAnomaliesData(insights_data.anomalie);
+
                     const rawProphet = insights_data.prophet.graphic_data || [];
-                    
-                    // 1. Descobre qual é o último índice que tem o "saldo real"
+                    console.log(rawProphet)
+                    // cleanup data for Recharts: Remove previous AI predictions and connect the last real value to the first AI prediction
                     let lastRealIndex = -1;
                     rawProphet.forEach((item: any, index: number) => {
                         if (item.real !== null) {
@@ -124,7 +129,7 @@ function InsightsPage(){
                         }
                     });
 
-                    // 2. Mapeia limpando o passado e conectando o "Hoje"
+                    
                     const cleanedProphet = rawProphet.map((item: any, index: number) => {
                         if (index < lastRealIndex) {
                             // Dias passados: Apaga a linha da IA, deixa só a Verde
@@ -138,7 +143,7 @@ function InsightsPage(){
                         return item;
                     });
 
-                    // Salva os dados limpinhos pro Recharts!
+                    // Salva os dados pro Recharts!
                     setProphetData(cleanedProphet);
                 }
             } catch (error) {
@@ -154,8 +159,7 @@ function InsightsPage(){
     if (loading) {
         return (
             <div className="flex flex-col w-full h-full items-center justify-center">
-                {/* Aqui você pode colocar um spinner bonitão do Tailwind se quiser */}
-                <p className="text-violet-400 font-medium animate-pulse">Analisando seu financeiro...</p>
+                <Loader />
             </div>
         );
     }
@@ -176,6 +180,12 @@ function InsightsPage(){
                     <FinanceComportment 
                         title={financeComportment.title}
                         description={financeComportment.text_content}
+                    />
+                )}
+                {anomaliesData?.title && (
+                    <FinanceComportment 
+                        title={anomaliesData.title}
+                        description={anomaliesData.text_content}
                     />
                 )}
                 {prophetData.length > 0 && (
