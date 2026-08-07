@@ -120,7 +120,9 @@ function Login(){
                             Senha:
                         </h1>
                         <Input  onChangeInputChildren={onChangeInputFatherPassword} 
-                                type="password"/>
+                                type="password"
+                                onEnterPress={onClickFather}
+                                />
                         <button onClick={redirectToRecoveryPassword}
                                 className="text-white/70 text-xs pl-1 font-normal underline">
                             Esqueci a senha
