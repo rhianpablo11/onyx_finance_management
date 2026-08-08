@@ -4,6 +4,7 @@ export interface InputProps {
     cleanText?: boolean
     isError?: boolean
     onEnterPress?: (info:string) => void;
+    placeholder?: string
 }
 
 export interface ButtonProps {
