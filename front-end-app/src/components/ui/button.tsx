@@ -169,7 +169,7 @@ function Button(props: ButtonProps){
     } else if(type == 'edit-expense'){
         return(
             <>
-                <button disabled={true}
+                <button disabled={false}
                         onClick={() => onClickButtonChildren('')}
                         className="bg-[#888888] px-3 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
                         

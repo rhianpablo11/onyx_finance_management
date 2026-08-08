@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import backgroundDetailsExpense from '../assets/Group 8.svg?url'
 import type { DetailsExpenseProps } from '../interfaces/interfacesComponents'
 import { getCookie } from '../services/cookiesService'
@@ -5,7 +6,10 @@ import {  formatDateShow, formatValue } from '../utils/utils'
 import CreditCard from './creditCard'
 import PaperMoney from './paperMoney'
 import Button from './ui/button'
-
+import Input from './ui/input'
+import SelectionComp from './ui/selection'
+import { parseDate } from '@internationalized/date'
+import {DatePicker} from './react-aria/DatePicker'
 
 function DetailsExpense(props: DetailsExpenseProps){
     const {nameExpense,
@@ -18,10 +22,18 @@ function DetailsExpense(props: DetailsExpenseProps){
            idExpense,
            typeExpense} = props
     
+
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [editedValue, setEditedValue] = useState(amount)
+    const initialDateString = dateExpense ? dateExpense.split('T')[0] : '2026-08-07';
+    const [editedDate, setEditedDate] = useState(parseDate(initialDateString))
+
     const onClickFather =  () =>{
         console.log(idExpense)
         console.log(description[description.length - 1] == '.' ? '' : '.')
+        setIsEditMode(true)
     }
+
 
 
 
@@ -76,34 +88,84 @@ function DetailsExpense(props: DetailsExpenseProps){
                         <h3 className='text-2xl text-white font-light'>
                             R$
                         </h3>
-                        <h1 className='text-white text-[32px] font-normal pl-1'>
-                            {formatValue(amount)}
-                        </h1>
+                        {isEditMode ? (
+                            <div className='flex justify-end items-end w-full ml-3 mt-1'>
+                                <Input type='change-value-transaction'
+                                    placeholder={formatValue(amount).toString()}
+                                    onChangeInputChildren={(value) => setEditedValue(parseFloat(value) || 0)}
+                                />
+                            </div>
+                            ):(
+                            <>
+                                <h1 className='text-white text-[32px] font-normal pl-1'>
+                                    {formatValue(amount)}
+                                </h1>
+                            </>
+                        )}
+                        
                     </div>
 
                     <div className='border-b border-white/30'>
                     </div>
 
                     <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                        <h3 className='text-base text-white font-light'>
+                        <h3 className='text-base flex shrink-0 text-white font-light'>
                             Data do {typeExpense ? 'pagamento' : 'recebimento'}:
                         </h3>
-                        <h1 className='text-white text-lg font-normal '>
-                            {formatDateShow(dateExpense)}
-                            
-                        </h1>
+                        {isEditMode ? (
+                            <>
+                                <div className='w-full ml-4 pt-1'>
+                                    <DatePicker 
+                                        aria-label="Data da transação"
+                                        value={editedDate}
+                                        onChange={setEditedDate}
+                                        className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                    />
+                                </div>
+                            </>
+                        ) : 
+                            (
+                                <>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatDateShow(dateExpense)}
+                                    </h1>
+                                </>
+                            )}
+                        
                     </div>
 
                     <div className='border-b border-white/30'>
                     </div>
 
                     <div className='flex pt-2 pb-5 justify-between items-baseline'>
-                        <h3 className='text-base text-white font-light'>
+                        <h3 className='flex shrink-0 text-base text-white font-light'>
                             {typeExpense ? 'Pagamento' : 'Recebimento'} via:
                         </h3>
-                        <h1 className='text-white text-lg font-normal '>
-                            {paymentMethod}
-                        </h1>
+                        {isEditMode ? (
+                            <>
+                                <div className='w-full pl-4'>
+                                    <SelectionComp useFor='select-type-payment'
+                                               options={[
+                                                { label: 'Dinheiro Físico', value: 'dinheiro' },
+                                                { label: 'Pix', value: 'pix' },
+                                                { label: 'Cartão de Crédito', value: 'cartao-credito' },
+                                                { label: 'Cartão de Débito', value: 'cartao-debito' }
+                                               ]}
+                                               placeholder={paymentMethod}
+                                               initialValue={paymentMethod}
+                                               onChange={(value) => console.log(value)}
+                                    />
+                                </div>
+                            </>
+                        ) :
+                        (
+                            <>
+                                <h1 className='text-white text-lg font-normal '>
+                                    {paymentMethod}
+                                </h1>
+                            </>
+                        )}
+                        
                     </div>
 
                     {methodPaymentShow()}
