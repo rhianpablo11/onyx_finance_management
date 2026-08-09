@@ -531,7 +531,8 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
         
     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
                     .where(Expense.user_id == user_id)
-                    .where(Expense.date.between(start_date, end_date)))
+                    .where(Expense.date.between(start_date, end_date))
+                    .where(Expense.is_activated == True))
     list_transactions = db.execute(stmt_get).all()
     
     formatted_list = []
