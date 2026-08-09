@@ -571,3 +571,40 @@ def get_transaction_title_by_id(db: Session, transaction_id: int):
     except Exception as e:
         print(f"Erro ao buscar título da transação: {e}")
         return None
+
+
+def edit_transaction(db: Session, transaction_id: int, user_id: int, new_categorie: int = None, new_value: float = None, new_date: date = None, new_payment_method: str = None):
+    stmt = select(Expense).where(Expense.id == transaction_id).where(Expense.user_id == user_id)
+    expense_to_edit = db.execute(stmt).scalar_one_or_none()
+
+    if not expense_to_edit:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if new_categorie is not None:
+        expense_to_edit.category = new_categorie
+    if new_value is not None:
+        expense_to_edit.value = new_value
+    if new_date is not None:
+        expense_to_edit.date = new_date
+    if new_payment_method is not None:
+        expense_to_edit.payment_method = new_payment_method
+
+    db.commit()
+    db.refresh(expense_to_edit)
+
+    return expense_to_edit
+
+
+
+def disable_transaction(db: Session, transaction_id: int, user_id: int):
+    stmt = select(Expense).where(Expense.id == transaction_id).where(Expense.user_id == user_id)
+    expense_to_disable = db.execute(stmt).scalar_one_or_none()
+
+    if not expense_to_disable:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    expense_to_disable.is_activated = False
+    db.commit()
+    db.refresh(expense_to_disable)
+
+    return expense_to_disable

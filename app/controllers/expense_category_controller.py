@@ -36,3 +36,16 @@ def get_expense_category_by_id(id: int, user_id: int, db: Session):
     #colocar verificação caso n tenha nenhuma categoria
     #print(expense_name)
     return expense_name
+
+
+def get_categories_of_user_by_id(user_id: int, db: Session):
+    stmt = select(Expense_category.name, Expense_category.id).where(Expense_category.user_id == user_id)
+    categories_list = db.execute(stmt).all()
+    categories_formated = []
+    for categorie in categories_list:
+        categories_formated.append(
+            {'label': categorie.name,
+             'value': str(categorie.id)}
+        )
+    
+    return categories_formated
