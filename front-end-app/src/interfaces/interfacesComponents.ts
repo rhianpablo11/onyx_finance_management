@@ -134,6 +134,8 @@ export interface DetailsExpenseProps{
     category: string
     idExpense: number
     typeExpense: boolean
+    listCategories: {label: string, value: string}[]
+    onSuccessEdit?: () => void
 }
 
 

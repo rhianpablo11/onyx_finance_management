@@ -26,6 +26,7 @@ function ExtractPage(props: ExtractPageProps){
     const [idSelectedTransactionToSeeDetails, setIdSelectedTransactionToSeeDetails] = useState<number | null>(null)
     const [transactionSelected, setTransactionSelected] = useState<ListTransactionProps | undefined>()
     const [customRange, setCustomRange] = useState<RangeValue<CalendarDate> | null>(null)
+    const [categoriesUser, setCategoriesUser] = useState<{label: string, value: string}[]>([])
 
     const categorysOfSearch = [
         { label: "Este mês", value: "1" },
@@ -58,6 +59,8 @@ function ExtractPage(props: ExtractPageProps){
                 setListOfTransaction(data.transactions)
                 setValueReceivedInPeriod(data.value_received)
                 setValueSpentInPeriod(data.value_spent)
+                setCategoriesUser(data.categories_user)
+                console.log('categorias do usuário', data.categories_user)
             } catch(error){
                 console.error('erro ao buscar o extrato', error)
             }
@@ -321,7 +324,11 @@ function ExtractPage(props: ExtractPageProps){
                                 description={transactionSelected.description || 'Nenhuma descrição foi encontrada'}
                                 category={transactionSelected.category}
                                 idExpense={transactionSelected.id}
-                                typeExpense={transactionSelected.typeExpense || true} />
+                                typeExpense={transactionSelected.typeExpense || true}
+                                listCategories={categoriesUser}
+                                onSuccessEdit={async () => {
+                                    fetchExtractData(currentRange.start, currentRange.end) 
+                                }} />
                 </>
             )
         }

@@ -19,6 +19,26 @@ function DashMetricsPage(props: DashMetricsProps){
     const [listOfNextPayments, setListOfNextPayments] = useState<ListTransactionProps[]>([])
     const [idOfTransactionSelected, setIdOfTransactionSelected] = useState<number | null>(null)
     const [transactionSelected, setTransactionSelected] = useState<ListTransactionProps | undefined>()
+    const [categoriesUser, setCategoriesUser] = useState<{label: string, value: string}[]>([])
+    
+
+    const fetchDashboardData2 = async () => {
+                try {
+                    const data = await getMetrics();
+                    console.log(data)
+                    setBalanceMonth(data['month_balance'])
+                    setListOfTransactionsOut(data['expenses_out'])
+                    setListOfTransactionsIn(data['expenses_in_on_month'])
+                    setBalanceGeral(data['balance_geral'])
+                    setListOfNextPayments(data['next_payments'])
+                    setBalance(data['legend_balance'])
+                    setIsIncoming(data['is_incoming_legend'])
+                    setCategoriesUser(data['categories_user'])
+                    console.log(data['expenses_out'])
+                } catch (error) {
+                    console.error("Erro ao buscar métricas:", error);
+                }
+            }
 
 
     useEffect(() => {
@@ -33,6 +53,7 @@ function DashMetricsPage(props: DashMetricsProps){
                     setListOfNextPayments(data['next_payments'])
                     setBalance(data['legend_balance'])
                     setIsIncoming(data['is_incoming_legend'])
+                    setCategoriesUser(data['categories_user'])
                     console.log(data['expenses_out'])
                 } catch (error) {
                     console.error("Erro ao buscar métricas:", error);
@@ -111,7 +132,11 @@ function DashMetricsPage(props: DashMetricsProps){
                                 description={transactionSelected.description || 'Nenhuma descrição foi encontrada'}
                                 category={transactionSelected.category}
                                 idExpense={transactionSelected.id}
-                                typeExpense={transactionSelected.typeExpense || true} />
+                                typeExpense={transactionSelected.typeExpense || true}
+                                listCategories={categoriesUser}
+                                onSuccessEdit={async () => {
+                                    fetchDashboardData2(); 
+                                }} />
                 </>
             )
         }
