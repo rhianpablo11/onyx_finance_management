@@ -89,6 +89,9 @@ function DetailsExpense(props: DetailsExpenseProps){
         // Aqui você pode adicionar a lógica para deletar a transação, se necessário. Por enquanto, apenas loga no console.
         console.log(`Deletar transação com ID: ${idExpense}`);
         await disableExpense(idExpense);
+        if (onSuccessEdit) {
+            await onSuccessEdit();
+        }
     }
 
     // Atualizado para olhar para o "currentPaymentMethod"
