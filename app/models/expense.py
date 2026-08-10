@@ -15,3 +15,4 @@ class Expense(Base):
     payment_method = Column(String(200))
     is_activated = Column(Boolean, nullable=False)
     fixed_expense_id = Column(Integer, ForeignKey('expenses_fixed.id', ondelete="SET NULL"), nullable=True)
+    is_deleted = Column(Boolean, default=False)
