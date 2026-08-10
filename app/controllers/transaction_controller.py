@@ -167,6 +167,7 @@ def get_total_spent_on_the_date(db: Session, user_id: int, start_date: date, end
                         .where(Expense.user_id == user_id)
                         .where(Expense.date.between(start_date, end_date))
                         .where(Expense.is_activated == True)
+                        .where(Expense.is_deleted == False)
                         .where(Expense.type_expense == False)) # False = Gasto
         
         db_result = db.execute(stmt_realized).scalar()
@@ -196,6 +197,7 @@ def get_total_received_on_the_date(db:Session, user_id: int, start_date: date, e
                             .where(Expense.user_id == user_id)
                             .where(Expense.date.between(start_date, end_date))
                             .where(Expense.is_activated == True)
+                            .where(Expense.is_deleted == False)
                             .where(Expense.type_expense == True))
         list_expenses = db.execute(stmt_expenses).scalars().all()
 
@@ -264,6 +266,7 @@ def get_day_and_last_transactions(db: Session, user_id: int):
                 .where(Expense.user_id == user_id)
                 .where(Expense.date == today)
                 .where(Expense.type_expense == False)
+                .where(Expense.is_deleted == False)
                 .order_by(desc(Expense.id)))
     list_expenses = db.execute(stmt_get).all()
 
@@ -272,6 +275,7 @@ def get_day_and_last_transactions(db: Session, user_id: int):
                       .where(Expenses_fixed.user_id == user_id)
                       .where(Expenses_fixed.start_date == today)
                       .where(Expenses_fixed.type_expense == False)
+                      .where(Expenses_fixed.is_deleted == False)
                       .order_by(desc(Expenses_fixed.id)))
     list_expenses_fixed = db.execute(stmt_get_fixed).all()
     
@@ -322,14 +326,17 @@ def get_monthly_receives(db: Session, user_id: int):
     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
                 .where(Expense.user_id == user_id)
                 .where(Expense.date.between(start_date, end_date))
-                .where(Expense.type_expense == True))
+                .where(Expense.type_expense == True)
+                .where(Expense.is_deleted == False))
+
     list_received = db.execute(stmt_get).all()
 
 
     stmt_get_fixed = (select(Expenses_fixed.value, Expenses_fixed.name, Expenses_fixed.category, Expenses_fixed.id, Expenses_fixed.type_expense, Expenses_fixed.start_date, Expenses_fixed.payment_method, Expenses_fixed.description)
                       .where(Expenses_fixed.user_id == user_id)
                       .where(Expenses_fixed.start_date.between(start_date, end_date))
-                      .where(Expenses_fixed.type_expense == True))
+                      .where(Expenses_fixed.type_expense == True)
+                      .where(Expenses_fixed.is_deleted == False))
     list_receiveds_fixed = db.execute(stmt_get_fixed).all()
     
     formatted_list = []
@@ -422,6 +429,7 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
             .join(Charge_type, Expenses_fixed.charge == Charge_type.id)
             .where(Expenses_fixed.user_id == user_id)
             .where(Expenses_fixed.activated == True)
+            .where(Expenses_fixed.is_deleted == False)
             .where(Expenses_fixed.start_date <= end_date) 
             .where(or_(Expenses_fixed.end_date == None, Expenses_fixed.end_date >= start_date)))
     
@@ -430,7 +438,8 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
     stmt_paid = (select(Expense.fixed_expense_id, Expense.date)
                  .where(Expense.user_id == user_id)
                  .where(Expense.date.between(start_date, end_date))
-                 .where(Expense.fixed_expense_id != None))
+                 .where(Expense.fixed_expense_id != None)
+                 .where(Expense.is_deleted == False))
     paid_map = {f"{row.fixed_expense_id}_{row.date}" for row in db.execute(stmt_paid).all()}
     
     projected_transactions = []
@@ -532,7 +541,7 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
     stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
                     .where(Expense.user_id == user_id)
                     .where(Expense.date.between(start_date, end_date))
-                    .where(Expense.is_activated == True))
+                    .where(Expense.is_deleted == False))
     list_transactions = db.execute(stmt_get).all()
     
     formatted_list = []
@@ -604,7 +613,7 @@ def disable_transaction(db: Session, transaction_id: int, user_id: int):
     if not expense_to_disable:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
-    expense_to_disable.is_activated = False
+    expense_to_disable.is_deleted = True
     db.commit()
     db.refresh(expense_to_disable)
 
