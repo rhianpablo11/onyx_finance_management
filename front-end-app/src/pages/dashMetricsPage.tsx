@@ -136,6 +136,10 @@ function DashMetricsPage(props: DashMetricsProps){
                                 listCategories={categoriesUser}
                                 onSuccessEdit={async () => {
                                     fetchDashboardData2(); 
+                                }} 
+                                onDeleteAction={async () => {
+                                    setTransactionSelected(undefined);
+                                    setIdOfTransactionSelected(null);
                                 }} />
                 </>
             )

@@ -328,7 +328,11 @@ function ExtractPage(props: ExtractPageProps){
                                 listCategories={categoriesUser}
                                 onSuccessEdit={async () => {
                                     fetchExtractData(currentRange.start, currentRange.end) 
-                                }} />
+                                }}
+                                onDeleteAction={async () => {
+                                    setTransactionSelected(undefined);
+                                    setIdSelectedTransactionToSeeDetails(null);
+                                }}  />
                 </>
             )
         }

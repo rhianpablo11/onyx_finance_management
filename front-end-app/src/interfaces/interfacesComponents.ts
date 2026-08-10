@@ -136,6 +136,7 @@ export interface DetailsExpenseProps{
     typeExpense: boolean
     listCategories: {label: string, value: string}[]
     onSuccessEdit?: () => void
+    onDeleteAction?: () => void
 }
 
 

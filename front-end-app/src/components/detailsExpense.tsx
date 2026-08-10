@@ -23,7 +23,8 @@ function DetailsExpense(props: DetailsExpenseProps){
            idExpense,
            typeExpense,
            listCategories,
-           onSuccessEdit} = props
+           onSuccessEdit,
+           onDeleteAction} = props
     
     // 🔥 1. ESTADOS DE EXIBIÇÃO: Começam com os valores do banco, mas vão mudar instantaneamente na tela
     const [currentAmount, setCurrentAmount] = useState(amount)
@@ -91,7 +92,11 @@ function DetailsExpense(props: DetailsExpenseProps){
         await disableExpense(idExpense);
         if (onSuccessEdit) {
             await onSuccessEdit();
+            if(onDeleteAction){
+                onDeleteAction()
+            }
         }
+        
     }
 
     // Atualizado para olhar para o "currentPaymentMethod"
