@@ -326,6 +326,7 @@ function ExtractPage(props: ExtractPageProps){
                                 idExpense={transactionSelected.id}
                                 typeExpense={transactionSelected.typeExpense || true}
                                 listCategories={categoriesUser}
+                                come_of_fixed={transactionSelected.come_of_fixed}
                                 onSuccessEdit={async () => {
                                     fetchExtractData(currentRange.start, currentRange.end) 
                                 }}

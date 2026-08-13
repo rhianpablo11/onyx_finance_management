@@ -134,6 +134,7 @@ function DashMetricsPage(props: DashMetricsProps){
                                 idExpense={transactionSelected.id}
                                 typeExpense={transactionSelected.typeExpense || true}
                                 listCategories={categoriesUser}
+                                come_of_fixed={transactionSelected.come_of_fixed}
                                 onSuccessEdit={async () => {
                                     fetchDashboardData2(); 
                                 }} 

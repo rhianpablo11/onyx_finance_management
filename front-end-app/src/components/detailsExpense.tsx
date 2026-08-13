@@ -23,6 +23,7 @@ function DetailsExpense(props: DetailsExpenseProps){
            idExpense,
            typeExpense,
            listCategories,
+           come_of_fixed,
            onSuccessEdit,
            onDeleteAction} = props
     
@@ -31,17 +32,47 @@ function DetailsExpense(props: DetailsExpenseProps){
     const [currentCategory, setCurrentCategory] = useState(category)
     const [currentPaymentMethod, setCurrentPaymentMethod] = useState(paymentMethod)
     const [currentDate, setCurrentDate] = useState(dateExpense)
-
     const [isEditMode, setIsEditMode] = useState(false)
     const [editedValue, setEditedValue] = useState<number | undefined>()
     const initialDateString = dateExpense ? dateExpense.split('T')[0] : '2026-08-07';
     const [editedDate, setEditedDate] = useState(parseDate(initialDateString))
     const [categoriesUser] = useState<{label: string, value: string}[]>(listCategories)
-    
     const [newPaymentMethod, setNewPaymentMethod] = useState<string | undefined>()
     const [newCategory, setNewCategory] = useState<string | number | undefined>()
     const [nameButton, setNameButton] = useState('Editar movimentação')
-    const {editExpense, loading, disableExpense} = useExpense()
+    const {editExpense, loading, disableExpense, getDetailsAboutFixedExpense} = useExpense()
+    const [installmentValue, setInstallmentValue] = useState<number>(0)
+    const [installmentNumber, setInstallmentNumber] = useState<number | string>(0)
+    const [installmentRemaining, setInstallmentRemaining] = useState<number>(0)
+    const [fixedExpenseendDate, setFixedExpenseEndDate] = useState<string>('')
+    const [fixedExpenseStartDate, setFixedExpenseStartDate] = useState<string>('')
+    const [totalValueOfFixedExpense, setTotalValueOfFixedExpense] = useState<number>(0)
+    const [paidInstallments, setPaidInstallments] = useState<number>(0)
+    const [typeOfCharge, setTypeOfCharge] = useState<string>('')
+
+    useEffect(() =>{
+        console.log('ola mundo')
+        console.log(come_of_fixed)
+        
+        const fetchDetails = async () => {
+            try {
+                const details = await getDetailsAboutFixedExpense(come_of_fixed);
+                setInstallmentNumber(details.total_installments); //quant de parcelas
+                setInstallmentValue(details.installment_value); //valor de cada parcela
+                setInstallmentRemaining(details.remaining_installments); //quant de parcelas restantes
+                setFixedExpenseEndDate(details.end_date); //data final do pagamento
+                setFixedExpenseStartDate(details.start_date); //data q começou
+                setTotalValueOfFixedExpense(details.total_value); //valor total da despesa fixa
+                setPaidInstallments(details.paid_installments); //quant de parcelas pagas
+                setTypeOfCharge(details.type_of_charge); //tipo de cobrança
+            } catch (error) {  
+                console.error('Erro ao buscar detalhes da despesa fixa:', error);
+            }
+        };
+        if(come_of_fixed != null){
+            fetchDetails();
+        }
+    },[])
 
     const onClickFather = async () =>{
         if(isEditMode){
@@ -115,6 +146,150 @@ function DetailsExpense(props: DetailsExpenseProps){
         }
     }
 
+    
+    const paymentIsRecurrent = () => {
+        if(fixedExpenseendDate != null){
+            return (
+                <>
+                    {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Parcela atual:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {paidInstallments} de {installmentNumber}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+
+                        {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Parcelas a serem pagas:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {installmentRemaining}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+
+                        {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Valor total a ser pago:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatValue(totalValueOfFixedExpense)}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+
+                        {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Valor restante a ser pago:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatValue(totalValueOfFixedExpense - (installmentValue * paidInstallments))}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+  
+                        {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Valor ja pago:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatValue(installmentValue * paidInstallments)}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+
+ 
+                        {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Data do {typeExpense ? "pagamento" : "recebimento"} final:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatDateShow(fixedExpenseendDate)}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+                </>
+            )
+        } else{
+            return(
+                <>
+                    {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Recorrência do {typeExpense ? "pagamento" : "recebimento"}:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        Contínuo
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+
+                        {come_of_fixed != null && (
+                            <>
+                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                        Valor ja pago:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatValue(installmentValue * paidInstallments)}
+                                    </h1>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='border-b border-white/30'>
+                        </div>
+                </>
+            )
+        }
+        
+        
+    }
+
     return(
         <>
             <div className="rounded-[29px] w-full h-full flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px ">
@@ -180,9 +355,40 @@ function DetailsExpense(props: DetailsExpenseProps){
                     <div className='border-b border-white/30'>
                     </div>
 
+                    {/*
+                        Começa aqui a parte q eh diferente entre desepesa fixa vs despesa normal
+                    */}
                     <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                        {come_of_fixed == null ? (
+                            <>
+                                <h3 className='text-base flex shrink-0 text-white font-light'>
+                                    Data do {typeExpense ? 'pagamento' : 'recebimento'}:
+                                </h3>
+                                {isEditMode ? (
+                                    <>
+                                        <div className='w-full ml-4 pt-1'>
+                                            <DatePicker 
+                                                aria-label="Data da transação"
+                                                value={editedDate}
+                                                onChange={setEditedDate}
+                                                className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                            />
+                                        </div>
+                                    </>
+                                ) : 
+                                    (
+                                        <>
+                                            <h1 className='text-white text-lg font-normal '>
+                                                {formatDateShow(currentDate)}
+                                            </h1>
+                                        </>
+                                    )}
+                            </>
+                        ):
+                        (
+                        <>
                         <h3 className='text-base flex shrink-0 text-white font-light'>
-                            Data do {typeExpense ? 'pagamento' : 'recebimento'}:
+                            Data do primeiro {typeExpense ? 'pagamento' : 'recebimento'}:
                         </h3>
                         {isEditMode ? (
                             <>
@@ -199,15 +405,55 @@ function DetailsExpense(props: DetailsExpenseProps){
                             (
                                 <>
                                     <h1 className='text-white text-lg font-normal '>
-                                        {formatDateShow(currentDate)}
+                                        {formatDateShow(fixedExpenseStartDate)}
                                     </h1>
                                 </>
                             )}
-                        
+                        </>)}
                     </div>
 
                     <div className='border-b border-white/30'>
                     </div>
+
+                    {come_of_fixed != null && (
+                        <>
+                            <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                <h3 className='text-base flex shrink-0 text-white font-light'>
+                                    Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
+                                </h3>
+                                <h1 className='text-white text-lg font-normal '>
+                                    {formatDateShow(currentDate)}
+                                </h1>
+                            </div>
+                        </>
+                    )}
+
+                    <div className='border-b border-white/30'>
+                    </div>
+
+                    {paymentIsRecurrent()}
+
+
+                    
+
+                    
+
+                    {come_of_fixed != null && (
+                        <>
+                            <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                <h3 className='text-base flex shrink-0 text-white font-light'>
+                                    Cobranças realizadas no período:
+                                </h3>
+                                <h1 className='text-white text-lg font-normal '>
+                                    {typeOfCharge}
+                                </h1>
+                            </div>
+                        </>
+                    )}
+
+                    <div className='border-b border-white/30'>
+                    </div>
+
 
                     <div className='flex pt-2 pb-5 justify-between items-baseline'>
                         <h3 className='flex shrink-0 text-base text-white font-light'>

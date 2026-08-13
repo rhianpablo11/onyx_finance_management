@@ -32,6 +32,19 @@ export function useExpense(){
         }
     }
 
+    const getDetailsAboutFixedExpense = async (transactionID: number) => {
+        setLoading(true)
+        console.log('fui chamado')
+        try{
+            const response = await api.get(`/transactions/fixed-expense/${transactionID}`)
+            console.log(response.data)
+            return response.data
+        } catch(err: any) {
+            throw err
+        } finally {
+            setLoading(false)
+        }
+    }
 
-    return {editExpense, loading, disableExpense}
+    return {editExpense, loading, disableExpense, getDetailsAboutFixedExpense}
 }
