@@ -517,13 +517,14 @@ def process_fixed_expenses_in_period(db: Session, user_id: int, start_date: date
                     desc = expense.description if expense.description else ""
 
                     projected_transactions.append({
-                        "id": f"fixed_{expense.id}_{current_check_date}", 
+                        "id": expense.id, 
                         "nameExpense": expense.name,
                         "value": parcel_value,
                         "category": cat_name, 
                         "typeExpense": expense.type_expense,
                         "date": current_check_date,
                         "is_fixed": True,
+                        "come_of_fixed": expense.id,
                         "paymentMethod": expense.payment_method,
                         "description": f"Agendado: {desc}" 
                     })
@@ -538,7 +539,7 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
     if not end_date:
         end_date = date.today()
         
-    stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
+    stmt_get = (select(Expense.id, Expense.name, Expense.type_expense, Expense.fixed_expense_id, Expense.value, Expense.date, Expense.category, Expense.payment_method, Expense.description)
                     .where(Expense.user_id == user_id)
                     .where(Expense.date.between(start_date, end_date))
                     .where(Expense.is_deleted == False))
@@ -555,9 +556,11 @@ def get_transactions_in_period(db: Session, user_id: int, start_date: date, end_
             'id': item.id,
             'date': item.date,
             'is_fixed': False,
+            'come_of_fixed': item.fixed_expense_id,
             'paymentMethod': item.payment_method,
             'description': item.description
         })
+    # print(formatted_list)
     
     # LIGA A ENGENHARIA DE PROJEÇÃO NO EXTRATO AQUI!
     list_fixed_projected = process_fixed_expenses_in_period(
@@ -618,3 +621,47 @@ def disable_transaction(db: Session, transaction_id: int, user_id: int):
     db.refresh(expense_to_disable)
 
     return expense_to_disable
+
+
+
+def get_details_about_fixed_expense(db: Session, user_id: int, fixed_id: int):
+    # 1. Busca a transação fixa "mãe"
+    fixed_exp = db.query(Expenses_fixed).filter(
+        Expenses_fixed.id == fixed_id, 
+        Expenses_fixed.user_id == user_id,
+        Expenses_fixed.is_deleted == False
+    ).first()
+
+    type_of_charge = db.query(Charge_type).filter(Charge_type.id == fixed_exp.charge).first() if fixed_exp else None
+    
+    if not fixed_exp:
+        raise HTTPException(status_code=404, detail="Assinatura/Parcelamento não encontrado")
+
+    # 2. Conta quantas parcelas já foram processadas (Pagas ou Puladas)
+    paid_count = db.query(Expense).filter(
+        Expense.fixed_expense_id == fixed_id, 
+        Expense.is_deleted == False
+    ).count()
+    
+    # 3. Matemática de parcelas
+    total_installments = fixed_exp.installments_count if fixed_exp.installments_count else 0
+    
+    if total_installments > 0:
+        installment_value = float(fixed_exp.value) / total_installments
+        remaining = total_installments - paid_count
+    else:
+        # É uma assinatura infinita (Ex: Spotify, Netflix)
+        installment_value = float(fixed_exp.value)
+        remaining = "Infinito"
+    
+    return {
+        "fixed_id": fixed_id,
+        "total_value": float(fixed_exp.value),
+        "installment_value": installment_value,
+        "total_installments": total_installments,
+        "paid_installments": paid_count,
+        "remaining_installments": remaining,
+        "start_date": fixed_exp.start_date,
+        "end_date": fixed_exp.end_date,
+        "type_of_charge": type_of_charge.name if type_of_charge else "Desconhecido"
+    }

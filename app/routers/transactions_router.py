@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.controllers.user_controller import get_balance_user
 from app.core.auth import get_current_user
-from app.controllers.transaction_controller import create_new_expense, disable_transaction, edit_transaction, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_monthly_receives, get_next_payments, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
+from app.controllers.transaction_controller import create_new_expense, disable_transaction, edit_transaction, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_details_about_fixed_expense, get_monthly_receives, get_next_payments, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.controllers.expense_category_controller import get_categories_of_user_by_id, get_expense_category_by_id
@@ -206,4 +206,17 @@ def delete_expense(current_user:dict = Depends(get_current_user), db: Session = 
         return deleted_expense
     except Exception as e:
         print(f"Error occurred while deleting expense: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get('/fixed-expense/{transaction_id}')
+def get_fixed_expense_details(transaction_id: int, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    try:
+        fixed_expense_details = get_details_about_fixed_expense(db=db, fixed_id=transaction_id, user_id=current_user['user_id'])
+        print(fixed_expense_details)
+        return fixed_expense_details
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error occurred while fetching fixed expense details: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
