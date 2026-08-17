@@ -194,12 +194,16 @@ async def edit_expense(current_user:dict = Depends(get_current_user), db: Sessio
 
 
 @router.delete('/{expense_id}')
-def delete_expense(current_user:dict = Depends(get_current_user), db: Session = Depends(get_db), expense_id: int = None):
+async def delete_expense(current_user:dict = Depends(get_current_user), db: Session = Depends(get_db), expense_id: int = None, request: Request = {}):
     try:
+        # Pega as instruções de exclusão do frontend
+        payload = await request.json()
+        
         deleted_expense = disable_transaction(
             db=db,
             transaction_id=expense_id,
-            user_id=current_user['user_id']
+            user_id=current_user['user_id'],
+            payload=payload
         )
         return deleted_expense
     except Exception as e:

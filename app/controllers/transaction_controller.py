@@ -734,20 +734,100 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
         return exp
 
 
+def disable_transaction(db: Session, transaction_id: int, user_id: int, payload: dict):
+    
+    delete_type = payload.get('delete_type', 'simple')
+    fixed_expense_id = payload.get('come_of_fixed')
+    target_date_str = payload.get('date')
+    target_date = date.fromisoformat(str(target_date_str).split('T')[0]) if target_date_str else None
 
-def disable_transaction(db: Session, transaction_id: int, user_id: int):
-    stmt = select(Expense).where(Expense.id == transaction_id).where(Expense.user_id == user_id)
-    expense_to_disable = db.execute(stmt).scalar_one_or_none()
+    # Tenta achar a despesa filha física no banco
+    exp = db.query(Expense).filter(Expense.id == transaction_id, Expense.user_id == user_id).first()
 
-    if not expense_to_disable:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+    # 🔥 A MÁGICA DA DEDUÇÃO: Descobrindo se é Projeção ou Real
+    # Se a transação não existe OU se existe mas pertence a outra mãe (coincidência de IDs), é projeção!
+    is_projected = False
+    if not exp or exp.fixed_expense_id != fixed_expense_id:
+        is_projected = True
 
-    expense_to_disable.is_deleted = True
+    # =======================================================
+    # CENÁRIO 1: É UMA DESPESA SIMPLES
+    # =======================================================
+    if not fixed_expense_id or delete_type == 'simple':
+        if not exp:
+            raise HTTPException(status_code=404, detail="Transação não encontrada")
+        
+        if exp.is_activated:
+            reverse_type = not exp.type_expense
+            update_balance(db=db, user_id=user_id, value=float(exp.value), type=reverse_type)
+        
+        exp.is_deleted = True
+        db.commit()
+        return {"status": "success", "message": "Despesa simples deletada com sucesso"}
+
+    # =======================================================
+    # CENÁRIO 2: É UMA DESPESA FIXA / PARCELADA
+    # =======================================================
+    fixed_exp = db.query(Expenses_fixed).filter(Expenses_fixed.id == fixed_expense_id, Expenses_fixed.user_id == user_id).first()
+    if not fixed_exp:
+        raise HTTPException(status_code=404, detail="Despesa mãe não encontrada")
+
+    # Se a transação for real (não projetada), garante que a target_date é a data real dela
+    if not is_projected:
+        target_date = exp.date
+
+    # OPÇÃO 1: SOMENTE ESTA (A Tática do Fantasma Visível)
+    if delete_type == 'this':
+        if not is_projected: # Já existe no banco
+            if exp.is_activated:
+                reverse_type = not exp.type_expense
+                update_balance(db=db, user_id=user_id, value=float(exp.value), type=reverse_type)
+            
+            exp.value = 0
+            exp.description = f"[PULADA] {exp.description}"
+            exp.name = f"[PULADA] {exp.name}"
+            # is_deleted continua False pro usuário ver no extrato com R$ 0,00
+        else:
+            # Era projeção! Cria o fantasma na data especificada.
+            ghost = Expense(
+                user_id=user_id, category=fixed_exp.category, value=0, type_expense=fixed_exp.type_expense,
+                description=f"[PULADA] {fixed_exp.description}", date=target_date, 
+                is_activated=True, is_deleted=False, # Visível no extrato!
+                fixed_expense_id=fixed_expense_id, name=f"[PULADA] {fixed_exp.name}", 
+                payment_method=fixed_exp.payment_method
+            )
+            db.add(ghost)
+
+    # OPÇÃO 2: AS PRÓXIMAS
+    elif delete_type == 'next':
+        fixed_exp.end_date = target_date
+
+    # OPÇÃO 3: ESTA E AS PRÓXIMAS
+    elif delete_type == 'this_and_next':
+        fixed_exp.end_date = target_date - timedelta(days=1)
+        if not is_projected: # Se a de hoje já estava no banco, deleta e estorna
+            if exp.is_activated:
+                reverse_type = not exp.type_expense
+                update_balance(db=db, user_id=user_id, value=float(exp.value), type=reverse_type)
+            exp.is_deleted = True
+
+    # OPÇÃO 4: TODAS (Bomba Atômica)
+    elif delete_type == 'all':
+        fixed_exp.is_deleted = True
+        all_children = db.query(Expense).filter(
+            Expense.fixed_expense_id == fixed_expense_id, 
+            Expense.user_id == user_id, 
+            Expense.is_deleted == False
+        ).all()
+        
+        for child in all_children:
+            if child.is_activated:
+                reverse_type = not child.type_expense
+                update_balance(db=db, user_id=user_id, value=float(child.value), type=reverse_type)
+            child.is_deleted = True
+
     db.commit()
-    db.refresh(expense_to_disable)
-
-    return expense_to_disable
-
+    return {"status": "success", "message": f"Deletada com a estratégia: {delete_type}"}
 
 
 def get_details_about_fixed_expense(db: Session, user_id: int, fixed_id: int):
