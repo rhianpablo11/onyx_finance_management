@@ -179,15 +179,13 @@ def get_extract(current_user: dict = Depends(get_current_user),
 async def edit_expense(current_user:dict = Depends(get_current_user), db: Session = Depends(get_db), expense_id: int = None, request: Request = {}):
     try:
         payload = await request.json()
-        print(payload)
+        print("Payload recebido no PUT:", payload)
+        
         updated_expense = edit_transaction(
             db=db,
             transaction_id=expense_id,
             user_id=current_user['user_id'],
-            new_categorie=payload.get('category'),
-            new_value=payload.get('value'),
-            new_date=payload.get('date'),
-            new_payment_method=payload.get('paymentMethod')
+            payload=payload 
         )
         return updated_expense
     except Exception as e:

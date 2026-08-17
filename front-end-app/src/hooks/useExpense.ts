@@ -5,10 +5,31 @@ import { api } from "../services/apiService";
 export function useExpense(){
     const [loading, setLoading] = useState(false)
 
-    const editExpense = async (transactionID: number, category: string, value: number, paymentMethod: string, date: string) => {
+    const editExpense = async (transactionID: number,
+                               category: string,
+                               value: number,
+                               paymentMethod: string,
+                               date: string,
+                               typeOfCharge: string,
+                               dateOfThisPayment: string,
+                               dateOfLastPayment: string,
+                               editedStartDate: string,
+                               fixedExpenseID: string) => {
         setLoading(true)
         try{
-            const response = await api.put(`/transactions/${transactionID}`, { category, value, paymentMethod, date })
+            const dataToSend = {
+                'category': category,
+                'value': value,
+                'paymentMethod': paymentMethod,
+                'date': date,
+                'typeOfCharge': typeOfCharge,
+                'dateOfThisPayment': dateOfThisPayment,
+                'dateOfLastPayment': dateOfLastPayment,
+                'editedStartDate': editedStartDate,
+                'fixedExpenseID': fixedExpenseID
+            }
+
+            const response = await api.put(`/transactions/${transactionID}`, dataToSend)
             console.log(response.data)
             return response.data
         } catch(err: any) {

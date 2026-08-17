@@ -594,26 +594,144 @@ def get_transaction_title_by_id(db: Session, transaction_id: int):
         return None
 
 
-def edit_transaction(db: Session, transaction_id: int, user_id: int, new_categorie: int = None, new_value: float = None, new_date: date = None, new_payment_method: str = None):
-    stmt = select(Expense).where(Expense.id == transaction_id).where(Expense.user_id == user_id)
-    expense_to_edit = db.execute(stmt).scalar_one_or_none()
+def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: dict):
+    fixed_expense_id = payload.get('fixedExpenseID')
 
-    if not expense_to_edit:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+    # =======================================================
+    # TRATAMENTO DE CATEGORIA (Garante que sempre será um ID)
+    # =======================================================
+    cat_payload = payload.get('category')
+    new_category_id = None
+    if cat_payload:
+        if str(cat_payload).isdigit():
+            new_category_id = int(cat_payload)
+        else:
+            cat_obj = db.query(Expense_category).filter(
+                Expense_category.name == cat_payload, 
+                Expense_category.user_id == user_id
+            ).first()
+            if cat_obj:
+                new_category_id = cat_obj.id
 
-    if new_categorie is not None:
-        expense_to_edit.category = new_categorie
-    if new_value is not None:
-        expense_to_edit.value = new_value
-    if new_date is not None:
-        expense_to_edit.date = new_date
-    if new_payment_method is not None:
-        expense_to_edit.payment_method = new_payment_method
+    # =======================================================
+    # CENÁRIO 1: É UMA DESPESA FIXA (MÃE E/OU PROJEÇÃO)
+    # =======================================================
 
-    db.commit()
-    db.refresh(expense_to_edit)
+    if fixed_expense_id is not None:
+        fixed_exp = db.query(Expenses_fixed).filter(
+            Expenses_fixed.id == fixed_expense_id, 
+            Expenses_fixed.user_id == user_id
+        ).first()
 
-    return expense_to_edit
+        if fixed_exp:
+            # Conta se já existem filhas processadas no passado
+            paid_count = db.query(Expense).filter(
+                Expense.fixed_expense_id == fixed_expense_id, 
+                Expense.is_deleted == False
+            ).count()
+
+            # Categorias, Valores e Data Final podem ser editados livremente
+            if new_category_id:
+                fixed_exp.category = new_category_id
+            if payload.get('paymentMethod'):
+                fixed_exp.payment_method = payload.get('paymentMethod')
+
+            new_value = payload.get('value')
+            if new_value is not None:
+                if fixed_exp.installments_count and fixed_exp.installments_count > 0:
+                    fixed_exp.value = float(new_value) * fixed_exp.installments_count
+                else:
+                    fixed_exp.value = float(new_value)
+            
+            if payload.get('dateOfLastPayment'):
+                fixed_exp.end_date = date.fromisoformat(str(payload.get('dateOfLastPayment')).split('T')[0])
+
+            # =======================================================
+            # 🛡️ BLINDAGEM TEMPORAL (O Escudo)
+            # =======================================================
+            explicit_start_date = payload.get('editedStartDate')
+            type_of_charge = payload.get('typeOfCharge')
+            
+            # 1. MUDANÇA DE RECORRÊNCIA (A Auto-correção)
+            if type_of_charge:
+                charge_obj = db.query(Charge_type).filter(Charge_type.name.ilike(f"%{type_of_charge}%")).first()
+                if charge_obj and fixed_exp.charge != charge_obj.id:
+                    fixed_exp.charge = charge_obj.id
+                    
+                    # Se mudou de Mensal para Semanal, nós SOMOS OBRIGADOS a atualizar o start_date 
+                    # para hoje (a data da parcela atual), senão o robô buga. O código faz isso sozinho:
+                    target_date_str = payload.get('dateOfThisPayment') or payload.get('date')
+                    if target_date_str:
+                        fixed_exp.start_date = date.fromisoformat(str(target_date_str).split('T')[0])
+                        # Anula a edição manual do usuário para não dar conflito
+                        explicit_start_date = None 
+
+            # 2. MUDANÇA MANUAL DA DATA DE INÍCIO
+            # Só aceitamos a alteração digitada pelo usuário SE E SOMENTE SE 
+            # não existir NENHUMA parcela paga no histórico, OU seja a primeira cobrança do carnê!
+            if explicit_start_date and paid_count <= 1:
+                fixed_exp.start_date = date.fromisoformat(str(explicit_start_date).split('T')[0])
+
+        # 2. ATUALIZA A FILHA (Se for uma parcela que já existe fisicamente)
+        child_exp = db.query(Expense).filter(Expense.id == transaction_id, Expense.user_id == user_id).first()
+        
+        # 🔥 A MÁGICA DA DEDUÇÃO:
+        # Como saber se é uma filha real ou uma projeção?
+        # Se a Expense não existir, OU se existir mas pertencer a OUTRA fixa (coincidência de IDs numéricos),
+        # então temos certeza que o usuário clicou numa PROJEÇÃO do futuro.
+        is_projected = False
+        if not child_exp or child_exp.fixed_expense_id != fixed_expense_id:
+            is_projected = True
+
+        if not is_projected:
+            new_value = payload.get('value')
+            if new_value is not None and float(new_value) != float(child_exp.value):
+                # Estorna e recalcula o saldo
+                if child_exp.is_activated:
+                    reverse_type = not child_exp.type_expense
+                    update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
+                    update_balance(db=db, user_id=user_id, value=float(new_value), type=child_exp.type_expense)
+                child_exp.value = new_value
+
+            if new_category_id:
+                child_exp.category = new_category_id
+            if payload.get('paymentMethod'):
+                child_exp.payment_method = payload.get('paymentMethod')
+                
+            target_date = payload.get('dateOfThisPayment') or payload.get('date')
+            if target_date:
+                child_exp.date = date.fromisoformat(str(target_date).split('T')[0])
+
+        db.commit()
+        return {"status": "success", "message": "Projeção/Despesa atualizada com sucesso!"}
+
+    # =======================================================
+    # CENÁRIO 2: É UMA DESPESA SIMPLES
+    # =======================================================
+    else:
+        exp = db.query(Expense).filter(Expense.id == transaction_id, Expense.user_id == user_id).first()
+        if not exp:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+
+        new_value = payload.get('value')
+        if new_value is not None and float(new_value) != float(exp.value):
+            if exp.is_activated:
+                reverse_type = not exp.type_expense
+                update_balance(db=db, user_id=user_id, value=float(exp.value), type=reverse_type)
+                update_balance(db=db, user_id=user_id, value=float(new_value), type=exp.type_expense)
+            exp.value = new_value
+
+        if new_category_id:
+            exp.category = new_category_id
+
+        if payload.get('date'):
+            exp.date = date.fromisoformat(str(payload.get('date')).split('T')[0])
+        if payload.get('paymentMethod'):
+            exp.payment_method = payload.get('paymentMethod')
+
+        db.commit()
+        db.refresh(exp)
+        return exp
 
 
 

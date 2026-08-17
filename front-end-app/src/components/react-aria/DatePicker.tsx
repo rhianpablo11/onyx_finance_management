@@ -34,8 +34,8 @@ export function DatePicker<T extends DateValue>({
         'group flex flex-col gap-1 font-sans'
       )}>
       {label && <Label>{label}</Label>}
-      <FieldGroup className="min-w-[208px] w-auto cursor-text disabled:cursor-default">
-        <DateInput className="flex-1 min-w-[150px] px-3 text-sm" />
+      <FieldGroup className="min-w-[50px] w-auto cursor-text disabled:cursor-default">
+        <DateInput className="flex-1 min-w-[50px] px-3 text-sm" />
         <FieldButton className="w-6 mr-1 outline-offset-0">
           <CalendarIcon aria-hidden className="w-4 h-4" />
         </FieldButton>

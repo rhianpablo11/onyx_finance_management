@@ -11,6 +11,7 @@ import SelectionComp from './ui/selection'
 import { parseDate } from '@internationalized/date'
 import { DatePicker } from './react-aria/DatePicker'
 import { useExpense } from '../hooks/useExpense'
+import { I18nProvider } from 'react-aria-components';
 
 function DetailsExpense(props: DetailsExpenseProps){
     const {nameExpense,
@@ -38,7 +39,7 @@ function DetailsExpense(props: DetailsExpenseProps){
     const [editedDate, setEditedDate] = useState(parseDate(initialDateString))
     const [categoriesUser] = useState<{label: string, value: string}[]>(listCategories)
     const [newPaymentMethod, setNewPaymentMethod] = useState<string | undefined>()
-    const [newCategory, setNewCategory] = useState<string | number | undefined>()
+    const [newCategory, setNewCategory] = useState<string | undefined>()
     const [nameButton, setNameButton] = useState('Editar movimentação')
     const {editExpense, loading, disableExpense, getDetailsAboutFixedExpense} = useExpense()
     const [installmentValue, setInstallmentValue] = useState<number>(0)
@@ -49,6 +50,10 @@ function DetailsExpense(props: DetailsExpenseProps){
     const [totalValueOfFixedExpense, setTotalValueOfFixedExpense] = useState<number>(0)
     const [paidInstallments, setPaidInstallments] = useState<number>(0)
     const [typeOfCharge, setTypeOfCharge] = useState<string>('')
+    const [dateOfThisPayment, setDateOfThisPayment] = useState(parseDate(initialDateString)) //corrigir para poder aparecer a data q ta setada
+    const [dateOfLastPayment, setDateOfLastPayment] = useState<any>(null) //corrigir para poder aparecer a data q ta setada
+    const [editedStartDate, setEditedStartDate] = useState<any>(null)
+    const [newRecurrencyOfPayment, setNewRecurrencyOfPayment] = useState<string | number | undefined>()
 
     useEffect(() =>{
         console.log('ola mundo')
@@ -65,6 +70,15 @@ function DetailsExpense(props: DetailsExpenseProps){
                 setTotalValueOfFixedExpense(details.total_value); //valor total da despesa fixa
                 setPaidInstallments(details.paid_installments); //quant de parcelas pagas
                 setTypeOfCharge(details.type_of_charge); //tipo de cobrança
+                if (details.end_date) {
+                    const endString = details.end_date.split('T')[0];
+                    setDateOfLastPayment(parseDate(endString));
+                }
+
+                if (details.start_date) {
+                    const startString = details.start_date.split('T')[0];
+                    setEditedStartDate(parseDate(startString));
+                }
             } catch (error) {  
                 console.error('Erro ao buscar detalhes da despesa fixa:', error);
             }
@@ -90,7 +104,12 @@ function DetailsExpense(props: DetailsExpenseProps){
                 categoryIdToSend,
                 editedValue || currentAmount, 
                 newPaymentMethod || currentPaymentMethod, 
-                editedDate.toString()
+                editedDate.toString(),
+                typeOfCharge,
+                dateOfThisPayment,
+                dateOfLastPayment,
+                editedStartDate,
+                come_of_fixed
             );
 
             // 🔥 2. Atualiza a tela (UX Instantânea!)
@@ -146,13 +165,71 @@ function DetailsExpense(props: DetailsExpenseProps){
         }
     }
 
+
+    const typesOfExpense = () => {
+        if(come_of_fixed == null){
+            return (
+                [
+                    { label: 'Dinheiro Físico', value: 'Dinheiro Físico' },
+                    { label: 'Pix', value: 'Pix' },
+                    { label: 'Cartão de Crédito', value: 'Cartão de Crédito' },
+                    { label: 'Cartão de Débito', value: 'Cartão de Débito' }
+                ]
+            )
+        } else{
+            return (
+                [
+                    { label: 'Dinheiro Físico', value: 'Dinheiro Físico' },
+                    { label: 'Pix', value: 'Pix' },
+                    { label: 'Cartão de Crédito', value: 'Cartão de Crédito' },
+                    { label: 'Cartão de Débito', value: 'Cartão de Débito' },
+                    { label: 'Automatico', value: 'Automatico' }
+                ]
+            )
+        }
+    }
     
     const paymentIsRecurrent = () => {
-        if(fixedExpenseendDate != null){
-            return (
-                <>
-                    {come_of_fixed != null && (
+        if(come_of_fixed == null){
+            return(null)
+        }else{
+            if(fixedExpenseendDate != null){
+                return (
+                    <>
+                        <div className='flex w-full pt-2 pb-2 justify-between items-baseline'>
+                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                                Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
+                            </h3>
+                            {isEditMode ? (
+                                <>
+                                    <div className='ml-4 pt-1'>
+                                        <I18nProvider locale="pt-BR">
+                                            <DatePicker 
+                                                aria-label="Data da transação"
+                                                value={dateOfThisPayment}
+                                                onChange={setDateOfThisPayment} //vai ta editando a data daquele primeiro pagamento
+                                                isDisabled={come_of_fixed != null}
+                                                className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                            />
+                                        </I18nProvider>
+                                    </div>
+                                </>
+                            ):(
+                                <h1 className='text-white text-lg font-normal '>
+                                {formatDateShow(currentDate)}
+                            </h1>
+                            )}
+                            
+                        </div>
+                        <div className='border-b border-white/30'>
+                        </div>
+
+                        {isEditMode ? (
+                            null
+                        ): (
                             <>
+                                
+
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Parcela atual:
@@ -161,14 +238,10 @@ function DetailsExpense(props: DetailsExpenseProps){
                                         {paidInstallments} de {installmentNumber}
                                     </h1>
                                 </div>
-                            </>
-                        )}
 
-                        <div className='border-b border-white/30'>
-                        </div>
+                                <div className='border-b border-white/30'>
+                                </div>
 
-                        {come_of_fixed != null && (
-                            <>
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Parcelas a serem pagas:
@@ -177,30 +250,25 @@ function DetailsExpense(props: DetailsExpenseProps){
                                         {installmentRemaining}
                                     </h1>
                                 </div>
-                            </>
-                        )}
 
-                        <div className='border-b border-white/30'>
-                        </div>
+                                <div className='border-b border-white/30'>
+                                </div>
 
-                        {come_of_fixed != null && (
-                            <>
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Valor total a ser pago:
                                     </h3>
-                                    <h1 className='text-white text-lg font-normal '>
-                                        {formatValue(totalValueOfFixedExpense)}
-                                    </h1>
+                                    {isEditMode ? (null):(
+                                        <h1 className='text-white text-lg font-normal '>
+                                            {formatValue(totalValueOfFixedExpense)}
+                                        </h1>
+                                    )}
+                                    
                                 </div>
-                            </>
-                        )}
 
-                        <div className='border-b border-white/30'>
-                        </div>
+                                <div className='border-b border-white/30'>
+                                </div>
 
-                        {come_of_fixed != null && (
-                            <>
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Valor restante a ser pago:
@@ -209,14 +277,10 @@ function DetailsExpense(props: DetailsExpenseProps){
                                         {formatValue(totalValueOfFixedExpense - (installmentValue * paidInstallments))}
                                     </h1>
                                 </div>
-                            </>
-                        )}
 
-                        <div className='border-b border-white/30'>
-                        </div>
-  
-                        {come_of_fixed != null && (
-                            <>
+                                <div className='border-b border-white/30'>
+                                </div>
+            
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Valor ja pago:
@@ -225,50 +289,124 @@ function DetailsExpense(props: DetailsExpenseProps){
                                         {formatValue(installmentValue * paidInstallments)}
                                     </h1>
                                 </div>
-                            </>
-                        )}
 
-                        <div className='border-b border-white/30'>
-                        </div>
-
- 
-                        {come_of_fixed != null && (
-                            <>
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
-                                        Data do {typeExpense ? "pagamento" : "recebimento"} final:
-                                    </h3>
-                                    <h1 className='text-white text-lg font-normal '>
-                                        {formatDateShow(fixedExpenseendDate)}
-                                    </h1>
+                                <div className='border-b border-white/30'>
                                 </div>
                             </>
-                        )}
+                        )}    
+                        
+
+    
+                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                                Data do {typeExpense ? "pagamento" : "recebimento"} final:
+                            </h3>
+                            {isEditMode ? (
+                                <>
+                                    <div className='ml-4 pt-1'>
+                                        <I18nProvider locale="pt-BR">
+                                            <DatePicker 
+                                                aria-label="Data da transação"
+                                                value={dateOfLastPayment}
+                                                onChange={setDateOfLastPayment} //vai ta editando a data daquele primeiro pagamento
+                                                className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                            />
+                                        </I18nProvider>
+                                    </div>
+                                </>
+                            ):(
+                                <h1 className='text-white text-lg font-normal '>
+                                    {formatDateShow(fixedExpenseendDate)}
+                                </h1>
+                            )}
+                            
+                        </div>
 
                         <div className='border-b border-white/30'>
                         </div>
-                </>
-            )
-        } else{
-            return(
-                <>
-                    {come_of_fixed != null && (
+                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                                Cobranças realizadas no período:
+                            </h3>
+                            {isEditMode ? (
+                                <div className=''>
+                                    <SelectionComp useFor='select-category'
+                                                   options={[
+                                                    {label: 'Anual', value: 'anual'},
+                                                    {label: 'Mensal', value: 'mensal'},
+                                                    {label: 'Quinzenal', value: 'quinzenal'},
+                                                    {label: 'Semanal', value: 'semanal'},
+                                                    {label: 'Diario', value: 'diario'},
+                                                   ]}
+                                                   placeholder={typeOfCharge} 
+                                                   initialValue={typeOfCharge}
+                                                   onChange={(value) => setNewRecurrencyOfPayment(value)}
+                                    />
+                                </div>
+                            ):(
+                                <h1 className='text-white text-lg font-normal '>
+                                    {typeOfCharge}
+                                </h1>
+                            )}
+                            
+                        </div>
+                        <div className='border-b border-white/30'>
+                        </div>
+                    </>
+                )
+            } else{
+                return(
+                    <>
+                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                                Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
+                            </h3>
+                            {isEditMode ? (
+                                <>
+                                    <div className='ml-4 pt-1'>
+                                        <I18nProvider locale="pt-BR">
+                                            <DatePicker 
+                                                aria-label="Data da transação"
+                                                value={dateOfThisPayment}
+                                                onChange={setDateOfThisPayment} //vai ta editando a data daquele primeiro pagamento
+                                                className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                            />
+                                        </I18nProvider>
+                                    </div>
+                                </>
+                            ):(
+                                <h1 className='text-white text-lg font-normal '>
+                                {formatDateShow(currentDate)}
+                            </h1>
+                            )}
+                        </div>
+
+                        <div className='border-b border-white/30'>
+                        </div>
+                        {isEditMode ? (null
+                        ):(
                             <>
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Recorrência do {typeExpense ? "pagamento" : "recebimento"}:
                                     </h3>
-                                    <h1 className='text-white text-lg font-normal '>
-                                        Contínuo
-                                    </h1>
+                                    {isEditMode ? (
+                                        null
+                                    ):(
+                                        <h1 className='text-white text-lg font-normal '>
+                                            Contínuo
+                                        </h1>
+                                    )}
+                                    
+                                </div>
+
+                                <div className='border-b border-white/30'>
                                 </div>
                             </>
                         )}
+                        
 
-                        <div className='border-b border-white/30'>
-                        </div>
-
-                        {come_of_fixed != null && (
+                        {isEditMode ? (null):(
                             <>
                                 <div className='flex pt-2 pb-2 justify-between items-baseline'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
@@ -278,16 +416,45 @@ function DetailsExpense(props: DetailsExpenseProps){
                                         {formatValue(installmentValue * paidInstallments)}
                                     </h1>
                                 </div>
+
+                                <div className='border-b border-white/30'>
+                                </div>
                             </>
                         )}
+                        
+                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                                Cobranças realizadas no período:
+                            </h3>
+                            {isEditMode ? (
+                                <div className=''>
+                                    <SelectionComp useFor='select-category'
+                                                   options={[
+                                                    {label: 'Anual', value: 'anual'},
+                                                    {label: 'Mensal', value: 'mensal'},
+                                                    {label: 'Quinzenal', value: 'quinzenal'},
+                                                    {label: 'Semanal', value: 'semanal'},
+                                                    {label: 'Diario', value: 'diario'},
+                                                   ]}
+                                                   placeholder={typeOfCharge} 
+                                                   initialValue={typeOfCharge}
+                                                   onChange={(value) => setNewRecurrencyOfPayment(value)}
+                                    />
+                                </div>
+                            ):(
+                                <h1 className='text-white text-lg font-normal '>
+                                    {typeOfCharge}
+                                </h1>
+                            )}
+                        </div>
 
                         <div className='border-b border-white/30'>
                         </div>
-                </>
-            )
+                    </>
+                )
+            }
+        
         }
-        
-        
     }
 
     return(
@@ -335,7 +502,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                         <h3 className='text-2xl text-white font-light'>
                             R$
                         </h3>
-                        {isEditMode ? (
+                        {isEditMode && come_of_fixed == null ? (
                             <div className='flex justify-end items-end w-full ml-3 mt-1'>
                                 <Input type='change-value-transaction'
                                     placeholder={formatValue(currentAmount).toString()}
@@ -367,12 +534,14 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 {isEditMode ? (
                                     <>
                                         <div className='w-full ml-4 pt-1'>
-                                            <DatePicker 
-                                                aria-label="Data da transação"
-                                                value={editedDate}
-                                                onChange={setEditedDate}
-                                                className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
-                                            />
+                                            <I18nProvider locale="pt-BR">
+                                                <DatePicker 
+                                                    aria-label="Data da transação"
+                                                    value={editedDate}
+                                                    onChange={setEditedDate}
+                                                    className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                                />
+                                            </I18nProvider>
                                         </div>
                                     </>
                                 ) : 
@@ -387,73 +556,40 @@ function DetailsExpense(props: DetailsExpenseProps){
                         ):
                         (
                         <>
-                        <h3 className='text-base flex shrink-0 text-white font-light'>
-                            Data do primeiro {typeExpense ? 'pagamento' : 'recebimento'}:
-                        </h3>
-                        {isEditMode ? (
-                            <>
-                                <div className='w-full ml-4 pt-1'>
-                                    <DatePicker 
-                                        aria-label="Data da transação"
-                                        value={editedDate}
-                                        onChange={setEditedDate}
-                                        className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
-                                    />
-                                </div>
-                            </>
-                        ) : 
-                            (
-                                <>
-                                    <h1 className='text-white text-lg font-normal '>
-                                        {formatDateShow(fixedExpenseStartDate)}
-                                    </h1>
-                                </>
-                            )}
+                            <div className='w-full flex justify-between items-center'>
+                                <h3 className='text-base flex shrink-0 text-white font-light'>
+                                    Data do primeiro {typeExpense ? 'pagamento' : 'recebimento'}:
+                                </h3>
+                                {isEditMode ? (
+                                    <>
+                                        <div className='w-full ml-4 pt-1'>
+                                            <I18nProvider locale="pt-BR">
+                                                <DatePicker 
+                                                    aria-label="Data da transação"
+                                                    value={editedStartDate}
+                                                    isDisabled={paidInstallments > 0}
+                                                    onChange={setEditedStartDate} //vai ta editando a data daquele primeiro pagamento
+                                                    className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
+                                                />
+                                            </I18nProvider>
+                                        </div>
+                                    </>
+                                ) : 
+                                    (
+                                        <>
+                                            <h1 className='text-white text-lg font-normal '>
+                                                {formatDateShow(fixedExpenseStartDate)}
+                                            </h1>
+                                        </>
+                                    )}
+                            </div>
                         </>)}
                     </div>
 
                     <div className='border-b border-white/30'>
                     </div>
 
-                    {come_of_fixed != null && (
-                        <>
-                            <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                <h3 className='text-base flex shrink-0 text-white font-light'>
-                                    Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
-                                </h3>
-                                <h1 className='text-white text-lg font-normal '>
-                                    {formatDateShow(currentDate)}
-                                </h1>
-                            </div>
-                        </>
-                    )}
-
-                    <div className='border-b border-white/30'>
-                    </div>
-
                     {paymentIsRecurrent()}
-
-
-                    
-
-                    
-
-                    {come_of_fixed != null && (
-                        <>
-                            <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                <h3 className='text-base flex shrink-0 text-white font-light'>
-                                    Cobranças realizadas no período:
-                                </h3>
-                                <h1 className='text-white text-lg font-normal '>
-                                    {typeOfCharge}
-                                </h1>
-                            </div>
-                        </>
-                    )}
-
-                    <div className='border-b border-white/30'>
-                    </div>
-
 
                     <div className='flex pt-2 pb-5 justify-between items-baseline'>
                         <h3 className='flex shrink-0 text-base text-white font-light'>
@@ -463,12 +599,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                             <>
                                 <div className='w-full pl-4'>
                                     <SelectionComp useFor='select-type-payment'
-                                                   options={[
-                                                    { label: 'Dinheiro Físico', value: 'Dinheiro Físico' },
-                                                    { label: 'Pix', value: 'Pix' },
-                                                    { label: 'Cartão de Crédito', value: 'Cartão de Crédito' },
-                                                    { label: 'Cartão de Débito', value: 'Cartão de Débito' }
-                                                   ]}
+                                                   options={typesOfExpense()}
                                                    placeholder={currentPaymentMethod}
                                                    initialValue={currentPaymentMethod}
                                                    onChange={(value) => setNewPaymentMethod(value)}
