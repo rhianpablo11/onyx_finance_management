@@ -190,3 +190,75 @@ def test_delete_todas_a_bomba_atomica_financeira(auth_client, db_session, test_u
         filhas = db_session.query(Expense).filter(Expense.fixed_expense_id == mae.id).all()
         for f in filhas:
             assert f.is_deleted == True
+
+
+def test_delete_despesa_simples_com_estorno(auth_client, db_session, test_user):
+    """
+    CENÁRIO SIMPLES 1:
+    Garante que uma despesa simples ativada (já cobrada no saldo)
+    seja deletada fisicamente (is_deleted=True) e o dinheiro volte pro bolso.
+    """
+    with freeze_time("2026-08-17"):
+        # Setup inicial (Saldo começa a sofrer)
+        test_user.balance -= 50
+        pao = Expense(
+            user_id=test_user.id, category=1, value=50.0, type_expense=False, 
+            date=date(2026, 8, 17), name="Pão", description="Padaria", 
+            is_activated=True, is_deleted=False, fixed_expense_id=None
+        )
+        db_session.add(pao)
+        db_session.commit()
+        
+        # O dinheiro saiu da conta
+        assert test_user.balance == -50.0
+
+        # O front não envia 'come_of_fixed' para despesas simples
+        payload = {
+            "delete_type": "simple"
+        }
+        
+        response = auth_client.request("DELETE", f"/transactions/{pao.id}", json=payload)
+        assert response.status_code == 200
+        
+        db_session.refresh(test_user)
+        db_session.refresh(pao)
+        
+        # O dinheiro voltou!
+        assert test_user.balance == 0.0
+        # Despesa desaparece pro sistema
+        assert pao.is_deleted == True
+
+
+def test_delete_despesa_simples_futura_sem_estorno(auth_client, db_session, test_user):
+    """
+    CENÁRIO SIMPLES 2 (A Pegadinha):
+    Garante que uma despesa futura (ainda não cobrada, is_activated=False)
+    seja deletada SEM alterar o saldo atual do usuário.
+    """
+    with freeze_time("2026-08-17"):
+        # Gasto agendado pro mês que vem! (Não mexe no saldo agora)
+        videogame = Expense(
+            user_id=test_user.id, category=1, value=3000.0, type_expense=False, 
+            date=date(2026, 9, 17), name="PS5", description="Loja", 
+            is_activated=False, is_deleted=False, fixed_expense_id=None
+        )
+        db_session.add(videogame)
+        db_session.commit()
+        
+        # Saldo continua 0.0 (intacto)
+        assert test_user.balance == 0.0 
+
+        # Simulando que o front enviou um JSON vazio sem querer
+        # A dedução do Back-end tem que saber que é uma despesa simples!
+        payload = {} 
+        
+        response = auth_client.request("DELETE", f"/transactions/{videogame.id}", json=payload)
+        assert response.status_code == 200
+        
+        db_session.refresh(test_user)
+        db_session.refresh(videogame)
+        
+        # O saldo tem que CONTINUAR 0.0!
+        # Se o sistema estornasse cego, o usuário ia ficar com + R$ 3000 do nada!
+        assert test_user.balance == 0.0
+        assert videogame.is_deleted == True
