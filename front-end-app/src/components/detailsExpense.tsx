@@ -54,6 +54,8 @@ function DetailsExpense(props: DetailsExpenseProps){
     const [dateOfLastPayment, setDateOfLastPayment] = useState<any>(null) //corrigir para poder aparecer a data q ta setada
     const [editedStartDate, setEditedStartDate] = useState<any>(null)
     const [newRecurrencyOfPayment, setNewRecurrencyOfPayment] = useState<string | number | undefined>()
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(true);
+    const [selectedDeleteType, setSelectedDeleteType] = useState('this');
 
     useEffect(() =>{
         console.log('ola mundo')
@@ -136,17 +138,35 @@ function DetailsExpense(props: DetailsExpenseProps){
         }
     }
 
-    const onClickFatherDelTransaction = async () =>{
-        // Aqui você pode adicionar a lógica para deletar a transação, se necessário. Por enquanto, apenas loga no console.
-        console.log(`Deletar transação com ID: ${idExpense}`);
-        await disableExpense(idExpense);
+
+
+    const onClickFatherDelTransaction = async () => {
+        // Se for despesa fixa, abre o modal. Se for simples, já manda a faca!
+        if (come_of_fixed != null) {
+            setIsDeleteModalOpen(true);
+        } else {
+            await executeDelete('simple');
+        }
+    }
+
+
+    const executeDelete = async (typeOfDelete: string) => {
+        const payload = {
+            delete_type: typeOfDelete,
+            come_of_fixed: come_of_fixed,
+            date: currentDate // Manda a data exata da parcela que ele clicou
+        }
+
+        await disableExpense(idExpense, payload);
+        
+        setIsDeleteModalOpen(false); // Fecha o modal
+        
         if (onSuccessEdit) {
             await onSuccessEdit();
-            if(onDeleteAction){
-                onDeleteAction()
+            if (onDeleteAction) {
+                onDeleteAction();
             }
         }
-        
     }
 
     // Atualizado para olhar para o "currentPaymentMethod"
@@ -633,6 +653,83 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                 </div>
             </div>
+           {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm px-4">
+                    
+                    {/* Contêiner Principal - Mesmo estilo da ExtractPage */}
+                    <div className="rounded-[29px] w-full max-w-sm flex-1 max-h-[85vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                        
+                        {/* Fundo de Vidro com Imagem */}
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-auto bg-cover bg-center bg-no-repeat" 
+                             style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
+                            
+                            <h2 className="text-white text-2xl font-medium mb-1">
+                                Excluir transação
+                            </h2>
+                            <p className="text-white/70 text-sm font-light mb-6">
+                                Essa é uma despesa recorrente. Como você deseja excluir?
+                            </p>
+
+                            <div className="flex flex-col gap-3">
+                                {/* OPÇÃO 1 */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedDeleteType === 'this' ? 'border-red-500 bg-red-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="deleteType" value="this" className="hidden" checked={selectedDeleteType === 'this'} onChange={() => setSelectedDeleteType('this')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-normal text-sm">Pular somente esta</span>
+                                        <span className="text-white/50 text-xs font-light mt-0.5">Exclui a parcela atual, mas mantém as próximas intactas.</span>
+                                    </div>
+                                </label>
+
+                                {/* OPÇÃO 2 */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedDeleteType === 'next' ? 'border-red-500 bg-red-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="deleteType" value="next" className="hidden" checked={selectedDeleteType === 'next'} onChange={() => setSelectedDeleteType('next')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-normal text-sm">As próximas</span>
+                                        <span className="text-white/50 text-xs font-light mt-0.5">Mantém a de hoje paga, e cancela todas do mês que vem em diante.</span>
+                                    </div>
+                                </label>
+
+                                {/* OPÇÃO 3 */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedDeleteType === 'this_and_next' ? 'border-red-500 bg-red-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="deleteType" value="this_and_next" className="hidden" checked={selectedDeleteType === 'this_and_next'} onChange={() => setSelectedDeleteType('this_and_next')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-normal text-sm">Esta e as próximas</span>
+                                        <span className="text-white/50 text-xs font-light mt-0.5">Cancela o contrato agora. Estorna a de hoje e cancela as futuras.</span>
+                                    </div>
+                                </label>
+
+                                {/* OPÇÃO 4 */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedDeleteType === 'all' ? 'border-red-500 bg-red-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="deleteType" value="all" className="hidden" checked={selectedDeleteType === 'all'} onChange={() => setSelectedDeleteType('all')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-normal text-sm text-red-400">Apagar todo o histórico</span>
+                                        <span className="text-white/50 text-xs font-light mt-0.5">Apaga do sistema e estorna todo o dinheiro pago no passado.</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {/* DIVISÓRIA (Estilo Onyx) */}
+                            <div className="mt-6 mb-4 h-px w-full"></div>
+
+                            {/* BOTÕES DE AÇÃO DO MODAL */}
+                            <div className="flex justify-between gap-3 mt-auto">
+                                <button 
+                                    onClick={() => setIsDeleteModalOpen(false)} 
+                                    className="w-full py-3 rounded-[14px] text-white/80 bg-white/10 hover:bg-white/20 transition-all font-light text-sm">
+                                    Cancelar
+                                </button>
+                                <button 
+                                    onClick={() => executeDelete(selectedDeleteType)} 
+                                    disabled={loading}
+                                    className="w-full py-3 rounded-[14px] text-white bg-red-600/80 hover:bg-red-700/90 transition-all font-medium text-sm flex justify-center">
+                                    {loading ? 'Excluindo...' : 'Confirmar'}
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     )
 }

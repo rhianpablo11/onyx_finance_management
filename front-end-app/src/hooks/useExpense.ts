@@ -40,18 +40,18 @@ export function useExpense(){
     }
 
 
-    const disableExpense = async (transactionID: number) => {
-        setLoading(true)
-        try{
-            const response = await api.delete(`/transactions/${transactionID}`)
-            console.log(response.data)
-            return response.data
-        } catch(err: any) {
-            throw err
-        } finally {
-            setLoading(false)
-        }
+    const disableExpense = async (transactionID: string | number, payload: any) => {
+    setLoading(true)
+    try {
+        const response = await api.delete(`/transactions/${transactionID}`, payload)
+        console.log(response.data)
+        return response.data
+    } catch(err: any) {
+        throw err
+    } finally {
+        setLoading(false)
     }
+}
 
     const getDetailsAboutFixedExpense = async (transactionID: number) => {
         setLoading(true)
