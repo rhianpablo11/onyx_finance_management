@@ -216,8 +216,8 @@ function DetailsExpense(props: DetailsExpenseProps){
             if(fixedExpenseendDate != null){
                 return (
                     <>
-                        <div className='flex w-full pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex w-full pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
                             </h3>
                             {isEditMode ? (
@@ -250,8 +250,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                             <>
                                 
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Parcela atual:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
@@ -262,8 +262,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Parcelas a serem pagas:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
@@ -274,8 +274,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Valor total a ser pago:
                                     </h3>
                                     {isEditMode ? (null):(
@@ -289,8 +289,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Valor restante a ser pago:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
@@ -301,8 +301,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
             
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Valor ja pago:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
@@ -317,8 +317,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                         
 
     
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Data do {typeExpense ? "pagamento" : "recebimento"} final:
                             </h3>
                             {isEditMode ? (
@@ -344,8 +344,8 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                         <div className='border-b border-white/30'>
                         </div>
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Cobranças realizadas no período:
                             </h3>
                             {isEditMode ? (
@@ -377,8 +377,8 @@ function DetailsExpense(props: DetailsExpenseProps){
             } else{
                 return(
                     <>
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex text-white font-light'>
                                 Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
                             </h3>
                             {isEditMode ? (
@@ -406,7 +406,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                         {isEditMode ? (null
                         ):(
                             <>
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Recorrência do {typeExpense ? "pagamento" : "recebimento"}:
                                     </h3>
@@ -428,7 +428,7 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                         {isEditMode ? (null):(
                             <>
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Valor ja pago:
                                     </h3>
@@ -442,8 +442,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                             </>
                         )}
                         
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Cobranças realizadas no período:
                             </h3>
                             {isEditMode ? (
@@ -545,7 +545,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                     {/*
                         Começa aqui a parte q eh diferente entre desepesa fixa vs despesa normal
                     */}
-                    <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                    <div className='flex pt-2 pb-2 justify-between items-center'>
                         {come_of_fixed == null ? (
                             <>
                                 <h3 className='text-base flex shrink-0 text-white font-light'>
@@ -577,12 +577,12 @@ function DetailsExpense(props: DetailsExpenseProps){
                         (
                         <>
                             <div className='w-full flex justify-between items-center'>
-                                <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <h3 className='text-base flex text-white font-light'>
                                     Data do primeiro {typeExpense ? 'pagamento' : 'recebimento'}:
                                 </h3>
                                 {isEditMode ? (
                                     <>
-                                        <div className='w-full ml-4 pt-1'>
+                                        <div className='pt-1'>
                                             <I18nProvider locale="pt-BR">
                                                 <DatePicker 
                                                     aria-label="Data da transação"
@@ -611,7 +611,7 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                     {paymentIsRecurrent()}
 
-                    <div className='flex pt-2 pb-5 justify-between items-baseline'>
+                    <div className='flex pt-2 pb-5 justify-between items-center'>
                         <h3 className='flex shrink-0 text-base text-white font-light'>
                             {typeExpense ? 'Pagamento' : 'Recebimento'} via:
                         </h3>
@@ -654,21 +654,27 @@ function DetailsExpense(props: DetailsExpenseProps){
                 </div>
             </div>
            {isDeleteModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm px-4">
+                // 🔥 AJUSTE 1: Aumentei o z-index para z-[100] (ou mais, se precisar) e adicionei 'pb-24' para empurrar o centro do modal para cima, fugindo da Navbar.
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/10 backdrop-blur-sm px-4 pb-24">
                     
-                    {/* Contêiner Principal - Mesmo estilo da ExtractPage */}
-                    <div className="rounded-[29px] w-full max-w-sm flex-1 max-h-[85vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                    {/* Contêiner Principal */}
+                    {/* 🔥 AJUSTE 2: Mudei max-h-[85vh] para max-h-[70vh] para ele não esticar tanto para baixo no mobile */}
+                    <div className="rounded-[29px] w-full max-w-sm flex flex-col max-h-[76vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
                         
                         {/* Fundo de Vidro com Imagem */}
-                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-auto bg-cover bg-center bg-no-repeat" 
+                        {/* 🔥 AJUSTE 3: Troquei 'overflow-auto' por 'overflow-y-auto' para garantir que a rolagem funcione suave no celular */}
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-y-auto bg-cover bg-center bg-no-repeat" 
                              style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
                             
-                            <h2 className="text-white text-2xl font-medium mb-1">
-                                Excluir transação
-                            </h2>
-                            <p className="text-white/70 text-base font-light mb-6">
-                                Essa é uma despesa recorrente. Como você deseja excluir?
-                            </p>
+                            {/* O cabeçalho fica fixo no topo do scroll interno */}
+                            <div className="shrink-0">
+                                <h2 className="text-white text-2xl font-medium mb-1">
+                                    Excluir transação
+                                </h2>
+                                <p className="text-white/70 text-base font-light mb-6">
+                                    Essa é uma despesa recorrente. Como você deseja excluir?
+                                </p>
+                            </div>
 
                             <div className="flex flex-col gap-3">
                                 {/* OPÇÃO 1 */}
@@ -708,18 +714,18 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 </label>
                             </div>
 
-                            {/* DIVISÓRIA (Estilo Onyx) */}
-                            <div className="mt-6 mb-4 h-px w-full"></div>
-
-                            {/* BOTÕES DE AÇÃO DO MODAL */}
-                            <div className="flex justify-between gap-3 mt-auto">
-                                <Button type='cancel-del-expense'
-                                        onClickButtonChildren={()=>{setIsDeleteModalOpen(false)}}
-                                        />
-                                <Button type='confirm-del-expense'
-                                        onClickButtonChildren={()=>{executeDelete(selectedDeleteType)}}
-                                        loading={loading}
-                                        />
+                            {/* DIVISÓRIA E BOTÕES - Ficam no final da rolagem */}
+                            <div className="mt-auto shrink-0 pt-2">
+                                <div className="mt-2 mb-2 h-px w-full"></div>
+                                <div className="flex justify-between gap-3">
+                                    <Button type='cancel-del-expense'
+                                            onClickButtonChildren={()=>{setIsDeleteModalOpen(false)}}
+                                            />
+                                    <Button type='confirm-del-expense'
+                                            onClickButtonChildren={()=>{executeDelete(selectedDeleteType)}}
+                                            loading={loading}
+                                            />
+                                </div>
                             </div>
 
                         </div>

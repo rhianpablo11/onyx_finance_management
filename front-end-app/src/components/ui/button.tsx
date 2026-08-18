@@ -185,7 +185,7 @@ function Button(props: ButtonProps){
             <>
                 <button disabled={false}
                         onClick={() => onClickButtonChildren('')}
-                        className="bg-[#ac1010] px-3 border border-red-600 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        className="bg-[#ac1010] px-3 border border-[#ac1010] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
                         
                         <h1 className="font-normal text-sm text-white">
                             {nameConfig}
@@ -199,7 +199,7 @@ function Button(props: ButtonProps){
             <>
                 <button disabled={false}
                         onClick={() => onClickButtonChildren('')}
-                        className="bg-[#ac1010] px-3 border border-red-600 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        className="bg-[#ac1010] px-3 border border-[#ac1010] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
                         {loading ? (
                             <>
                                 <h1 className="font-normal text-sm text-white">
