@@ -14,7 +14,7 @@ export function useExpense(){
                                dateOfThisPayment: string,
                                dateOfLastPayment: string,
                                editedStartDate: string,
-                               fixedExpenseID: string) => {
+                               fixedExpenseID: null | number | undefined) => {
         setLoading(true)
         try{
             const dataToSend = {
@@ -43,7 +43,7 @@ export function useExpense(){
     const disableExpense = async (transactionID: string | number, payload: any) => {
     setLoading(true)
     try {
-        const response = await api.delete(`/transactions/${transactionID}`, payload)
+        const response = await api.delete(`/transactions/${transactionID}`, { data: payload })
         console.log(response.data)
         return response.data
     } catch(err: any) {
