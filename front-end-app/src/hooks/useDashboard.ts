@@ -11,6 +11,7 @@ interface returnGetMetrics{
     next_payments: ListTransactionProps[]
     is_incoming_legend: boolean
     legend_balance: string
+    categories_user: { label: string, value: string}[];
 }
 
 export function useDashboard(){

@@ -15,7 +15,8 @@ def sync_user_finances(db: Session, user_id: int):
         Expense.user_id == user_id,
         Expense.is_activated == False, 
         Expense.date <= today,
-        Expense.fixed_expense_id == None
+        Expense.fixed_expense_id == None,
+        Expense.is_deleted == False
     )
     pending_simple_expenses = db.execute(stmt_pending).scalars().all()
     
@@ -27,7 +28,7 @@ def sync_user_finances(db: Session, user_id: int):
     # 2. PROCESSAR DESPESAS RECORRENTES E PARCELADAS
     stmt_fixed = (select(Expenses_fixed, Charge_type.name.label('charge_name'))
             .join(Charge_type, Expenses_fixed.charge == Charge_type.id)
-            .where(Expenses_fixed.user_id == user_id, Expenses_fixed.activated == True))
+            .where(Expenses_fixed.user_id == user_id, Expenses_fixed.activated == True, Expenses_fixed.is_deleted == False))
     
     fixed_expenses = db.execute(stmt_fixed).all()
     

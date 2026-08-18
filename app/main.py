@@ -2,7 +2,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.routers import chat_router, insights_router, user_router, transactions_router
+from app.routers import chat_router, expense_category_router, insights_router, user_router, transactions_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import engine, Base
 from app.models import user
@@ -59,6 +59,7 @@ app.include_router(user_router.router, prefix='/user', tags=['user control'])
 app.include_router(transactions_router.router, prefix='/transactions', tags=['expenses control'])
 app.include_router(insights_router.router, prefix='/insights', tags=['insights control'])
 app.include_router(chat_router.router, prefix='/chat', tags=['chat control'])
+app.include_router(expense_category_router.router,  prefix='/expense-category', tags=['expenses category'])
 app.mount('/static', StaticFiles(directory='app/static'), name='static')
 
 

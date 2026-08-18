@@ -5,7 +5,7 @@ import type { InputProps } from "../../interfaces/interfacesComponents"
 
 
 function Input(props: InputProps){
-    const {type, onChangeInputChildren, cleanText, isError, onEnterPress} = props
+    const {type, onChangeInputChildren, cleanText, isError, onEnterPress, placeholder} = props
     const [valueInputTyped, setValueInputTyped] = useState('')
     const [otp, setOtp] = useState<string[]>(new Array(6).fill(''))
     const inputsRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -234,7 +234,27 @@ function Input(props: InputProps){
                 </div>
             </>
         )
-    }
+    } else if(type == 'change-value-transaction'){
+        return(
+            <>
+                <div className='flex h-13 rounded-[14px] bg-[#1e1c28] justify-center items-center w-full'>
+                    <input className='w-full h-full p-2.5  flex items-center text-end justify-end font-normal text-[28px] text-white placeholder:text-white/75 focus:outline-none'
+                        type='number'
+                        placeholder={placeholder}
+                        required
+                        onChange={handleInputChange}
+                        value={valueInputTyped}
+                        >
+                    </input>
+                </div>
+            </>
+        )
+    } else if(type == 'change-date-transaction'){
+        return(
+            <>
+            </>
+        )
+    } 
  
 }
 
