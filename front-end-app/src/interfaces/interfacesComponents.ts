@@ -4,6 +4,7 @@ export interface InputProps {
     cleanText?: boolean
     isError?: boolean
     onEnterPress?: (info:string) => void;
+    placeholder?: string
 }
 
 export interface ButtonProps {
@@ -26,6 +27,7 @@ export interface ListTransactionProps {
     installments_count?: number | null
     start_date?: string
     end_date?: string
+    come_of_fixed?: number | null | undefined
     onClickChildren: (idTransaction:number) => void
 }
 
@@ -133,6 +135,10 @@ export interface DetailsExpenseProps{
     category: string
     idExpense: number
     typeExpense: boolean
+    come_of_fixed: number | null | undefined
+    listCategories: {label: string, value: string}[]
+    onSuccessEdit?: () => void
+    onDeleteAction?: () => void
 }
 
 

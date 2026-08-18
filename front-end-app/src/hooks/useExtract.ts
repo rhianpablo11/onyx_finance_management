@@ -9,6 +9,7 @@ export function useExtract(){
         setLoading(true)
         try{
             const response = await api.get(`/transactions/extract?start_date=${startDate}&end_date=${endDate}`)
+            console.log(response.data)
             return response.data
         } catch(err: any) {
             throw err
@@ -16,6 +17,7 @@ export function useExtract(){
             setLoading(false)
         }
     }
+
 
     return {getExtract, loading}
 }

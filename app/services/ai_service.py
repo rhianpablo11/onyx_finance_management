@@ -39,7 +39,8 @@ def get_expenses_by_user_id(user_id: int, db: Session):
         ).where(
             Expense.user_id == user_id,
             Expense.type_expense == False,
-            Expense.is_activated == True
+            Expense.is_activated == True,
+            Expense.is_deleted == False
         )
         
         transacoes = db.execute(stmt).all()
@@ -55,7 +56,7 @@ def get_daily_balances_by_user_id(user_id: int, db: Session):
         # Aprimorar p ver a quantidade de dias de transações q irá pegar, por enq ta pegando td
         today = date.today()
         stmt = (select(Expense.date, Expense.value, Expense.type_expense)
-                .where(Expense.user_id == user_id, Expense.is_activated == True, Expense.date <= today)
+                .where(Expense.user_id == user_id, Expense.is_activated == True, Expense.date <= today, Expense.is_deleted == False)
                 .order_by(Expense.date.asc()))
         transactions = db.execute(stmt).all()
         debug_print(is_show=True, text=f"Fetched {len(transactions)} transactions for daily balance calculation for user {user_id}")
@@ -103,7 +104,8 @@ def get_full_expenses_by_user_id(user_id: int, db: Session):
             Expense.user_id == user_id,
             Expense.type_expense == False,
             Expense.is_activated == True,
-            Expense.date >= thirty_days_ago
+            Expense.date >= thirty_days_ago,
+            Expense.is_deleted == False
         )
         transacoes = db.execute(stmt).scalars().all()
         return transacoes

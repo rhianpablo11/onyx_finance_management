@@ -1,12 +1,12 @@
 from datetime import date, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from app.controllers.user_controller import get_balance_user
 from app.core.auth import get_current_user
-from app.controllers.transaction_controller import create_new_expense, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_monthly_receives, get_next_payments, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
+from app.controllers.transaction_controller import create_new_expense, disable_transaction, edit_transaction, get_all_expenses_in_date, get_balance_in_period, get_day_and_last_transactions, get_details_about_fixed_expense, get_monthly_receives, get_next_payments, get_total_received_on_the_date,get_total_spent_on_the_date, get_monthly_balance_value, get_transactions_in_period
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.controllers.expense_category_controller import get_expense_category_by_id
+from app.controllers.expense_category_controller import get_categories_of_user_by_id, get_expense_category_by_id
 from app.controllers.charge_type_controller import get_charge_type_by_id
 from app.schemas.expense_schema import Expense_response_base, Expense_create, Expense_response_extended
 from app.services.sync_service import sync_user_finances
@@ -113,6 +113,10 @@ def get_metrics_for_dashboard(current_user: dict = Depends(get_current_user), db
     data_return['balance_geral'] = get_balance_user(db=db, user_id=current_user['user_id'])
 
     data_return['next_payments'] = get_next_payments(db=db, user_id=current_user['user_id'])
+
+    data_return['categories_user'] = get_categories_of_user_by_id(user_id=current_user['user_id'],
+                                                                 db=db)
+
     return data_return    
 
 
@@ -140,6 +144,9 @@ def get_extract(current_user: dict = Depends(get_current_user),
         start_date=start_date_search,
         end_date=end_date_search
     )
+
+    list_categories = get_categories_of_user_by_id(user_id=current_user['user_id'],
+                                                   db=db)
     
     
     total_received = 0.0
@@ -161,7 +168,57 @@ def get_extract(current_user: dict = Depends(get_current_user),
         'balance_value_in_period': balance_period,
         'transactions': list_transactions,
         'value_received': total_received,
-        'value_spent': total_spent
+        'value_spent': total_spent,
+        'categories_user': list_categories
     }
     
     return data_return
+
+
+@router.put('/{expense_id}')
+async def edit_expense(current_user:dict = Depends(get_current_user), db: Session = Depends(get_db), expense_id: int = None, request: Request = {}):
+    try:
+        payload = await request.json()
+        print("Payload recebido no PUT:", payload)
+        
+        updated_expense = edit_transaction(
+            db=db,
+            transaction_id=expense_id,
+            user_id=current_user['user_id'],
+            payload=payload 
+        )
+        return updated_expense
+    except Exception as e:
+        print(f"Error occurred while editing expense: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.delete('/{expense_id}')
+async def delete_expense(current_user:dict = Depends(get_current_user), db: Session = Depends(get_db), expense_id: int = None, request: Request = {}):
+    try:
+        # Pega as instruções de exclusão do frontend
+        payload = await request.json()
+        
+        deleted_expense = disable_transaction(
+            db=db,
+            transaction_id=expense_id,
+            user_id=current_user['user_id'],
+            payload=payload
+        )
+        return deleted_expense
+    except Exception as e:
+        print(f"Error occurred while deleting expense: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get('/fixed-expense/{transaction_id}')
+def get_fixed_expense_details(transaction_id: int, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    try:
+        fixed_expense_details = get_details_about_fixed_expense(db=db, fixed_id=transaction_id, user_id=current_user['user_id'])
+        print(fixed_expense_details)
+        return fixed_expense_details
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error occurred while fetching fixed expense details: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
