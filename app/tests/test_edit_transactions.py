@@ -77,7 +77,7 @@ def test_edit_parcela_fixa_recalcula_mae_e_filha(auth_client, db_session, test_u
 
         # 3. Usuário renegociou, a parcela agora é R$ 80,00!
         payload = {
-            "value": 80.0,
+            "value": 800.0,
             "fixedExpenseID": mae.id,  # O front-end envia quem é a mãe!
             "category": 1
         }
@@ -321,7 +321,7 @@ def test_mega_jornada_parcelamento_quitado(auth_client, db_session, test_user):
         
         payload_quitacao = {
             "fixedExpenseID": tv_mae.id,
-            "value": 400.0,
+            "value": 2000.0, 
             "dateOfLastPayment": "2026-03-01T00:00:00Z"
         }
         auth_client.put(f"/transactions/{parcela_3.id}", json=payload_quitacao)
@@ -390,3 +390,99 @@ def test_mega_jornada_despesa_simples_caos(auth_client, db_session, test_user):
         # O sistema tem que ter estornado os 1800 e cobrado os 3000
         assert test_user.balance == -3000.0
         assert celular.date == date(2026, 5, 15)
+
+
+def test_edit_barrar_reducao_de_parcelas_invalidas(auth_client, db_session, test_user):
+    with freeze_time("2026-01-01"):
+        mae = Expenses_fixed(user_id=test_user.id, name="TV", value=1000.0, start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), charge=2, category=1, type_expense=False, activated=True, installments_count=5)
+        db_session.add(mae)
+        db_session.commit()
+        
+        test_user.balance -= 600
+        # 🔥 NOME E DESCRIÇÃO ADICIONADOS
+        db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 1, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="1/5"))
+        db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 2, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="2/5"))
+        db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 3, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="3/5"))
+        db_session.commit()
+
+        parcela_mar = db_session.query(Expense).filter(Expense.date == date(2026, 3, 1)).first()
+        payload = {
+            "fixedExpenseID": mae.id,
+            "installments_count": 2 
+        }
+        
+        response = auth_client.put(f"/transactions/{parcela_mar.id}", json=payload)
+        
+        assert response.status_code == 400
+        assert "não pode ser menor que as já pagas" in response.json()['detail']
+
+
+def test_edit_matematica_complexa_e_preservacao_do_passado(auth_client, db_session, test_user):
+    with freeze_time("2026-01-01"):
+        mae = Expenses_fixed(user_id=test_user.id, name="PC", value=1000.0, start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), charge=2, category=1, type_expense=False, activated=True, installments_count=5)
+        db_session.add(mae)
+        db_session.commit()
+        
+        test_user.balance -= 400
+        # 🔥 NOME E DESCRIÇÃO ADICIONADOS
+        db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 1, 1), is_activated=True, fixed_expense_id=mae.id, name="PC", description="1/5"))
+        db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 2, 1), is_activated=True, fixed_expense_id=mae.id, name="PC", description="2/5"))
+        db_session.commit()
+
+    with freeze_time("2026-03-01"):
+        sync_user_finances(db_session, test_user.id) 
+        parcela_mar = db_session.query(Expense).filter(Expense.date == date(2026, 3, 1)).first()
+
+        payload = {
+            "fixedExpenseID": mae.id,
+            "value": 3000.0,
+            "installments_count": 10
+        }
+        response = auth_client.put(f"/transactions/{parcela_mar.id}", json=payload)
+        assert response.status_code == 200
+
+        db_session.refresh(test_user)
+        db_session.refresh(mae)
+        db_session.refresh(parcela_mar)
+
+        assert float(mae.value) == 3000.0
+        assert mae.installments_count == 10
+        assert float(parcela_mar.value) == 300.0
+        
+        parcela_fev = db_session.query(Expense).filter(Expense.date == date(2026, 2, 1)).first()
+        assert float(parcela_fev.value) == 200.0
+        assert test_user.balance == -700.0
+
+
+def test_edit_recorrencia_sem_bugar_passado(auth_client, db_session, test_user):
+    with freeze_time("2026-05-01"):
+        mae = Expenses_fixed(user_id=test_user.id, name="Academia", value=100.0, start_date=date(2026, 5, 1), payment_date=date(2026, 5, 1), charge=2, category=1, type_expense=False, activated=True)
+        db_session.add(mae)
+        db_session.commit()
+        
+        test_user.balance -= 200
+        # 🔥 NOME E DESCRIÇÃO ADICIONADOS
+        db_session.add(Expense(user_id=test_user.id, category=1, value=100, type_expense=False, date=date(2026, 5, 1), is_activated=True, fixed_expense_id=mae.id, name="Academia", description="Mensal"))
+        db_session.add(Expense(user_id=test_user.id, category=1, value=100, type_expense=False, date=date(2026, 6, 1), is_activated=True, fixed_expense_id=mae.id, name="Academia", description="Mensal"))
+        db_session.commit()
+
+    with freeze_time("2026-07-01"):
+        sync_user_finances(db_session, test_user.id) 
+        parcela_julho = db_session.query(Expense).filter(Expense.date == date(2026, 7, 1)).first()
+
+        payload = {
+            "fixedExpenseID": mae.id,
+            "typeOfCharge": "Semanal",
+            "dateOfThisPayment": "2026-07-01T00:00:00Z"
+        }
+        auth_client.put(f"/transactions/{parcela_julho.id}", json=payload)
+        db_session.refresh(mae)
+
+        assert mae.start_date == date(2026, 7, 1)
+        assert mae.charge == 3 
+
+    with freeze_time("2026-07-08"): 
+        sync_user_finances(db_session, test_user.id)
+        db_session.refresh(test_user)
+        
+        assert test_user.balance == -400.0
