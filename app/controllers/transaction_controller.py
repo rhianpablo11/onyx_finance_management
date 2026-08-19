@@ -630,18 +630,30 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
                 Expense.is_deleted == False
             ).count()
 
-            # Categorias, Valores e Data Final podem ser editados livremente
+            # Categorias e Data Final podem ser editados livremente
             if new_category_id:
                 fixed_exp.category = new_category_id
             if payload.get('paymentMethod'):
                 fixed_exp.payment_method = payload.get('paymentMethod')
 
-            new_value = payload.get('value')
-            if new_value is not None:
-                if fixed_exp.installments_count and fixed_exp.installments_count > 0:
-                    fixed_exp.value = float(new_value) * fixed_exp.installments_count
-                else:
-                    fixed_exp.value = float(new_value)
+            # =======================================================
+            # 🧮 NOVA MATEMÁTICA: TOTAL E PARCELAS
+            # =======================================================
+            new_total_value = payload.get('value')
+            new_installments = payload.get('installments_count') 
+
+            # 1. Validação de Parcelas (O Escudo)
+            if new_installments is not None:
+                new_inst_int = int(new_installments)
+                # Só valida se não for contínuo (0)
+                if new_inst_int > 0 and new_inst_int < paid_count:
+                    raise HTTPException(status_code=400, detail=f"O número de parcelas ({new_inst_int}) não pode ser menor que as já pagas ({paid_count}).")
+                
+                fixed_exp.installments_count = new_inst_int
+
+            # 2. Salva o Valor Total na Tabela Mãe (Sem multiplicar, pois o front já manda o Total)
+            if new_total_value is not None:
+                fixed_exp.value = float(new_total_value)
             
             if payload.get('dateOfLastPayment'):
                 fixed_exp.end_date = date.fromisoformat(str(payload.get('dateOfLastPayment')).split('T')[0])
@@ -658,13 +670,17 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
                 if charge_obj and fixed_exp.charge != charge_obj.id:
                     fixed_exp.charge = charge_obj.id
                     
-                    # Se mudou de Mensal para Semanal, nós SOMOS OBRIGADOS a atualizar o start_date 
-                    # para hoje (a data da parcela atual), senão o robô buga. O código faz isso sozinho:
-                    target_date_str = payload.get('dateOfThisPayment') or payload.get('date')
-                    if target_date_str:
-                        fixed_exp.start_date = date.fromisoformat(str(target_date_str).split('T')[0])
-                        # Anula a edição manual do usuário para não dar conflito
-                        explicit_start_date = None 
+                    # 🚨 MUDOU A RECORRÊNCIA! OBRIGATÓRIO ATUALIZAR O MARCO ZERO.
+                    # Pega a data da parcela atual. Se o front não mandou, usa o editedStartDate.
+                    new_marco_zero = payload.get('dateOfThisPayment') or payload.get('date') or explicit_start_date
+                    
+                    if new_marco_zero:
+                        fixed_exp.start_date = date.fromisoformat(str(new_marco_zero).split('T')[0])
+                    else:
+                        fixed_exp.start_date = date.today()
+                        
+                    # Anula a edição manual do usuário para não dar conflito
+                    explicit_start_date = None 
 
             # 2. MUDANÇA MANUAL DA DATA DE INÍCIO
             # Só aceitamos a alteração digitada pelo usuário SE E SOMENTE SE 
@@ -684,14 +700,20 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
             is_projected = True
 
         if not is_projected:
-            new_value = payload.get('value')
-            if new_value is not None and float(new_value) != float(child_exp.value):
-                # Estorna e recalcula o saldo
+            # 🧮 Calcula a nova fração da parcela (Valor Total Atualizado / Qtd de Parcelas)
+            if fixed_exp.installments_count and fixed_exp.installments_count > 0:
+                new_child_value = float(fixed_exp.value) / fixed_exp.installments_count
+            else:
+                new_child_value = float(fixed_exp.value)
+
+            # Estorna e recalcula o saldo SE o valor da parcela mudou
+            if new_child_value != float(child_exp.value):
                 if child_exp.is_activated:
                     reverse_type = not child_exp.type_expense
                     update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
-                    update_balance(db=db, user_id=user_id, value=float(new_value), type=child_exp.type_expense)
-                child_exp.value = new_value
+                    update_balance(db=db, user_id=user_id, value=new_child_value, type=child_exp.type_expense)
+                
+                child_exp.value = new_child_value
 
             if new_category_id:
                 child_exp.category = new_category_id
