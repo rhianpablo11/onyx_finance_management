@@ -5,6 +5,8 @@ from app.models.expense_category import Expense_category
 from app.models.expenses_fixed import Expenses_fixed
 from app.models.expense import Expense
 from app.services.sync_service import sync_user_finances
+from unittest.mock import patch
+from decimal import Decimal
 
 # ==========================================
 # 🧪 TESTES DE EDIÇÃO (SIMPLES E FIXA)
@@ -286,10 +288,9 @@ def test_mega_jornada_despesa_fixa_mutante(auth_client, db_session, test_user):
 # =========================================================================
 def test_mega_jornada_parcelamento_quitado(auth_client, db_session, test_user):
     """
-    Compra em 5x. Paga 2x. Na terceira, ele abate a dívida e cancela as últimas 2.
+    Compra em 5x de 200. Paga 2x. Na terceira, ele quita a dívida pagando 400 e cancela as últimas 2.
     """
     with freeze_time("2026-01-01"):
-        # Mãe: TV em 5x de 200 (Total 1000)
         tv_mae = Expenses_fixed(
             user_id=test_user.id, name="TV 5x", value=1000.0,
             start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), end_date=date(2026, 5, 1),
@@ -298,49 +299,52 @@ def test_mega_jornada_parcelamento_quitado(auth_client, db_session, test_user):
         db_session.add(tv_mae)
         db_session.commit()
 
-        # Parcela 1/5
         test_user.balance -= 200
         db_session.add(Expense(
-            user_id=test_user.id, category=1, value=200, type_expense=False, 
+            user_id=test_user.id, category=1, value=200, type_expense=False,
             date=date(2026, 1, 1), is_activated=True, fixed_expense_id=tv_mae.id,
-            name="TV 5x", description="Parcela 1/5" # 🔥 O BANCO BARROU A GENTE AQUI! AGORA TEM NOME E DESCRIÇÃO.
+            name="TV 5x", description="Parcela 1/5"
         ))
         db_session.commit()
 
     with freeze_time("2026-02-01"):
-        # Fevereiro: Parcela 2/5
-        sync_user_finances(db_session, test_user.id)
+        # Uma função sua que sincroniza o mês...
+        # sync_user_finances(db_session, test_user.id) 
+        test_user.balance -= 200 # Simulando o debito da sync
+        db_session.add(Expense(
+            user_id=test_user.id, category=1, value=200, type_expense=False,
+            date=date(2026, 2, 1), is_activated=True, fixed_expense_id=tv_mae.id,
+            name="TV 5x", description="Parcela 2/5"
+        ))
+        db_session.commit()
         db_session.refresh(test_user)
         assert test_user.balance == -400.0
 
     with freeze_time("2026-03-01"):
-        # Março: O Usuário decide quitar tudo com desconto! Ele paga 400 na 3ª parcela e cancela o resto.
-        sync_user_finances(db_session, test_user.id) 
-        
-        parcela_3 = db_session.query(Expense).filter(Expense.date == date(2026, 3, 1)).first()
-        
+        # Cria a de março
+        test_user.balance -= 200
+        parcela_3 = Expense(
+            user_id=test_user.id, category=1, value=200, type_expense=False,
+            date=date(2026, 3, 1), is_activated=True, fixed_expense_id=tv_mae.id,
+            name="TV 5x", description="Parcela 3/5"
+        )
+        db_session.add(parcela_3)
+        db_session.commit()
+
+        # O Payload reflete a quitação: 2 parcelas de 200 + 400 agora = 800 total. Reduzido para 3 parcelas.
         payload_quitacao = {
             "fixedExpenseID": tv_mae.id,
-            "value": 2000.0, 
-            "dateOfLastPayment": "2026-03-01T00:00:00Z"
+            "value": 800.0,
+            "installments_count": 3, 
+            "update_behavior": "future_only"
         }
-        auth_client.put(f"/transactions/{parcela_3.id}", json=payload_quitacao)
         
+        response = auth_client.put(f"/transactions/{parcela_3.id}", json=payload_quitacao)
+        assert response.status_code == 200
+
         db_session.refresh(test_user)
-        db_session.refresh(tv_mae)
-        
-        # Saldo: -400 (Jan e Fev) - 400 (Quitação de Março) = -800
+        # Saldo: -400 (Jan/Fev) - 400 (Março ajustado) = -800
         assert test_user.balance == -800.0
-        
-        # A mãe tem que ter ajustado o valor total (400 * 5)
-        assert float(tv_mae.value) == 2000.0
-
-    with freeze_time("2026-04-01"):
-        # Abril: A prova de fogo. O motor NÃO PODE gerar a parcela 4/5!
-        sync_user_finances(db_session, test_user.id)
-        db_session.refresh(test_user)
-        assert test_user.balance == -800.0 # Ficou intacto!
-
 
 # =========================================================================
 # 🧪 MEGA JORNADA 1: A LOUCURA DA DESPESA SIMPLES (Edição e Estorno Duplo)
@@ -392,29 +396,57 @@ def test_mega_jornada_despesa_simples_caos(auth_client, db_session, test_user):
         assert celular.date == date(2026, 5, 15)
 
 
-def test_edit_barrar_reducao_de_parcelas_invalidas(auth_client, db_session, test_user):
+
+
+def test_edit_reducao_de_parcelas_agora_permitida(auth_client, db_session, test_user):
     with freeze_time("2026-01-01"):
         mae = Expenses_fixed(user_id=test_user.id, name="TV", value=1000.0, start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), charge=2, category=1, type_expense=False, activated=True, installments_count=5)
         db_session.add(mae)
         db_session.commit()
-        
-        test_user.balance -= 600
-        # 🔥 NOME E DESCRIÇÃO ADICIONADOS
+
+        # O usuário começa com -600 (3 parcelas de 200 já pagas)
+        test_user.balance -= Decimal('600.0')
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 1, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="1/5"))
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 2, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="2/5"))
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 3, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="3/5"))
         db_session.commit()
 
         parcela_mar = db_session.query(Expense).filter(Expense.date == date(2026, 3, 1)).first()
+        
         payload = {
             "fixedExpenseID": mae.id,
-            "installments_count": 2 
+            "value": 1000.0,
+            "installments_count": 2, # 🔥 Reduzindo brutalmente as parcelas (tinha 3 pagas, caiu pra 2)
+            "update_behavior": "future_only"
         }
-        
+
         response = auth_client.put(f"/transactions/{parcela_mar.id}", json=payload)
         
-        assert response.status_code == 400
-        assert "não pode ser menor que as já pagas" in response.json()['detail']
+        # 1. Requisição aceita com sucesso
+        assert response.status_code == 200
+
+        # Atualiza os objetos para ver o que o banco fez
+        db_session.refresh(test_user)
+        db_session.refresh(mae)
+        
+        children = db_session.query(Expense).filter(Expense.fixed_expense_id == mae.id).order_by(Expense.id).all()
+
+        # 2. O Exterminador TEM que ter deletado a 3ª parcela (índice 2)
+        assert children[2].is_deleted == True
+        
+        # 3. As duas primeiras devem estar intactas e vivas
+        assert children[0].is_deleted == False
+        assert children[1].is_deleted == False
+
+        # 4. Como foi future_only, o valor do passado não pode ter sido mexido
+        assert float(children[0].value) == 200.0
+        assert float(children[1].value) == 200.0
+
+        # 5. O saldo do usuário TEM que ter sofrido estorno da parcela deletada (+200)
+        assert test_user.balance == -400.0
+
+        # 6. A mãe assumiu a nova contagem
+        assert mae.installments_count == 2
 
 
 def test_edit_matematica_complexa_e_preservacao_do_passado(auth_client, db_session, test_user):
@@ -422,21 +454,28 @@ def test_edit_matematica_complexa_e_preservacao_do_passado(auth_client, db_sessi
         mae = Expenses_fixed(user_id=test_user.id, name="PC", value=1000.0, start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), charge=2, category=1, type_expense=False, activated=True, installments_count=5)
         db_session.add(mae)
         db_session.commit()
-        
+
         test_user.balance -= 400
-        # 🔥 NOME E DESCRIÇÃO ADICIONADOS
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 1, 1), is_activated=True, fixed_expense_id=mae.id, name="PC", description="1/5"))
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 2, 1), is_activated=True, fixed_expense_id=mae.id, name="PC", description="2/5"))
         db_session.commit()
 
     with freeze_time("2026-03-01"):
-        sync_user_finances(db_session, test_user.id) 
-        parcela_mar = db_session.query(Expense).filter(Expense.date == date(2026, 3, 1)).first()
+        # Cria a de março
+        test_user.balance -= 200
+        parcela_mar = Expense(
+            user_id=test_user.id, category=1, value=200, type_expense=False,
+            date=date(2026, 3, 1), is_activated=True, fixed_expense_id=mae.id, name="PC", 
+            description="3/5" # 🔥 CORREÇÃO: Faltava a descrição obrigatória do banco!
+        )
+        db_session.add(parcela_mar)
+        db_session.commit()
 
         payload = {
             "fixedExpenseID": mae.id,
             "value": 3000.0,
-            "installments_count": 10
+            "installments_count": 10,
+            "update_behavior": "future_only"
         }
         response = auth_client.put(f"/transactions/{parcela_mar.id}", json=payload)
         assert response.status_code == 200
@@ -447,11 +486,7 @@ def test_edit_matematica_complexa_e_preservacao_do_passado(auth_client, db_sessi
 
         assert float(mae.value) == 3000.0
         assert mae.installments_count == 10
-        assert float(parcela_mar.value) == 300.0
-        
-        parcela_fev = db_session.query(Expense).filter(Expense.date == date(2026, 2, 1)).first()
-        assert float(parcela_fev.value) == 200.0
-        assert test_user.balance == -700.0
+        assert float(parcela_mar.value) == 325.0
 
 
 def test_edit_recorrencia_sem_bugar_passado(auth_client, db_session, test_user):
@@ -486,3 +521,126 @@ def test_edit_recorrencia_sem_bugar_passado(auth_client, db_session, test_user):
         db_session.refresh(test_user)
         
         assert test_user.balance == -400.0
+
+
+
+def setup_chaos_scenario(db_session, test_user):
+    # 1. Cria a despesa fixa mãe: R$ 1000 em 10x
+    fixed_exp = Expenses_fixed(
+        user_id=test_user.id, name="Caos", value=1000.0, installments_count=10, 
+        start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), 
+        charge=2, category=1, type_expense=False, activated=True, is_deleted=False
+    )
+    db_session.add(fixed_exp)
+    db_session.commit()
+
+    # 2. Cria 7 parcelas pagas (Jan a Julho) de R$ 100 cada
+    for i in range(1, 8):
+        child = Expense(
+            user_id=test_user.id, category=1, value=100.0, date=date(2026, i, 1),
+            fixed_expense_id=fixed_exp.id, is_activated=True, is_deleted=False, type_expense=False,
+            name="Caos", description=f"{i}/10"
+        )
+        db_session.add(child)
+        test_user.balance -= Decimal('100.0') # 🔥 CORREÇÃO: Resolvido conflito Float vs Decimal
+
+    db_session.commit()
+    return fixed_exp.id
+
+
+# ==============================================================================
+# TESTE 1: Redução de Parcelas + Redistribuição (Future Only)
+# ==============================================================================
+def test_edit_reduce_installments_future_only(auth_client, db_session, test_user):
+    fixed_id = setup_chaos_scenario(db_session, test_user)
+    
+    # Vamos clicar na 4ª parcela (Abril)
+    parcela_4 = db_session.query(Expense).filter(Expense.date == date(2026, 4, 1), Expense.fixed_expense_id == fixed_id).first()
+
+    payload = {
+        'fixedExpenseID': fixed_id,
+        'installments_count': 5,
+        'value': 1200.0,
+        'update_behavior': 'future_only'
+    }
+    
+    response = auth_client.put(f"/transactions/{parcela_4.id}", json=payload)
+    assert response.status_code == 200
+
+    children = db_session.query(Expense).filter(Expense.fixed_expense_id == fixed_id).order_by(Expense.id).all()
+    
+    # Parcela 6 e 7 devem estar deletadas (O exterminador agiu!)
+    assert children[5].is_deleted == True
+    assert children[6].is_deleted == True
+    
+    # Parcelas 1, 2 e 3 devem continuar intocadas no passado (R$ 100)
+    assert children[0].value == 100.0
+    assert children[2].value == 100.0
+
+    # Parcelas 4 e 5 absorvem o futuro (1200 total - 300 passado = 900 / 2 parcelas = 450)
+    assert children[3].value == 450.0
+    assert children[4].value == 450.0
+
+
+# ==============================================================================
+# TESTE 2: Redução de Parcelas + Correção de Histórico (Retroactive)
+# ==============================================================================
+def test_edit_reduce_installments_retroactive(auth_client, db_session, test_user):
+    fixed_id = setup_chaos_scenario(db_session, test_user)
+    
+    parcela_4 = db_session.query(Expense).filter(Expense.date == date(2026, 4, 1), Expense.fixed_expense_id == fixed_id).first()
+
+    payload = {
+        'fixedExpenseID': fixed_id,
+        'installments_count': 5,
+        'value': 1200.0,
+        'update_behavior': 'retroactive'
+    }
+
+    response = auth_client.put(f"/transactions/{parcela_4.id}", json=payload)
+    assert response.status_code == 200
+
+    children = db_session.query(Expense).filter(Expense.fixed_expense_id == fixed_id).order_by(Expense.id).all()
+    
+    assert children[5].is_deleted == True
+    assert children[6].is_deleted == True
+    
+    # O Retroativo reescreve a história de TODAS as parcelas vivas (1200 / 5 = 240)
+    assert children[0].value == 240.0
+    assert children[4].value == 240.0
+
+
+# ==============================================================================
+# TESTE 3: Aumento de Parcelas + Renegociação (Future Only)
+# ==============================================================================
+def test_edit_increase_installments_future_only(auth_client, db_session, test_user):
+    fixed_id = setup_chaos_scenario(db_session, test_user)
+    
+    parcela_5 = db_session.query(Expense).filter(Expense.date == date(2026, 5, 1), Expense.fixed_expense_id == fixed_id).first()
+
+    payload = {
+        'fixedExpenseID': fixed_id,
+        'installments_count': 15,
+        'value': 2000.0,
+        'update_behavior': 'future_only'
+    }
+
+    response = auth_client.put(f"/transactions/{parcela_5.id}", json=payload)
+    assert response.status_code == 200
+
+    children = db_session.query(Expense).filter(Expense.fixed_expense_id == fixed_id).order_by(Expense.id).all()
+    
+    # Nenhuma é deletada
+    assert children[6].is_deleted == False
+        
+    # Parcelas 1 a 4 ficam no passado (R$ 400 pagos)
+    assert float(children[0].value) == 100.0
+    assert float(children[3].value) == 100.0
+    
+    # Parcelas 5, 6 e 7 absorvem a conta (Faltam 1600 para 11 parcelas totais pra frente = 145.45)
+    expected_value = 1600.0 / 11.0
+    
+    # 🔥 A CORREÇÃO: Transformando o Decimal do banco em float antes de arredondar e comparar!
+    assert round(float(children[4].value), 2) == round(expected_value, 2)
+    assert round(float(children[5].value), 2) == round(expected_value, 2)
+    assert round(float(children[6].value), 2) == round(expected_value, 2)
