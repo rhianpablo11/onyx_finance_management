@@ -631,12 +631,9 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
             if new_installments is not None and int(new_installments) != fixed_exp.installments_count:
                 math_changed = True
 
-            # 1. Validação de Parcelas
+            # 1. Validação de Parcelas (SEM BLOQUEIO AGORA)
             if new_installments is not None:
                 new_inst_int = int(new_installments)
-                # A Regra Universal: O total de parcelas NUNCA pode ser menor que o que já existe fisicamente.
-                if new_inst_int > 0 and new_inst_int < paid_count:
-                    raise HTTPException(status_code=400, detail=f"O número de parcelas ({new_inst_int}) não pode ser menor que as já pagas ({paid_count}).")
                 fixed_exp.installments_count = new_inst_int
 
             # 2. Salva o Valor Total
@@ -674,9 +671,34 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
             is_projected = True
 
         # =======================================================
-        # 🧠 O MOTOR DE MATEMÁTICA TEMPORAL
+        # 🧠 O NOVO MOTOR DE MATEMÁTICA TEMPORAL DO ONYX
         # =======================================================
         if fixed_exp and math_changed and paid_count > 0:
+            
+            # 🛑 1. O EXTERMINADOR DE PARCELAS EXCEDENTES
+            if fixed_exp.installments_count < paid_count:
+                excess_count = paid_count - fixed_exp.installments_count
+                
+                # Ordena as filhas por data (da mais recente para a mais antiga) para deletar o excesso do fim
+                existing_children.sort(key=lambda x: x.date, reverse=True)
+                children_to_delete = existing_children[:excess_count]
+
+                for child_to_del in children_to_delete:
+                    if child_to_del.is_activated:
+                        # Estorna o dinheiro para o saldo atual do usuário!
+                        reverse_type = not child_to_del.type_expense
+                        update_balance(db=db, user_id=user_id, value=float(child_to_del.value), type=reverse_type)
+                    child_to_del.is_deleted = True # Soft delete
+                
+                # Limpa a nossa lista de trabalho para o cálculo continuar perfeito
+                existing_children = [c for c in existing_children if c not in children_to_delete]
+                # Reordena para ordem cronológica normal
+                existing_children.sort(key=lambda x: x.date)
+                paid_count = len(existing_children)
+                # Recalcula o valor pago total com base no que sobrou vivo!
+                paid_sum = sum(float(c.value) for c in existing_children)
+
+            # ⚙️ 2. APLICAR A LÓGICA ESCOLHIDA
             
             # OPÇÃO 1: CORRIGIR O HISTÓRICO (RETROATIVO)
             if update_behavior == 'retroactive':
@@ -704,12 +726,15 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
                     
                     new_child_value = rem_bal / rem_inst if rem_inst > 0 else rem_bal
                     
-                    if float(child_exp.value) != new_child_value:
-                        if child_exp.is_activated:
-                            reverse_type = not child_exp.type_expense
-                            update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
-                            update_balance(db=db, user_id=user_id, value=new_child_value, type=child_exp.type_expense)
-                        child_exp.value = new_child_value
+                    # 🔥 Atualiza TODAS as parcelas existentes da data clicada para frente
+                    future_children = [c for c in existing_children if c.date >= child_exp.date]
+                    for f_child in future_children:
+                        if float(f_child.value) != new_child_value:
+                            if f_child.is_activated:
+                                reverse_type = not f_child.type_expense
+                                update_balance(db=db, user_id=user_id, value=float(f_child.value), type=reverse_type)
+                                update_balance(db=db, user_id=user_id, value=new_child_value, type=f_child.type_expense)
+                            f_child.value = new_child_value
 
         # Se não teve alteração complexa de matemática, mas o cara mudou uma coisa ou outra
         elif fixed_exp and not is_projected:
@@ -723,12 +748,15 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
             else:
                 new_child_value = float(fixed_exp.value)
             
-            if float(child_exp.value) != new_child_value:
-                if child_exp.is_activated:
-                    reverse_type = not child_exp.type_expense
-                    update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
-                    update_balance(db=db, user_id=user_id, value=new_child_value, type=child_exp.type_expense)
-                child_exp.value = new_child_value
+            # 🔥 Atualiza TODAS as parcelas existentes da data clicada para frente
+            future_children = [c for c in existing_children if c.date >= child_exp.date]
+            for f_child in future_children:
+                if float(f_child.value) != new_child_value:
+                    if f_child.is_activated:
+                        reverse_type = not f_child.type_expense
+                        update_balance(db=db, user_id=user_id, value=float(f_child.value), type=reverse_type)
+                        update_balance(db=db, user_id=user_id, value=new_child_value, type=f_child.type_expense)
+                    f_child.value = new_child_value
 
         # Atualiza o resto dos dados comuns
         if not is_projected:
