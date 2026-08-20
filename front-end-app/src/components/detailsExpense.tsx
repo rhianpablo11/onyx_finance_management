@@ -99,18 +99,18 @@ function DetailsExpense(props: DetailsExpenseProps){
             const finalInstallments = editedInstallments !== undefined ? editedInstallments : (installmentNumber as number);
             const valueToSend = editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount);
             
-            // Verifica se a matemática estrutural foi alterada
+            // 🧠 VERIFICAÇÃO DE MUDANÇA MATEMÁTICA (Agora sem bloqueio)
             const isMathChanged = come_of_fixed != null && 
                                   installmentNumber !== "Infinito" && 
                                   (finalInstallments !== installmentNumber || valueToSend !== totalValueOfFixedExpense);
 
-            // Se mudou a matemática E já tem parcelas pagas, a gente pergunta como ele quer aplicar
+            // Se mudou a matemática estrutural E já tem parcelas pagas, abre o Modal!
             if (isMathChanged && paidInstallments > 0) {
                 setIsEditBehaviorModalOpen(true);
-                return; // Pausa aqui e espera o Modal
+                return; // Pausa aqui e espera o usuário escolher (Retroativo ou Redistribuir)
             }
 
-            // Se não precisa de modal, salva direto como 'future_only' (padrão)
+            // Se não precisa de modal, salva direto
             await executeEdit('future_only', finalInstallments, valueToSend);
 
         } else {
@@ -864,7 +864,14 @@ function DetailsExpense(props: DetailsExpenseProps){
                                     <Button type='cancel-del-expense'
                                             onClickButtonChildren={()=>{setIsEditBehaviorModalOpen(false)}}
                                             />
-                                    <button 
+                                    <Button type='confirm-edit-expense'
+                                            onClickButtonChildren={() => executeEdit(
+                                            selectedEditBehavior, 
+                                            editedInstallments !== undefined ? editedInstallments : (installmentNumber as number), 
+                                            editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount)
+                                        )}
+                                            loading={loading} />
+                                    {/* <button 
                                         onClick={() => executeEdit(
                                             selectedEditBehavior, 
                                             editedInstallments !== undefined ? editedInstallments : (installmentNumber as number), 
@@ -873,7 +880,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                                         disabled={loading}
                                         className="w-full py-3 rounded-[14px] text-white bg-violet-600/80 hover:bg-violet-700/90 transition-all font-medium text-sm flex justify-center shadow-lg shadow-violet-900/20">
                                         {loading ? 'Salvando...' : 'Confirmar'}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </div>
 
