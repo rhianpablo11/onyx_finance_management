@@ -631,21 +631,57 @@ def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: di
             if new_installments is not None and int(new_installments) != fixed_exp.installments_count:
                 math_changed = True
 
-            # 1. Validação de Parcelas (SEM BLOQUEIO AGORA)
+            # =======================================================
+            # 1. Validação de Parcelas e Cálculo Automático da Data Final
+            # =======================================================
             if new_installments is not None:
                 new_inst_int = int(new_installments)
+                
+                # 🔥 Se o número de parcelas mudou, o Backend recalcula a data final sozinho!
+                if fixed_exp.start_date and new_inst_int > 0 and new_inst_int != fixed_exp.installments_count:
+                    freq_obj = db.query(Charge_type).filter(Charge_type.id == fixed_exp.charge).first()
+                    freq_name = freq_obj.name.lower() if freq_obj else 'mensal'
+                    
+                    curr_d = fixed_exp.start_date
+                    count = 1
+                    while count < new_inst_int:
+                        if 'semanal' in freq_name:
+                            curr_d += timedelta(days=7)
+                        elif 'quinzenal' in freq_name:
+                            curr_d += timedelta(days=15)
+                        elif 'diari' in freq_name:
+                            curr_d += timedelta(days=1)
+                        elif 'anual' in freq_name:
+                            curr_d = curr_d.replace(year=curr_d.year + 1)
+                        else: # Padrão: Mensal
+                            m = curr_d.month + 1
+                            y = curr_d.year
+                            if m > 12:
+                                m = 1
+                                y += 1
+                            
+                            target_day = fixed_exp.payment_date.day if fixed_exp.payment_date else fixed_exp.start_date.day
+                            next_m = date(y, m, 28) + timedelta(days=4)
+                            last_day_m = next_m - timedelta(days=next_m.day)
+                            check_day = min(target_day, last_day_m.day)
+                            curr_d = date(y, m, check_day)
+                        count += 1
+                    
+                    fixed_exp.end_date = curr_d # Data cravada na última parcela!
+                elif new_inst_int == 0:
+                    fixed_exp.end_date = None # Recorrência Infinita
+                    
                 fixed_exp.installments_count = new_inst_int
 
             # 2. Salva o Valor Total
             if new_total_value is not None:
-                # Se for "Renegociação" (future_only), não deixamos colocar um total menor do que a soma do que já pagou.
-                # Se for "Retroativo", a gente deixa, porque o robô vai voltar no tempo e estornar o excedente!
                 if update_behavior == 'future_only' and float(new_total_value) < paid_sum:
                     raise HTTPException(status_code=400, detail=f"Na renegociação, o novo valor total (R$ {new_total_value}) não pode ser menor que o que você já pagou no passado (R$ {paid_sum}). Se foi um erro de digitação, use a opção 'Corrigir Histórico'.")
                 
                 fixed_exp.value = float(new_total_value)
             
-            if payload.get('dateOfLastPayment'):
+            # 🔥 Só aceita a data final do Front-end se a matemática NÃO mudou
+            if payload.get('dateOfLastPayment') and not math_changed:
                 fixed_exp.end_date = date.fromisoformat(str(payload.get('dateOfLastPayment')).split('T')[0])
 
             explicit_start_date = payload.get('editedStartDate')
