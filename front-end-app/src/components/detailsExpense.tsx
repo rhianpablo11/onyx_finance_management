@@ -58,6 +58,8 @@ function DetailsExpense(props: DetailsExpenseProps){
     const [selectedDeleteType, setSelectedDeleteType] = useState('this');
     const [editedInstallments, setEditedInstallments] = useState<number | undefined>()
     const [errorModalMsg, setErrorModalMsg] = useState<string>('')
+    const [isEditBehaviorModalOpen, setIsEditBehaviorModalOpen] = useState(false);
+    const [selectedEditBehavior, setSelectedEditBehavior] = useState('future_only');
 
     const fetchDetails = async () => {
         try {
@@ -95,28 +97,42 @@ function DetailsExpense(props: DetailsExpenseProps){
     const onClickFather = async () =>{
         if(isEditMode){
             const finalInstallments = editedInstallments !== undefined ? editedInstallments : (installmentNumber as number);
+            const valueToSend = editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount);
             
-            if (come_of_fixed != null && finalInstallments > 0 && finalInstallments < paidInstallments) {
-                setErrorModalMsg(`Operação inválida. Você já pagou ${paidInstallments} parcelas, portanto a nova quantidade não pode ser menor que isso.`);
-                return; 
+            // Verifica se a matemática estrutural foi alterada
+            const isMathChanged = come_of_fixed != null && 
+                                  installmentNumber !== "Infinito" && 
+                                  (finalInstallments !== installmentNumber || valueToSend !== totalValueOfFixedExpense);
+
+            // Se mudou a matemática E já tem parcelas pagas, a gente pergunta como ele quer aplicar
+            if (isMathChanged && paidInstallments > 0) {
+                setIsEditBehaviorModalOpen(true);
+                return; // Pausa aqui e espera o Modal
             }
 
-            let categoryIdToSend: string | number | undefined = newCategory;
+            // Se não precisa de modal, salva direto como 'future_only' (padrão)
+            await executeEdit('future_only', finalInstallments, valueToSend);
+
+        } else {
+            setIsEditMode(true);
+            setNameButton('Salvar alterações');
+        }
+    }
+
+
+    const executeEdit = async (behavior: string, finalInst: number, valToSend: number) => {
+        let categoryIdToSend: string | number | undefined = newCategory;
             
-            if (!categoryIdToSend) {
-                const currentCategoryObj = categoriesUser.find(c => c.label === currentCategory);
-                categoryIdToSend = currentCategoryObj ? currentCategoryObj.value : currentCategory; 
-            }
+        if (!categoryIdToSend) {
+            const currentCategoryObj = categoriesUser.find(c => c.label === currentCategory);
+            categoryIdToSend = currentCategoryObj ? currentCategoryObj.value : currentCategory; 
+        }
 
-            const valueToSend = editedValue !== undefined 
-                ? editedValue 
-                : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount);
-
-            // 1. Salva no banco
+        try {
             await editExpense(
                 idExpense, 
                 categoryIdToSend,
-                valueToSend, 
+                valToSend, 
                 newPaymentMethod || currentPaymentMethod, 
                 editedDate?.toString(),
                 newRecurrencyOfPayment,
@@ -124,41 +140,43 @@ function DetailsExpense(props: DetailsExpenseProps){
                 dateOfLastPayment?.toString(), 
                 editedStartDate?.toString(),   
                 come_of_fixed,
-                finalInstallments 
+                finalInst,
+                behavior // 🔥 Envia o comportamento (Retroativo ou Futuro)
             );
-
-            // 🔥 2. Atualiza a tela (UX Instantânea!)
-            if (come_of_fixed == null) {
-                // Se for simples, a gente mesmo atualiza o valor na mão
-                setCurrentAmount(valueToSend);
+        } catch (error: any) {
+            setIsEditBehaviorModalOpen(false); // Fecha o modal se tiver aberto
+            if (error.response && error.response.data && error.response.data.detail) {
+                setErrorModalMsg(error.response.data.detail);
             } else {
-                // Se for fixa, a gente pede pro banco a nova matemática (novo valor de parcela, novo total, etc)
-                await fetchDetails();
+                setErrorModalMsg("Ocorreu um erro ao salvar as alterações. Tente novamente.");
             }
-
-            setCurrentPaymentMethod(newPaymentMethod || currentPaymentMethod);
-            setCurrentDate(editedDate.toString());
-            
-            const updatedCategoryObj = categoriesUser.find(c => c.value == categoryIdToSend);
-            if (updatedCategoryObj) {
-                setCurrentCategory(updatedCategoryObj.label);
-            }
-
-            // 3. Avisa o Pai para buscar os dados de novo silenciosamente
-            if (onSuccessEdit) {
-                await onSuccessEdit();
-            }
-
-            // 4. Sai do modo edição e zera os campos digitados para não bugar a próxima edição
-            setIsEditMode(false);
-            setNameButton('Editar movimentação');
-            setEditedInstallments(undefined);
-            setEditedValue(undefined);
-
-        } else{
-            setIsEditMode(true);
-            setNameButton('Salvar alterações');
+            return; 
         }
+
+        // Atualiza UI
+        if (come_of_fixed == null) {
+            setCurrentAmount(valToSend);
+        } else {
+            await fetchDetails();
+        }
+
+        setCurrentPaymentMethod(newPaymentMethod || currentPaymentMethod);
+        setCurrentDate(editedDate.toString());
+        
+        const updatedCategoryObj = categoriesUser.find(c => c.value == categoryIdToSend);
+        if (updatedCategoryObj) {
+            setCurrentCategory(updatedCategoryObj.label);
+        }
+
+        if (onSuccessEdit) {
+            await onSuccessEdit();
+        }
+
+        setIsEditBehaviorModalOpen(false);
+        setIsEditMode(false);
+        setNameButton('Editar movimentação');
+        setEditedInstallments(undefined);
+        setEditedValue(undefined);
     }
 
 
@@ -801,6 +819,64 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 className="w-full py-3 rounded-[14px] text-white bg-white/10 hover:bg-white/20 transition-all font-medium text-sm flex justify-center">
                                 Entendi
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isEditBehaviorModalOpen && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-24">
+                    <div className="rounded-[29px] w-full max-w-sm flex flex-col max-h-[76vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-y-auto bg-cover bg-center bg-no-repeat" 
+                             style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
+                            
+                            <div className="shrink-0">
+                                <h2 className="text-white text-2xl font-medium mb-1">
+                                    Aplicar alterações
+                                </h2>
+                                <p className="text-white/70 text-sm font-light mb-6">
+                                    Você alterou o valor ou as parcelas de uma conta que já está em andamento. Como deseja aplicar isso?
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                {/* OPÇÃO 1: RENEGOCIAÇÃO (Redistribuir) */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedEditBehavior === 'future_only' ? 'border-violet-500 bg-violet-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="editBehavior" value="future_only" className="hidden" checked={selectedEditBehavior === 'future_only'} onChange={() => setSelectedEditBehavior('future_only')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-medium text-sm">Redistribuir o restante (Renegociação)</span>
+                                        <span className="text-white/50 text-xs font-light mt-1">O que já foi pago no passado fica intacto. A diferença será dividida apenas nas próximas parcelas.</span>
+                                    </div>
+                                </label>
+
+                                {/* OPÇÃO 2: RETROATIVO (Corrigir Histórico) */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedEditBehavior === 'retroactive' ? 'border-violet-500 bg-violet-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="editBehavior" value="retroactive" className="hidden" checked={selectedEditBehavior === 'retroactive'} onChange={() => setSelectedEditBehavior('retroactive')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-medium text-sm">Corrigir o histórico (Erro de digitação)</span>
+                                        <span className="text-white/50 text-xs font-light mt-1">Altera o valor das parcelas antigas que já foram pagas e ajusta o seu saldo atual.</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div className="mt-auto shrink-0 pt-2">
+                                <div className="mt-4 mb-4 h-px w-full bg-linear-to-r from-violet-900 via-white to-violet-900"></div>
+                                <div className="flex justify-between gap-3">
+                                    <Button type='cancel-del-expense'
+                                            onClickButtonChildren={()=>{setIsEditBehaviorModalOpen(false)}}
+                                            />
+                                    <button 
+                                        onClick={() => executeEdit(
+                                            selectedEditBehavior, 
+                                            editedInstallments !== undefined ? editedInstallments : (installmentNumber as number), 
+                                            editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount)
+                                        )} 
+                                        disabled={loading}
+                                        className="w-full py-3 rounded-[14px] text-white bg-violet-600/80 hover:bg-violet-700/90 transition-all font-medium text-sm flex justify-center shadow-lg shadow-violet-900/20">
+                                        {loading ? 'Salvando...' : 'Confirmar'}
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

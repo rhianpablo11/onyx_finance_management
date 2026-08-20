@@ -596,130 +596,146 @@ def get_transaction_title_by_id(db: Session, transaction_id: int):
 
 def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: dict):
     fixed_expense_id = payload.get('fixedExpenseID')
+    update_behavior = payload.get('update_behavior', 'future_only') # 🔥 A nova chave de decisão!
 
-    # =======================================================
-    # TRATAMENTO DE CATEGORIA (Garante que sempre será um ID)
-    # =======================================================
     cat_payload = payload.get('category')
     new_category_id = None
     if cat_payload:
         if str(cat_payload).isdigit():
             new_category_id = int(cat_payload)
         else:
-            cat_obj = db.query(Expense_category).filter(
-                Expense_category.name == cat_payload, 
-                Expense_category.user_id == user_id
-            ).first()
+            cat_obj = db.query(Expense_category).filter(Expense_category.name == cat_payload, Expense_category.user_id == user_id).first()
             if cat_obj:
                 new_category_id = cat_obj.id
 
-    # =======================================================
-    # CENÁRIO 1: É UMA DESPESA FIXA (MÃE E/OU PROJEÇÃO)
-    # =======================================================
-
     if fixed_expense_id is not None:
-        fixed_exp = db.query(Expenses_fixed).filter(
-            Expenses_fixed.id == fixed_expense_id, 
-            Expenses_fixed.user_id == user_id
-        ).first()
+        fixed_exp = db.query(Expenses_fixed).filter(Expenses_fixed.id == fixed_expense_id, Expenses_fixed.user_id == user_id).first()
 
         if fixed_exp:
-            # Conta se já existem filhas processadas no passado
-            paid_count = db.query(Expense).filter(
-                Expense.fixed_expense_id == fixed_expense_id, 
-                Expense.is_deleted == False
-            ).count()
+            existing_children = db.query(Expense).filter(Expense.fixed_expense_id == fixed_expense_id, Expense.is_deleted == False).order_by(Expense.date).all()
+            paid_count = len(existing_children)
+            paid_sum = sum(float(c.value) for c in existing_children)
 
-            # Categorias e Data Final podem ser editados livremente
             if new_category_id:
                 fixed_exp.category = new_category_id
             if payload.get('paymentMethod'):
                 fixed_exp.payment_method = payload.get('paymentMethod')
 
-            # =======================================================
-            # 🧮 NOVA MATEMÁTICA: TOTAL E PARCELAS
-            # =======================================================
             new_total_value = payload.get('value')
             new_installments = payload.get('installments_count') 
+            
+            # Verifica se o usuário mexeu na matemática
+            math_changed = False
+            if new_total_value is not None and float(new_total_value) != float(fixed_exp.value):
+                math_changed = True
+            if new_installments is not None and int(new_installments) != fixed_exp.installments_count:
+                math_changed = True
 
-            # 1. Validação de Parcelas (O Escudo)
+            # 1. Validação de Parcelas
             if new_installments is not None:
                 new_inst_int = int(new_installments)
-                # Só valida se não for contínuo (0)
+                # A Regra Universal: O total de parcelas NUNCA pode ser menor que o que já existe fisicamente.
                 if new_inst_int > 0 and new_inst_int < paid_count:
                     raise HTTPException(status_code=400, detail=f"O número de parcelas ({new_inst_int}) não pode ser menor que as já pagas ({paid_count}).")
-                
                 fixed_exp.installments_count = new_inst_int
 
-            # 2. Salva o Valor Total na Tabela Mãe (Sem multiplicar, pois o front já manda o Total)
+            # 2. Salva o Valor Total
             if new_total_value is not None:
+                # Se for "Renegociação" (future_only), não deixamos colocar um total menor do que a soma do que já pagou.
+                # Se for "Retroativo", a gente deixa, porque o robô vai voltar no tempo e estornar o excedente!
+                if update_behavior == 'future_only' and float(new_total_value) < paid_sum:
+                    raise HTTPException(status_code=400, detail=f"Na renegociação, o novo valor total (R$ {new_total_value}) não pode ser menor que o que você já pagou no passado (R$ {paid_sum}). Se foi um erro de digitação, use a opção 'Corrigir Histórico'.")
+                
                 fixed_exp.value = float(new_total_value)
             
             if payload.get('dateOfLastPayment'):
                 fixed_exp.end_date = date.fromisoformat(str(payload.get('dateOfLastPayment')).split('T')[0])
 
-            # =======================================================
-            # 🛡️ BLINDAGEM TEMPORAL (O Escudo)
-            # =======================================================
             explicit_start_date = payload.get('editedStartDate')
             type_of_charge = payload.get('typeOfCharge')
             
-            # 1. MUDANÇA DE RECORRÊNCIA (A Auto-correção)
             if type_of_charge:
                 charge_obj = db.query(Charge_type).filter(Charge_type.name.ilike(f"%{type_of_charge}%")).first()
                 if charge_obj and fixed_exp.charge != charge_obj.id:
                     fixed_exp.charge = charge_obj.id
-                    
-                    # 🚨 MUDOU A RECORRÊNCIA! OBRIGATÓRIO ATUALIZAR O MARCO ZERO.
-                    # Pega a data da parcela atual. Se o front não mandou, usa o editedStartDate.
                     new_marco_zero = payload.get('dateOfThisPayment') or payload.get('date') or explicit_start_date
-                    
                     if new_marco_zero:
                         fixed_exp.start_date = date.fromisoformat(str(new_marco_zero).split('T')[0])
                     else:
                         fixed_exp.start_date = date.today()
-                        
-                    # Anula a edição manual do usuário para não dar conflito
                     explicit_start_date = None 
 
-            # 2. MUDANÇA MANUAL DA DATA DE INÍCIO
-            # Só aceitamos a alteração digitada pelo usuário SE E SOMENTE SE 
-            # não existir NENHUMA parcela paga no histórico, OU seja a primeira cobrança do carnê!
             if explicit_start_date and paid_count <= 1:
                 fixed_exp.start_date = date.fromisoformat(str(explicit_start_date).split('T')[0])
 
-        # 2. ATUALIZA A FILHA (Se for uma parcela que já existe fisicamente)
         child_exp = db.query(Expense).filter(Expense.id == transaction_id, Expense.user_id == user_id).first()
-        
-        # 🔥 A MÁGICA DA DEDUÇÃO:
-        # Como saber se é uma filha real ou uma projeção?
-        # Se a Expense não existir, OU se existir mas pertencer a OUTRA fixa (coincidência de IDs numéricos),
-        # então temos certeza que o usuário clicou numa PROJEÇÃO do futuro.
         is_projected = False
         if not child_exp or child_exp.fixed_expense_id != fixed_expense_id:
             is_projected = True
 
-        if not is_projected:
-            # 🧮 Calcula a nova fração da parcela (Valor Total Atualizado / Qtd de Parcelas)
+        # =======================================================
+        # 🧠 O MOTOR DE MATEMÁTICA TEMPORAL
+        # =======================================================
+        if fixed_exp and math_changed and paid_count > 0:
+            
+            # OPÇÃO 1: CORRIGIR O HISTÓRICO (RETROATIVO)
+            if update_behavior == 'retroactive':
+                new_inst_val = float(fixed_exp.value) / fixed_exp.installments_count if fixed_exp.installments_count > 0 else float(fixed_exp.value)
+                
+                # O robô volta no tempo e corrige TUDO
+                for past_child in existing_children:
+                    if float(past_child.value) != new_inst_val:
+                        if past_child.is_activated:
+                            reverse_type = not past_child.type_expense
+                            update_balance(db=db, user_id=user_id, value=float(past_child.value), type=reverse_type)
+                            update_balance(db=db, user_id=user_id, value=new_inst_val, type=past_child.type_expense)
+                        past_child.value = new_inst_val
+
+            # OPÇÃO 2: RENEGOCIAÇÃO (REDISTRIBUIR O FUTURO)
+            elif update_behavior == 'future_only':
+                if not is_projected:
+                    # Calcula o saldo restante ignorando a parcela de hoje pra trás
+                    past_children = [c for c in existing_children if c.date < child_exp.date]
+                    past_c = len(past_children)
+                    past_s = sum(float(c.value) for c in past_children)
+
+                    rem_inst = fixed_exp.installments_count - past_c
+                    rem_bal = float(fixed_exp.value) - past_s
+                    
+                    new_child_value = rem_bal / rem_inst if rem_inst > 0 else rem_bal
+                    
+                    if float(child_exp.value) != new_child_value:
+                        if child_exp.is_activated:
+                            reverse_type = not child_exp.type_expense
+                            update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
+                            update_balance(db=db, user_id=user_id, value=new_child_value, type=child_exp.type_expense)
+                        child_exp.value = new_child_value
+
+        # Se não teve alteração complexa de matemática, mas o cara mudou uma coisa ou outra
+        elif fixed_exp and not is_projected:
             if fixed_exp.installments_count and fixed_exp.installments_count > 0:
-                new_child_value = float(fixed_exp.value) / fixed_exp.installments_count
+                past_children = [c for c in existing_children if c.date < child_exp.date]
+                past_c = len(past_children)
+                past_s = sum(float(c.value) for c in past_children)
+                rem_inst = fixed_exp.installments_count - past_c
+                rem_bal = float(fixed_exp.value) - past_s
+                new_child_value = rem_bal / rem_inst if rem_inst > 0 else rem_bal
             else:
                 new_child_value = float(fixed_exp.value)
-
-            # Estorna e recalcula o saldo SE o valor da parcela mudou
-            if new_child_value != float(child_exp.value):
+            
+            if float(child_exp.value) != new_child_value:
                 if child_exp.is_activated:
                     reverse_type = not child_exp.type_expense
                     update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
                     update_balance(db=db, user_id=user_id, value=new_child_value, type=child_exp.type_expense)
-                
                 child_exp.value = new_child_value
 
+        # Atualiza o resto dos dados comuns
+        if not is_projected:
             if new_category_id:
                 child_exp.category = new_category_id
             if payload.get('paymentMethod'):
                 child_exp.payment_method = payload.get('paymentMethod')
-                
             target_date = payload.get('dateOfThisPayment') or payload.get('date')
             if target_date:
                 child_exp.date = date.fromisoformat(str(target_date).split('T')[0])

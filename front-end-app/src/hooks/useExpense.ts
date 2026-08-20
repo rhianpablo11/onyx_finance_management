@@ -15,7 +15,8 @@ export function useExpense(){
                                dateOfLastPayment: string,
                                editedStartDate: string,
                                fixedExpenseID: null | number | undefined,
-                               installments_count?: number) => {
+                               installments_count?: number,
+                               update_behavior?: string) => {
         setLoading(true)
         try{
             const dataToSend = {
@@ -28,7 +29,8 @@ export function useExpense(){
                 'dateOfLastPayment': dateOfLastPayment,
                 'editedStartDate': editedStartDate,
                 'fixedExpenseID': fixedExpenseID,
-                'installments_count': installments_count
+                'installments_count': installments_count,
+                'update_behavior': update_behavior
             }
 
             const response = await api.put(`/transactions/${transactionID}`, dataToSend)
