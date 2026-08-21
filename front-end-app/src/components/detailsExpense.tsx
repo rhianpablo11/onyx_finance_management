@@ -99,9 +99,9 @@ function DetailsExpense(props: DetailsExpenseProps){
             const finalInstallments = editedInstallments !== undefined ? editedInstallments : (installmentNumber as number);
             const valueToSend = editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount);
             
-            // 🧠 VERIFICAÇÃO DE MUDANÇA MATEMÁTICA (Agora sem bloqueio)
+            // 🧠 VERIFICAÇÃO DE MUDANÇA MATEMÁTICA (Agora sem bloquear o Infinito!)
+            // Removemos a verificação installmentNumber !== "Infinito"
             const isMathChanged = come_of_fixed != null && 
-                                  installmentNumber !== "Infinito" && 
                                   (finalInstallments !== installmentNumber || valueToSend !== totalValueOfFixedExpense);
 
             // Se mudou a matemática estrutural E já tem parcelas pagas, abre o Modal!
@@ -799,9 +799,10 @@ function DetailsExpense(props: DetailsExpenseProps){
                 </div>
             )}
             {errorModalMsg !== '' && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 pb-24">
-                    <div className="rounded-[29px] w-full max-w-sm flex flex-col bg-linear-to-tl from-red-500/50 via-black to-red-500/30 p-px shadow-2xl">
-                        <div className="w-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] bg-[#1e1c28]/90">
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-24">
+                    <div className="rounded-[29px] w-full max-w-sm flex flex-col max-h-[76vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-y-auto bg-cover bg-center bg-no-repeat" 
+                             style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
                             
                             <h2 className="text-white text-xl font-medium mb-3 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-red-500">
