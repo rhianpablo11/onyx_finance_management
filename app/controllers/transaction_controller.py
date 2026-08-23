@@ -596,108 +596,211 @@ def get_transaction_title_by_id(db: Session, transaction_id: int):
 
 def edit_transaction(db: Session, transaction_id: int, user_id: int, payload: dict):
     fixed_expense_id = payload.get('fixedExpenseID')
+    update_behavior = payload.get('update_behavior', 'future_only') 
 
-    # =======================================================
-    # TRATAMENTO DE CATEGORIA (Garante que sempre será um ID)
-    # =======================================================
     cat_payload = payload.get('category')
     new_category_id = None
     if cat_payload:
         if str(cat_payload).isdigit():
             new_category_id = int(cat_payload)
         else:
-            cat_obj = db.query(Expense_category).filter(
-                Expense_category.name == cat_payload, 
-                Expense_category.user_id == user_id
-            ).first()
+            cat_obj = db.query(Expense_category).filter(Expense_category.name == cat_payload, Expense_category.user_id == user_id).first()
             if cat_obj:
                 new_category_id = cat_obj.id
 
-    # =======================================================
-    # CENÁRIO 1: É UMA DESPESA FIXA (MÃE E/OU PROJEÇÃO)
-    # =======================================================
-
     if fixed_expense_id is not None:
-        fixed_exp = db.query(Expenses_fixed).filter(
-            Expenses_fixed.id == fixed_expense_id, 
-            Expenses_fixed.user_id == user_id
-        ).first()
+        fixed_exp = db.query(Expenses_fixed).filter(Expenses_fixed.id == fixed_expense_id, Expenses_fixed.user_id == user_id).first()
 
         if fixed_exp:
-            # Conta se já existem filhas processadas no passado
-            paid_count = db.query(Expense).filter(
-                Expense.fixed_expense_id == fixed_expense_id, 
-                Expense.is_deleted == False
-            ).count()
+            existing_children = db.query(Expense).filter(Expense.fixed_expense_id == fixed_expense_id, Expense.is_deleted == False).order_by(Expense.date).all()
+            paid_count = len(existing_children)
+            paid_sum = sum(float(c.value) for c in existing_children)
+            
+            # 🔥 A SUA SACADA AQUI: Identifica se é Assinatura Infinita (Netflix) ou Carnê (Carro)
+            is_subscription = fixed_exp.end_date is None or fixed_exp.installments_count == 1
 
-            # Categorias, Valores e Data Final podem ser editados livremente
             if new_category_id:
                 fixed_exp.category = new_category_id
             if payload.get('paymentMethod'):
                 fixed_exp.payment_method = payload.get('paymentMethod')
 
-            new_value = payload.get('value')
-            if new_value is not None:
-                if fixed_exp.installments_count and fixed_exp.installments_count > 0:
-                    fixed_exp.value = float(new_value) * fixed_exp.installments_count
-                else:
-                    fixed_exp.value = float(new_value)
+            new_total_value = payload.get('value')
+            new_installments = payload.get('installments_count') 
             
-            if payload.get('dateOfLastPayment'):
-                fixed_exp.end_date = date.fromisoformat(str(payload.get('dateOfLastPayment')).split('T')[0])
+            math_changed = False
+            if new_total_value is not None and float(new_total_value) != float(fixed_exp.value):
+                math_changed = True
+            if new_installments is not None and str(new_installments).lower() != str(fixed_exp.installments_count).lower():
+                math_changed = True
 
             # =======================================================
-            # 🛡️ BLINDAGEM TEMPORAL (O Escudo)
+            # 1. Validação de Parcelas e Cálculo Automático da Data Final
             # =======================================================
+            if new_installments is not None:
+                # Se o front mandar "Infinito", a gente salva como 1 no banco para manter a consistência
+                if str(new_installments).lower() == "infinito":
+                    new_inst_int = 1
+                else:
+                    new_inst_int = int(new_installments)
+                
+                # SÓ recalcula a data final automaticamente se for CARNÊ (Não-Assinatura)
+                if not is_subscription and fixed_exp.start_date and new_inst_int > 0 and new_inst_int != fixed_exp.installments_count:
+                    freq_obj = db.query(Charge_type).filter(Charge_type.id == fixed_exp.charge).first()
+                    freq_name = freq_obj.name.lower() if freq_obj else 'mensal'
+                    
+                    curr_d = fixed_exp.start_date
+                    count = 1
+                    while count < new_inst_int:
+                        if 'semanal' in freq_name:
+                            curr_d += timedelta(days=7)
+                        elif 'quinzenal' in freq_name:
+                            curr_d += timedelta(days=15)
+                        elif 'diari' in freq_name:
+                            curr_d += timedelta(days=1)
+                        elif 'anual' in freq_name:
+                            curr_d = curr_d.replace(year=curr_d.year + 1)
+                        else: 
+                            m = curr_d.month + 1
+                            y = curr_d.year
+                            if m > 12:
+                                m = 1
+                                y += 1
+                            
+                            target_day = fixed_exp.payment_date.day if fixed_exp.payment_date else fixed_exp.start_date.day
+                            next_m = date(y, m, 28) + timedelta(days=4)
+                            last_day_m = next_m - timedelta(days=next_m.day)
+                            check_day = min(target_day, last_day_m.day)
+                            curr_d = date(y, m, check_day)
+                        count += 1
+                    
+                    fixed_exp.end_date = curr_d 
+                elif new_inst_int == 0 or str(new_installments).lower() == "infinito":
+                    fixed_exp.end_date = None # Garante que fica infinito
+                    
+                fixed_exp.installments_count = new_inst_int
+
+            # 2. Salva o Valor Total
+            if new_total_value is not None:
+                # 🔥 A TRAVA SÓ EXISTE PARA CARNÊS! Assinaturas passam livremente.
+                if not is_subscription:
+                    if update_behavior == 'future_only' and float(new_total_value) < paid_sum:
+                        raise HTTPException(status_code=400, detail=f"Na renegociação, o novo valor total (R$ {new_total_value}) não pode ser menor que o que você já pagou no passado (R$ {paid_sum}). Se foi um erro de digitação, use a opção 'Corrigir Histórico'.")
+                
+                fixed_exp.value = float(new_total_value)
+            
+            if payload.get('dateOfLastPayment') and not math_changed:
+                fixed_exp.end_date = date.fromisoformat(str(payload.get('dateOfLastPayment')).split('T')[0])
+
             explicit_start_date = payload.get('editedStartDate')
             type_of_charge = payload.get('typeOfCharge')
             
-            # 1. MUDANÇA DE RECORRÊNCIA (A Auto-correção)
             if type_of_charge:
                 charge_obj = db.query(Charge_type).filter(Charge_type.name.ilike(f"%{type_of_charge}%")).first()
                 if charge_obj and fixed_exp.charge != charge_obj.id:
                     fixed_exp.charge = charge_obj.id
-                    
-                    # Se mudou de Mensal para Semanal, nós SOMOS OBRIGADOS a atualizar o start_date 
-                    # para hoje (a data da parcela atual), senão o robô buga. O código faz isso sozinho:
-                    target_date_str = payload.get('dateOfThisPayment') or payload.get('date')
-                    if target_date_str:
-                        fixed_exp.start_date = date.fromisoformat(str(target_date_str).split('T')[0])
-                        # Anula a edição manual do usuário para não dar conflito
-                        explicit_start_date = None 
+                    new_marco_zero = payload.get('dateOfThisPayment') or payload.get('date') or explicit_start_date
+                    if new_marco_zero:
+                        fixed_exp.start_date = date.fromisoformat(str(new_marco_zero).split('T')[0])
+                    else:
+                        fixed_exp.start_date = date.today()
+                    explicit_start_date = None 
 
-            # 2. MUDANÇA MANUAL DA DATA DE INÍCIO
-            # Só aceitamos a alteração digitada pelo usuário SE E SOMENTE SE 
-            # não existir NENHUMA parcela paga no histórico, OU seja a primeira cobrança do carnê!
             if explicit_start_date and paid_count <= 1:
                 fixed_exp.start_date = date.fromisoformat(str(explicit_start_date).split('T')[0])
 
-        # 2. ATUALIZA A FILHA (Se for uma parcela que já existe fisicamente)
         child_exp = db.query(Expense).filter(Expense.id == transaction_id, Expense.user_id == user_id).first()
-        
-        # 🔥 A MÁGICA DA DEDUÇÃO:
-        # Como saber se é uma filha real ou uma projeção?
-        # Se a Expense não existir, OU se existir mas pertencer a OUTRA fixa (coincidência de IDs numéricos),
-        # então temos certeza que o usuário clicou numa PROJEÇÃO do futuro.
         is_projected = False
         if not child_exp or child_exp.fixed_expense_id != fixed_expense_id:
             is_projected = True
 
-        if not is_projected:
-            new_value = payload.get('value')
-            if new_value is not None and float(new_value) != float(child_exp.value):
-                # Estorna e recalcula o saldo
-                if child_exp.is_activated:
-                    reverse_type = not child_exp.type_expense
-                    update_balance(db=db, user_id=user_id, value=float(child_exp.value), type=reverse_type)
-                    update_balance(db=db, user_id=user_id, value=float(new_value), type=child_exp.type_expense)
-                child_exp.value = new_value
+        # =======================================================
+        # 🧠 O NOVO MOTOR DE MATEMÁTICA TEMPORAL DO ONYX
+        # =======================================================
+        if fixed_exp and math_changed and paid_count > 0:
+            
+            # 🛑 1. O EXTERMINADOR DE PARCELAS EXCEDENTES
+            # SÓ extermina se for Carnê. Assinatura não tem "excesso" de parcelas.
+            if not is_subscription and fixed_exp.installments_count < paid_count:
+                excess_count = paid_count - fixed_exp.installments_count
+                
+                existing_children.sort(key=lambda x: x.date, reverse=True)
+                children_to_delete = existing_children[:excess_count]
 
+                for child_to_del in children_to_delete:
+                    if child_to_del.is_activated:
+                        reverse_type = not child_to_del.type_expense
+                        update_balance(db=db, user_id=user_id, value=float(child_to_del.value), type=reverse_type)
+                    child_to_del.is_deleted = True 
+                
+                existing_children = [c for c in existing_children if c not in children_to_delete]
+                existing_children.sort(key=lambda x: x.date)
+                paid_count = len(existing_children)
+                paid_sum = sum(float(c.value) for c in existing_children)
+
+            # ⚙️ 2. APLICAR A LÓGICA ESCOLHIDA
+            if update_behavior == 'retroactive':
+                # Assinatura: usa o valor inteiro. Carnê: divide pelo número de parcelas.
+                if is_subscription:
+                    new_inst_val = float(fixed_exp.value)
+                else:
+                    new_inst_val = float(fixed_exp.value) / fixed_exp.installments_count if fixed_exp.installments_count > 0 else float(fixed_exp.value)
+                
+                for past_child in existing_children:
+                    if float(past_child.value) != new_inst_val:
+                        if past_child.is_activated:
+                            reverse_type = not past_child.type_expense
+                            update_balance(db=db, user_id=user_id, value=float(past_child.value), type=reverse_type)
+                            update_balance(db=db, user_id=user_id, value=new_inst_val, type=past_child.type_expense)
+                        past_child.value = new_inst_val
+
+            elif update_behavior == 'future_only':
+                if not is_projected:
+                    if not is_subscription:
+                        # Cálculo de renegociação de Carnê
+                        past_children = [c for c in existing_children if c.date < child_exp.date]
+                        past_s = sum(float(c.value) for c in past_children)
+                        rem_inst = fixed_exp.installments_count - len(past_children)
+                        rem_bal = float(fixed_exp.value) - past_s
+                        new_child_value = rem_bal / rem_inst if rem_inst > 0 else rem_bal
+                    else:
+                        # Assinatura infinita apenas assume o novo valor a partir de hoje!
+                        new_child_value = float(fixed_exp.value)
+                    
+                    future_children = [c for c in existing_children if c.date >= child_exp.date]
+                    for f_child in future_children:
+                        if float(f_child.value) != new_child_value:
+                            if f_child.is_activated:
+                                reverse_type = not f_child.type_expense
+                                update_balance(db=db, user_id=user_id, value=float(f_child.value), type=reverse_type)
+                                update_balance(db=db, user_id=user_id, value=new_child_value, type=f_child.type_expense)
+                            f_child.value = new_child_value
+
+        # Mutações simples sem envolver o motor de matemática pesada
+        elif fixed_exp and not is_projected:
+            if not is_subscription and fixed_exp.installments_count and fixed_exp.installments_count > 0:
+                past_children = [c for c in existing_children if c.date < child_exp.date]
+                past_s = sum(float(c.value) for c in past_children)
+                rem_inst = fixed_exp.installments_count - len(past_children)
+                rem_bal = float(fixed_exp.value) - past_s
+                new_child_value = rem_bal / rem_inst if rem_inst > 0 else rem_bal
+            else:
+                new_child_value = float(fixed_exp.value)
+            
+            future_children = [c for c in existing_children if c.date >= child_exp.date]
+            for f_child in future_children:
+                if float(f_child.value) != new_child_value:
+                    if f_child.is_activated:
+                        reverse_type = not f_child.type_expense
+                        update_balance(db=db, user_id=user_id, value=float(f_child.value), type=reverse_type)
+                        update_balance(db=db, user_id=user_id, value=new_child_value, type=f_child.type_expense)
+                    f_child.value = new_child_value
+
+        # Atualiza o resto dos dados comuns
+        if not is_projected:
             if new_category_id:
                 child_exp.category = new_category_id
             if payload.get('paymentMethod'):
                 child_exp.payment_method = payload.get('paymentMethod')
-                
             target_date = payload.get('dateOfThisPayment') or payload.get('date')
             if target_date:
                 child_exp.date = date.fromisoformat(str(target_date).split('T')[0])
@@ -849,16 +952,24 @@ def get_details_about_fixed_expense(db: Session, user_id: int, fixed_id: int):
         Expense.is_deleted == False
     ).count()
     
-    # 3. Matemática de parcelas
-    total_installments = fixed_exp.installments_count if fixed_exp.installments_count else 0
+    # 3. Identifica se é assinatura baseado na falta de fim ou se a contagem original era 1
+    is_subscription = fixed_exp.end_date is None or fixed_exp.installments_count == 1
     
-    if total_installments > 0:
-        installment_value = float(fixed_exp.value) / total_installments
-        remaining = total_installments - paid_count
-    else:
-        # É uma assinatura infinita (Ex: Spotify, Netflix)
+    if is_subscription:
         installment_value = float(fixed_exp.value)
-        remaining = "Infinito"
+        # Se for assinatura com data final nula, enviamos a string para o front exibir "Infinito"
+        if fixed_exp.end_date is None:
+            total_installments = "Infinito"
+            remaining = "Infinito"
+        else:
+            # Se o cara cancelou a assinatura (tem data final), o total fica igual ao que já pagou
+            total_installments = paid_count
+            remaining = 0
+    else:
+        # É CARNÊ NORMAL
+        total_installments = fixed_exp.installments_count if fixed_exp.installments_count else 1
+        installment_value = float(fixed_exp.value) / total_installments if total_installments > 0 else float(fixed_exp.value)
+        remaining = total_installments - paid_count if total_installments > paid_count else 0
     
     return {
         "fixed_id": fixed_id,

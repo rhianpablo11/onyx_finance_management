@@ -249,9 +249,19 @@ function Input(props: InputProps){
                 </div>
             </>
         )
-    } else if(type == 'change-date-transaction'){
+    } else if(type == 'change-installments-of-transaction'){
         return(
             <>
+                 <div className='flex h-10 rounded-[14px] bg-[#1e1c28] justify-center items-center w-full'>
+                    <input className='w-full h-full p-2.5  flex items-center text-end justify-end font-normal text-xl text-white placeholder:text-white/75 focus:outline-none'
+                        type='number'
+                        placeholder={placeholder}
+                        required
+                        onChange={handleInputChange}
+                        value={valueInputTyped}
+                        >
+                    </input>
+                </div>
             </>
         )
     } 
