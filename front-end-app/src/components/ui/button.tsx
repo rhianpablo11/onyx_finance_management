@@ -185,7 +185,7 @@ function Button(props: ButtonProps){
             <>
                 <button disabled={false}
                         onClick={() => onClickButtonChildren('')}
-                        className="bg-[#ac1010] px-3 border border-red-600 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        className="bg-[#ac1010] px-3 border border-[#ac1010] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
                         
                         <h1 className="font-normal text-sm text-white">
                             {nameConfig}
@@ -199,7 +199,7 @@ function Button(props: ButtonProps){
             <>
                 <button disabled={false}
                         onClick={() => onClickButtonChildren('')}
-                        className="bg-[#ac1010] px-3 border border-red-600 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        className="bg-[#ac1010] px-3 border border-[#ac1010] hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
                         {loading ? (
                             <>
                                 <h1 className="font-normal text-sm text-white">
@@ -234,7 +234,33 @@ function Button(props: ButtonProps){
                 </button>
             </>
         )
-    }  else{
+    } else if(type == 'confirm-edit-expense'){
+        return(
+            <>
+                <button disabled={false}
+                        onClick={() => onClickButtonChildren('')}
+                        className="bg-violet-900 px-3 border border-violet-900 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        {loading ? (
+                            <>
+                                <h1 className="font-normal text-sm text-white">
+                                    Salvando
+                                </h1>
+                                <div className='ml-2 text-white'>
+                                    <LoadingSpinner />
+                                </div>
+                                
+                            </>
+                            ):(
+                                <h1 className="font-normal text-sm text-white">
+                                    Confirmar
+                                </h1>
+                            )}
+                        
+                        
+                </button>
+            </>
+        )
+    } else{
         return(
                 <>
                     <div className='rounded-[33px] flex-1 bg-linear-to-tl from-white/50 via-black to-white/50 p-px'>

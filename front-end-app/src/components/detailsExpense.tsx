@@ -56,86 +56,127 @@ function DetailsExpense(props: DetailsExpenseProps){
     const [newRecurrencyOfPayment, setNewRecurrencyOfPayment] = useState<string>('')
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDeleteType, setSelectedDeleteType] = useState('this');
+    const [editedInstallments, setEditedInstallments] = useState<number | undefined>()
+    const [errorModalMsg, setErrorModalMsg] = useState<string>('')
+    const [isEditBehaviorModalOpen, setIsEditBehaviorModalOpen] = useState(false);
+    const [selectedEditBehavior, setSelectedEditBehavior] = useState('future_only');
 
-    useEffect(() =>{
-        console.log('ola mundo')
-        console.log(come_of_fixed)
-        
-        const fetchDetails = async () => {
-            try {
-                const details = await getDetailsAboutFixedExpense(come_of_fixed as number);
-                setInstallmentNumber(details.total_installments); //quant de parcelas
-                setInstallmentValue(details.installment_value); //valor de cada parcela
-                setInstallmentRemaining(details.remaining_installments); //quant de parcelas restantes
-                setFixedExpenseEndDate(details.end_date); //data final do pagamento
-                setFixedExpenseStartDate(details.start_date); //data q começou
-                setTotalValueOfFixedExpense(details.total_value); //valor total da despesa fixa
-                setPaidInstallments(details.paid_installments); //quant de parcelas pagas
-                setTypeOfCharge(details.type_of_charge); //tipo de cobrança
-                if (details.end_date) {
-                    const endString = details.end_date.split('T')[0];
-                    setDateOfLastPayment(parseDate(endString));
-                }
-
-                if (details.start_date) {
-                    const startString = details.start_date.split('T')[0];
-                    setEditedStartDate(parseDate(startString));
-                }
-            } catch (error) {  
-                console.error('Erro ao buscar detalhes da despesa fixa:', error);
+    const fetchDetails = async () => {
+        try {
+            const details = await getDetailsAboutFixedExpense(come_of_fixed as number);
+            setInstallmentNumber(details.total_installments); //quant de parcelas
+            setInstallmentValue(details.installment_value); //valor de cada parcela
+            setInstallmentRemaining(details.remaining_installments); //quant de parcelas restantes
+            setFixedExpenseEndDate(details.end_date); //data final do pagamento
+            setFixedExpenseStartDate(details.start_date); //data q começou
+            setTotalValueOfFixedExpense(details.total_value); //valor total da despesa fixa
+            setPaidInstallments(details.paid_installments); //quant de parcelas pagas
+            setTypeOfCharge(details.type_of_charge); //tipo de cobrança
+            
+            if (details.end_date) {
+                const endString = details.end_date.split('T')[0];
+                setDateOfLastPayment(parseDate(endString));
             }
-        };
+
+            if (details.start_date) {
+                const startString = details.start_date.split('T')[0];
+                setEditedStartDate(parseDate(startString));
+            }
+        } catch (error) {  
+            console.error('Erro ao buscar detalhes da despesa fixa:', error);
+        }
+    };
+
+    // O useEffect agora só chama a função que tá lá fora
+    useEffect(() =>{
         if(come_of_fixed != null){
             fetchDetails();
         }
-    },[])
+    }, [])
 
     const onClickFather = async () =>{
         if(isEditMode){
-            let categoryIdToSend: string | number | undefined = newCategory;
+            const finalInstallments = editedInstallments !== undefined ? editedInstallments : (installmentNumber as number);
+            const valueToSend = editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount);
             
-            // Pega o ID da categoria atual se o usuário não mudou nada
-            if (!categoryIdToSend) {
-                const currentCategoryObj = categoriesUser.find(c => c.label === currentCategory);
-                categoryIdToSend = currentCategoryObj ? currentCategoryObj.value : currentCategory; 
+            // 🧠 VERIFICAÇÃO DE MUDANÇA MATEMÁTICA (Agora sem bloquear o Infinito!)
+            // Removemos a verificação installmentNumber !== "Infinito"
+            const isMathChanged = come_of_fixed != null && 
+                                  (finalInstallments !== installmentNumber || valueToSend !== totalValueOfFixedExpense);
+
+            // Se mudou a matemática estrutural E já tem parcelas pagas, abre o Modal!
+            if (isMathChanged && paidInstallments > 0) {
+                setIsEditBehaviorModalOpen(true);
+                return; // Pausa aqui e espera o usuário escolher (Retroativo ou Redistribuir)
             }
 
-            // 1. Salva no banco (aguarda terminar)
-            await editExpense(
-                idExpense, 
-                categoryIdToSend,
-                editedValue || currentAmount, 
-                newPaymentMethod || currentPaymentMethod, 
-                editedDate.toString(),
-                newRecurrencyOfPayment,
-                dateOfThisPayment?.toString(),
-                dateOfLastPayment,
-                editedStartDate,
-                come_of_fixed
-            );
+            // Se não precisa de modal, salva direto
+            await executeEdit('future_only', finalInstallments, valueToSend);
 
-            // 🔥 2. Atualiza a tela (UX Instantânea!)
-            setCurrentAmount(editedValue || currentAmount);
-            setCurrentPaymentMethod(newPaymentMethod || currentPaymentMethod);
-            setCurrentDate(editedDate.toString());
-            
-            const updatedCategoryObj = categoriesUser.find(c => c.value == categoryIdToSend);
-            if (updatedCategoryObj) {
-                setCurrentCategory(updatedCategoryObj.label);
-            }
-
-            // 🔥 3. Avisa o Pai (DashMetricsPage) para buscar os dados de novo silenciosamente
-            if (onSuccessEdit) {
-                await onSuccessEdit();
-            }
-
-            // 4. Sai do modo edição
-            setIsEditMode(false);
-            setNameButton('Editar movimentação');
-        } else{
+        } else {
             setIsEditMode(true);
             setNameButton('Salvar alterações');
         }
+    }
+
+
+    const executeEdit = async (behavior: string, finalInst: number, valToSend: number) => {
+        let categoryIdToSend: string | number | undefined = newCategory;
+            
+        if (!categoryIdToSend) {
+            const currentCategoryObj = categoriesUser.find(c => c.label === currentCategory);
+            categoryIdToSend = currentCategoryObj ? currentCategoryObj.value : currentCategory; 
+        }
+
+        try {
+            await editExpense(
+                idExpense, 
+                categoryIdToSend,
+                valToSend, 
+                newPaymentMethod || currentPaymentMethod, 
+                editedDate?.toString(),
+                newRecurrencyOfPayment,
+                dateOfThisPayment?.toString(),
+                dateOfLastPayment?.toString(), 
+                editedStartDate?.toString(),   
+                come_of_fixed,
+                finalInst,
+                behavior // 🔥 Envia o comportamento (Retroativo ou Futuro)
+            );
+        } catch (error: any) {
+            setIsEditBehaviorModalOpen(false); // Fecha o modal se tiver aberto
+            if (error.response && error.response.data && error.response.data.detail) {
+                setErrorModalMsg(error.response.data.detail);
+            } else {
+                setErrorModalMsg("Ocorreu um erro ao salvar as alterações. Tente novamente.");
+            }
+            return; 
+        }
+
+        // Atualiza UI
+        if (come_of_fixed == null) {
+            setCurrentAmount(valToSend);
+        } else {
+            await fetchDetails();
+        }
+
+        setCurrentPaymentMethod(newPaymentMethod || currentPaymentMethod);
+        setCurrentDate(editedDate.toString());
+        
+        const updatedCategoryObj = categoriesUser.find(c => c.value == categoryIdToSend);
+        if (updatedCategoryObj) {
+            setCurrentCategory(updatedCategoryObj.label);
+        }
+
+        if (onSuccessEdit) {
+            await onSuccessEdit();
+        }
+
+        setIsEditBehaviorModalOpen(false);
+        setIsEditMode(false);
+        setNameButton('Editar movimentação');
+        setEditedInstallments(undefined);
+        setEditedValue(undefined);
     }
 
 
@@ -216,8 +257,8 @@ function DetailsExpense(props: DetailsExpenseProps){
             if(fixedExpenseendDate != null){
                 return (
                     <>
-                        <div className='flex w-full pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex w-full pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
                             </h3>
                             {isEditMode ? (
@@ -250,8 +291,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                             <>
                                 
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Parcela atual:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
@@ -262,8 +303,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Parcelas a serem pagas:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
@@ -274,13 +315,13 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
-                                        Valor total a ser pago:
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
+                                        Valor da parcela:
                                     </h3>
                                     {isEditMode ? (null):(
                                         <h1 className='text-white text-lg font-normal '>
-                                            {formatValue(totalValueOfFixedExpense)}
+                                            R$ {formatValue(currentAmount)}
                                         </h1>
                                     )}
                                     
@@ -289,63 +330,48 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 <div className='border-b border-white/30'>
                                 </div>
 
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Valor restante a ser pago:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
-                                        {formatValue(totalValueOfFixedExpense - (installmentValue * paidInstallments))}
+                                        R$ {formatValue(totalValueOfFixedExpense - (installmentValue * paidInstallments))}
                                     </h1>
                                 </div>
 
                                 <div className='border-b border-white/30'>
                                 </div>
             
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                                    <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
                                         Valor ja pago:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
-                                        {formatValue(installmentValue * paidInstallments)}
+                                        R$ {formatValue(installmentValue * paidInstallments)}
                                     </h1>
                                 </div>
 
                                 <div className='border-b border-white/30'>
+                                </div>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
+                                    <h3 className='text-base flex  text-white font-light'>
+                                        Data do {typeExpense ? "pagamento" : "recebimento"} final:
+                                    </h3>
+                                    <h1 className='text-white text-lg font-normal '>
+                                        {formatDateShow(fixedExpenseendDate)}
+                                    </h1>
                                 </div>
                             </>
                         )}    
                         
 
     
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
-                                Data do {typeExpense ? "pagamento" : "recebimento"} final:
-                            </h3>
-                            {isEditMode ? (
-                                <>
-                                    <div className='ml-4 pt-1'>
-                                        <I18nProvider locale="pt-BR">
-                                            <DatePicker 
-                                                aria-label="Data da transação"
-                                                value={dateOfLastPayment}
-                                                onChange={setDateOfLastPayment} //vai ta editando a data daquele primeiro pagamento
-                                                className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
-                                            />
-                                        </I18nProvider>
-                                    </div>
-                                </>
-                            ):(
-                                <h1 className='text-white text-lg font-normal '>
-                                    {formatDateShow(fixedExpenseendDate)}
-                                </h1>
-                            )}
-                            
-                        </div>
+                        
 
                         <div className='border-b border-white/30'>
                         </div>
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Cobranças realizadas no período:
                             </h3>
                             {isEditMode ? (
@@ -372,13 +398,33 @@ function DetailsExpense(props: DetailsExpenseProps){
                         </div>
                         <div className='border-b border-white/30'>
                         </div>
+                        <div className='flex pt-2 pb-2 justify-between w-full items-center'>
+                            <h3 className='text-base flex min-w-5/8 text-white font-light'>
+                                Quantidade de parcelas:
+                            </h3>
+                            {isEditMode ? (
+                                <div className='flex justify-end items-end'>
+                                    <Input type='change-installments-of-transaction'
+                                        placeholder={installmentNumber.toString()}
+                                        onChangeInputChildren={(value) => setEditedInstallments(parseInt(value) || 0)}
+                                    />
+                                </div>
+                            ):(
+                                <h1 className='text-white text-lg font-normal '>
+                                    {installmentNumber}
+                                </h1>
+                            )}
+                            
+                        </div>
+                        <div className='border-b border-white/30'>
+                        </div>
                     </>
                 )
             } else{
                 return(
                     <>
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex text-white font-light'>
                                 Data desse {typeExpense ? 'pagamento' : 'recebimento'}:
                             </h3>
                             {isEditMode ? (
@@ -389,6 +435,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                                                 aria-label="Data da transação"
                                                 value={dateOfThisPayment}
                                                 onChange={(date) => date && setDateOfThisPayment(date)} //vai ta editando a data daquele primeiro pagamento
+                                                isDisabled={come_of_fixed != null}
                                                 className="w-full flex items-center justify-between rounded-[14px] h-10 text-white focus:outline-none"
                                             />
                                         </I18nProvider>
@@ -406,7 +453,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                         {isEditMode ? (null
                         ):(
                             <>
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Recorrência do {typeExpense ? "pagamento" : "recebimento"}:
                                     </h3>
@@ -428,12 +475,12 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                         {isEditMode ? (null):(
                             <>
-                                <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                                <div className='flex pt-2 pb-2 justify-between items-center'>
                                     <h3 className='text-base flex shrink-0 text-white font-light'>
                                         Valor ja pago:
                                     </h3>
                                     <h1 className='text-white text-lg font-normal '>
-                                        {formatValue(installmentValue * paidInstallments)}
+                                        R$ {formatValue(installmentValue * paidInstallments)}
                                     </h1>
                                 </div>
 
@@ -442,8 +489,8 @@ function DetailsExpense(props: DetailsExpenseProps){
                             </>
                         )}
                         
-                        <div className='flex pt-2 pb-2 justify-between items-baseline'>
-                            <h3 className='text-base flex shrink-0 text-white font-light'>
+                        <div className='flex pt-2 pb-2 justify-between items-center'>
+                            <h3 className='text-base flex  text-white font-light'>
                                 Cobranças realizadas no período:
                             </h3>
                             {isEditMode ? (
@@ -522,19 +569,38 @@ function DetailsExpense(props: DetailsExpenseProps){
                         <h3 className='text-2xl text-white font-light'>
                             R$
                         </h3>
-                        {isEditMode && come_of_fixed == null ? (
-                            <div className='flex justify-end items-end w-full ml-3 mt-1'>
-                                <Input type='change-value-transaction'
-                                    placeholder={formatValue(currentAmount).toString()}
-                                    onChangeInputChildren={(value) => setEditedValue(parseFloat(value) || 0)}
-                                />
-                            </div>
-                            ):(
-                            <>
-                                <h1 className='text-white text-[32px] font-normal pl-1'>
-                                    {formatValue(currentAmount)}
-                                </h1>
-                            </>
+                        {}
+                        {come_of_fixed != null ? (
+                            isEditMode ? (
+                                <div className='flex justify-end items-end w-full ml-3 mt-1'>
+                                    <Input type='change-value-transaction'
+                                        placeholder={formatValue(totalValueOfFixedExpense).toString()}
+                                        onChangeInputChildren={(value) => setEditedValue(parseFloat(value) || 0)}
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    <h1 className='text-white text-[32px] font-normal pl-1'>
+                                        {formatValue(totalValueOfFixedExpense)}
+                                    </h1>
+                                </>
+                            )
+                            
+                        ): (
+                           isEditMode && come_of_fixed == null ? (
+                                <div className='flex justify-end items-end w-full ml-3 mt-1'>
+                                    <Input type='change-value-transaction'
+                                        placeholder={formatValue(currentAmount).toString()}
+                                        onChangeInputChildren={(value) => setEditedValue(parseFloat(value) || 0)}
+                                    />
+                                </div>
+                                ):(
+                                <>
+                                    <h1 className='text-white text-[32px] font-normal pl-1'>
+                                        {formatValue(currentAmount)}
+                                    </h1>
+                                </>
+                            )
                         )}
                         
                     </div>
@@ -545,7 +611,7 @@ function DetailsExpense(props: DetailsExpenseProps){
                     {/*
                         Começa aqui a parte q eh diferente entre desepesa fixa vs despesa normal
                     */}
-                    <div className='flex pt-2 pb-2 justify-between items-baseline'>
+                    <div className='flex pt-2 pb-2 justify-between items-center'>
                         {come_of_fixed == null ? (
                             <>
                                 <h3 className='text-base flex shrink-0 text-white font-light'>
@@ -577,12 +643,12 @@ function DetailsExpense(props: DetailsExpenseProps){
                         (
                         <>
                             <div className='w-full flex justify-between items-center'>
-                                <h3 className='text-base flex shrink-0 text-white font-light'>
+                                <h3 className='text-base flex text-white font-light'>
                                     Data do primeiro {typeExpense ? 'pagamento' : 'recebimento'}:
                                 </h3>
                                 {isEditMode ? (
                                     <>
-                                        <div className='w-full ml-4 pt-1'>
+                                        <div className='pt-1'>
                                             <I18nProvider locale="pt-BR">
                                                 <DatePicker 
                                                     aria-label="Data da transação"
@@ -611,7 +677,7 @@ function DetailsExpense(props: DetailsExpenseProps){
 
                     {paymentIsRecurrent()}
 
-                    <div className='flex pt-2 pb-5 justify-between items-baseline'>
+                    <div className='flex pt-2 pb-5 justify-between items-center'>
                         <h3 className='flex shrink-0 text-base text-white font-light'>
                             {typeExpense ? 'Pagamento' : 'Recebimento'} via:
                         </h3>
@@ -654,21 +720,27 @@ function DetailsExpense(props: DetailsExpenseProps){
                 </div>
             </div>
            {isDeleteModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm px-4">
+                // 🔥 AJUSTE 1: Aumentei o z-index para z-[100] (ou mais, se precisar) e adicionei 'pb-24' para empurrar o centro do modal para cima, fugindo da Navbar.
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/10 backdrop-blur-sm px-4 pb-24">
                     
-                    {/* Contêiner Principal - Mesmo estilo da ExtractPage */}
-                    <div className="rounded-[29px] w-full max-w-sm flex-1 max-h-[85vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                    {/* Contêiner Principal */}
+                    {/* 🔥 AJUSTE 2: Mudei max-h-[85vh] para max-h-[70vh] para ele não esticar tanto para baixo no mobile */}
+                    <div className="rounded-[29px] w-full max-w-sm flex flex-col max-h-[76vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
                         
                         {/* Fundo de Vidro com Imagem */}
-                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-auto bg-cover bg-center bg-no-repeat" 
+                        {/* 🔥 AJUSTE 3: Troquei 'overflow-auto' por 'overflow-y-auto' para garantir que a rolagem funcione suave no celular */}
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-y-auto bg-cover bg-center bg-no-repeat" 
                              style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
                             
-                            <h2 className="text-white text-2xl font-medium mb-1">
-                                Excluir transação
-                            </h2>
-                            <p className="text-white/70 text-base font-light mb-6">
-                                Essa é uma despesa recorrente. Como você deseja excluir?
-                            </p>
+                            {/* O cabeçalho fica fixo no topo do scroll interno */}
+                            <div className="shrink-0">
+                                <h2 className="text-white text-2xl font-medium mb-1">
+                                    Excluir transação
+                                </h2>
+                                <p className="text-white/70 text-base font-light mb-6">
+                                    Essa é uma despesa recorrente. Como você deseja excluir?
+                                </p>
+                            </div>
 
                             <div className="flex flex-col gap-3">
                                 {/* OPÇÃO 1 */}
@@ -708,18 +780,109 @@ function DetailsExpense(props: DetailsExpenseProps){
                                 </label>
                             </div>
 
-                            {/* DIVISÓRIA (Estilo Onyx) */}
-                            <div className="mt-6 mb-4 h-px w-full"></div>
+                            {/* DIVISÓRIA E BOTÕES - Ficam no final da rolagem */}
+                            <div className="mt-auto shrink-0 pt-2">
+                                <div className="mt-2 mb-2 h-px w-full"></div>
+                                <div className="flex justify-between gap-3">
+                                    <Button type='cancel-del-expense'
+                                            onClickButtonChildren={()=>{setIsDeleteModalOpen(false)}}
+                                            />
+                                    <Button type='confirm-del-expense'
+                                            onClickButtonChildren={()=>{executeDelete(selectedDeleteType)}}
+                                            loading={loading}
+                                            />
+                                </div>
+                            </div>
 
-                            {/* BOTÕES DE AÇÃO DO MODAL */}
-                            <div className="flex justify-between gap-3 mt-auto">
-                                <Button type='cancel-del-expense'
-                                        onClickButtonChildren={()=>{setIsDeleteModalOpen(false)}}
-                                        />
-                                <Button type='confirm-del-expense'
-                                        onClickButtonChildren={()=>{executeDelete(selectedDeleteType)}}
-                                        loading={loading}
-                                        />
+                        </div>
+                    </div>
+                </div>
+            )}
+            {errorModalMsg !== '' && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-24">
+                    <div className="rounded-[29px] w-full max-w-sm flex flex-col max-h-[76vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-y-auto bg-cover bg-center bg-no-repeat" 
+                             style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
+                            
+                            <h2 className="text-white text-xl font-medium mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-red-500">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Ação Inválida
+                            </h2>
+                            
+                            <p className="text-white/80 text-sm font-light mb-6">
+                                {errorModalMsg}
+                            </p>
+                            
+                            <button 
+                                onClick={() => setErrorModalMsg('')} 
+                                className="w-full py-3 rounded-[14px] text-white bg-white/10 hover:bg-white/20 transition-all font-medium text-sm flex justify-center">
+                                Entendi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isEditBehaviorModalOpen && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-24">
+                    <div className="rounded-[29px] w-full max-w-sm flex flex-col max-h-[76vh] bg-linear-to-tl from-white/50 via-black to-white/50 p-px shadow-2xl">
+                        <div className="w-full h-full p-6 flex flex-col backdrop-blur-3xl rounded-[28px] overflow-y-auto bg-cover bg-center bg-no-repeat" 
+                             style={{backgroundImage: `url("${backgroundDetailsExpense}")`, backgroundColor: 'rgba(0, 0, 0, 0.7)'}}>
+                            
+                            <div className="shrink-0">
+                                <h2 className="text-white text-2xl font-medium mb-1">
+                                    Aplicar alterações
+                                </h2>
+                                <p className="text-white/70 text-sm font-light mb-6">
+                                    Você alterou o valor ou as parcelas de uma conta que já está em andamento. Como deseja aplicar isso?
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                {/* OPÇÃO 1: RENEGOCIAÇÃO (Redistribuir) */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedEditBehavior === 'future_only' ? 'border-violet-500 bg-violet-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="editBehavior" value="future_only" className="hidden" checked={selectedEditBehavior === 'future_only'} onChange={() => setSelectedEditBehavior('future_only')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-medium text-sm">Redistribuir o restante (Renegociação)</span>
+                                        <span className="text-white/50 text-xs font-light mt-1">O que já foi pago no passado fica intacto. A diferença será dividida apenas nas próximas parcelas.</span>
+                                    </div>
+                                </label>
+
+                                {/* OPÇÃO 2: RETROATIVO (Corrigir Histórico) */}
+                                <label className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${selectedEditBehavior === 'retroactive' ? 'border-violet-500 bg-violet-500/10' : 'border-white/15 hover:bg-white/5'}`}>
+                                    <input type="radio" name="editBehavior" value="retroactive" className="hidden" checked={selectedEditBehavior === 'retroactive'} onChange={() => setSelectedEditBehavior('retroactive')} />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-medium text-sm">Corrigir o histórico (Erro de digitação)</span>
+                                        <span className="text-white/50 text-xs font-light mt-1">Altera o valor das parcelas antigas que já foram pagas e ajusta o seu saldo atual.</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div className="mt-auto shrink-0 pt-2">
+                                <div className="mt-4 mb-4 h-px w-full bg-linear-to-r from-violet-900 via-white to-violet-900"></div>
+                                <div className="flex justify-between gap-3">
+                                    <Button type='cancel-del-expense'
+                                            onClickButtonChildren={()=>{setIsEditBehaviorModalOpen(false)}}
+                                            />
+                                    <Button type='confirm-edit-expense'
+                                            onClickButtonChildren={() => executeEdit(
+                                            selectedEditBehavior, 
+                                            editedInstallments !== undefined ? editedInstallments : (installmentNumber as number), 
+                                            editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount)
+                                        )}
+                                            loading={loading} />
+                                    {/* <button 
+                                        onClick={() => executeEdit(
+                                            selectedEditBehavior, 
+                                            editedInstallments !== undefined ? editedInstallments : (installmentNumber as number), 
+                                            editedValue !== undefined ? editedValue : (come_of_fixed != null ? totalValueOfFixedExpense : currentAmount)
+                                        )} 
+                                        disabled={loading}
+                                        className="w-full py-3 rounded-[14px] text-white bg-violet-600/80 hover:bg-violet-700/90 transition-all font-medium text-sm flex justify-center shadow-lg shadow-violet-900/20">
+                                        {loading ? 'Salvando...' : 'Confirmar'}
+                                    </button> */}
+                                </div>
                             </div>
 
                         </div>

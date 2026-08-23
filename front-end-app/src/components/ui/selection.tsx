@@ -141,8 +141,8 @@ function SelectionComp(props: SelectionProps){
                     <div className="relative w-full" ref={wrapperRef}>
                         <button type="button"
                                 className={`
-                                            flex items-center justify-between w-full h-10 px-2.5 
-                                            border border-white/25 rounded-2xl 
+                                            flex items-center justify-between w-full h-8 px-2.5 
+                                            border border-white/25 rounded-xl 
                                             text-base font-normal focus:outline-none transition-all duration-200
                                             ${isOpen ? 'ring-1 ring-purple-500' : ''}
                                         `}

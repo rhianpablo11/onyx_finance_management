@@ -188,6 +188,8 @@ async def edit_expense(current_user:dict = Depends(get_current_user), db: Sessio
             payload=payload 
         )
         return updated_expense
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Error occurred while editing expense: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -206,6 +208,8 @@ async def delete_expense(current_user:dict = Depends(get_current_user), db: Sess
             payload=payload
         )
         return deleted_expense
+    except HTTPException as e:
+            raise e
     except Exception as e:
         print(f"Error occurred while deleting expense: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
