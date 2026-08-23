@@ -52,22 +52,16 @@ def test_edit_despesa_simples_atualiza_saldo(auth_client, db_session, test_user)
 
 
 def test_edit_parcela_fixa_recalcula_mae_e_filha(auth_client, db_session, test_user):
-    """
-    CENÁRIO 2: Edição de uma Parcela Fixa FÍSICA (Que o usuário já pagou/gerou).
-    Se editar o valor de uma parcela de carnê, o saldo da filha atualiza,
-    e a tabela mãe (que guarda o total) deve multiplicar o novo valor.
-    """
     with freeze_time("2026-08-17"):
-        # 1. Cria a despesa mãe (Ex: Geladeira 10x de R$ 100) -> Total 1000
+        # 🔥 CORREÇÃO: Adicionado end_date=date(2027, 5, 17) para o robô saber que é um carnê!
         mae = Expenses_fixed(
             user_id=test_user.id, name="Geladeira 10x", value=1000.0,
-            start_date=date(2026, 8, 17), payment_date=date(2026, 8, 17),
+            start_date=date(2026, 8, 17), payment_date=date(2026, 8, 17), end_date=date(2027, 5, 17),
             charge=2, category=1, type_expense=False, activated=True, installments_count=10
         )
         db_session.add(mae)
         db_session.commit()
 
-        # 2. Cria a parcela gerada (A filha)
         test_user.balance -= 100
         filha = Expense(
             user_id=test_user.id, category=1, value=100.0, type_expense=False, 
@@ -77,10 +71,9 @@ def test_edit_parcela_fixa_recalcula_mae_e_filha(auth_client, db_session, test_u
         db_session.add(filha)
         db_session.commit()
 
-        # 3. Usuário renegociou, a parcela agora é R$ 80,00!
         payload = {
             "value": 800.0,
-            "fixedExpenseID": mae.id,  # O front-end envia quem é a mãe!
+            "fixedExpenseID": mae.id,
             "category": 1
         }
         
@@ -91,11 +84,8 @@ def test_edit_parcela_fixa_recalcula_mae_e_filha(auth_client, db_session, test_u
         db_session.refresh(mae)
         db_session.refresh(filha)
 
-        # O saldo deve estornar 100 e cobrar 80 (Fica -80)
         assert test_user.balance == -80.0
         assert float(filha.value) == 80.0
-        
-        # A MÁGICA: O valor total da mãe tem que ter virado 800 (80 * 10)
         assert float(mae.value) == 800.0
 
 
@@ -400,11 +390,15 @@ def test_mega_jornada_despesa_simples_caos(auth_client, db_session, test_user):
 
 def test_edit_reducao_de_parcelas_agora_permitida(auth_client, db_session, test_user):
     with freeze_time("2026-01-01"):
-        mae = Expenses_fixed(user_id=test_user.id, name="TV", value=1000.0, start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), charge=2, category=1, type_expense=False, activated=True, installments_count=5)
+        # 🔥 CORREÇÃO: Adicionado end_date=date(2026, 5, 1)
+        mae = Expenses_fixed(
+            user_id=test_user.id, name="TV", value=1000.0, 
+            start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), end_date=date(2026, 5, 1),
+            charge=2, category=1, type_expense=False, activated=True, installments_count=5
+        )
         db_session.add(mae)
         db_session.commit()
 
-        # O usuário começa com -600 (3 parcelas de 200 já pagas)
         test_user.balance -= Decimal('600.0')
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 1, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="1/5"))
         db_session.add(Expense(user_id=test_user.id, category=1, value=200, type_expense=False, date=date(2026, 2, 1), is_activated=True, fixed_expense_id=mae.id, name="TV", description="2/5"))
@@ -416,42 +410,35 @@ def test_edit_reducao_de_parcelas_agora_permitida(auth_client, db_session, test_
         payload = {
             "fixedExpenseID": mae.id,
             "value": 1000.0,
-            "installments_count": 2, # 🔥 Reduzindo brutalmente as parcelas (tinha 3 pagas, caiu pra 2)
+            "installments_count": 2, 
             "update_behavior": "future_only"
         }
 
         response = auth_client.put(f"/transactions/{parcela_mar.id}", json=payload)
-        
-        # 1. Requisição aceita com sucesso
         assert response.status_code == 200
 
-        # Atualiza os objetos para ver o que o banco fez
         db_session.refresh(test_user)
         db_session.refresh(mae)
         
         children = db_session.query(Expense).filter(Expense.fixed_expense_id == mae.id).order_by(Expense.id).all()
 
-        # 2. O Exterminador TEM que ter deletado a 3ª parcela (índice 2)
         assert children[2].is_deleted == True
-        
-        # 3. As duas primeiras devem estar intactas e vivas
         assert children[0].is_deleted == False
         assert children[1].is_deleted == False
-
-        # 4. Como foi future_only, o valor do passado não pode ter sido mexido
         assert float(children[0].value) == 200.0
         assert float(children[1].value) == 200.0
-
-        # 5. O saldo do usuário TEM que ter sofrido estorno da parcela deletada (+200)
         assert test_user.balance == -400.0
-
-        # 6. A mãe assumiu a nova contagem
         assert mae.installments_count == 2
 
 
 def test_edit_matematica_complexa_e_preservacao_do_passado(auth_client, db_session, test_user):
     with freeze_time("2026-01-01"):
-        mae = Expenses_fixed(user_id=test_user.id, name="PC", value=1000.0, start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), charge=2, category=1, type_expense=False, activated=True, installments_count=5)
+        # 🔥 CORREÇÃO: Adicionado end_date=date(2026, 5, 1)
+        mae = Expenses_fixed(
+            user_id=test_user.id, name="PC", value=1000.0, 
+            start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), end_date=date(2026, 5, 1),
+            charge=2, category=1, type_expense=False, activated=True, installments_count=5
+        )
         db_session.add(mae)
         db_session.commit()
 
@@ -461,12 +448,11 @@ def test_edit_matematica_complexa_e_preservacao_do_passado(auth_client, db_sessi
         db_session.commit()
 
     with freeze_time("2026-03-01"):
-        # Cria a de março
         test_user.balance -= 200
         parcela_mar = Expense(
             user_id=test_user.id, category=1, value=200, type_expense=False,
             date=date(2026, 3, 1), is_activated=True, fixed_expense_id=mae.id, name="PC", 
-            description="3/5" # 🔥 CORREÇÃO: Faltava a descrição obrigatória do banco!
+            description="3/5" 
         )
         db_session.add(parcela_mar)
         db_session.commit()
@@ -525,16 +511,15 @@ def test_edit_recorrencia_sem_bugar_passado(auth_client, db_session, test_user):
 
 
 def setup_chaos_scenario(db_session, test_user):
-    # 1. Cria a despesa fixa mãe: R$ 1000 em 10x
+    # 🔥 CORREÇÃO: Adicionado end_date=date(2026, 10, 1) para o motor do Chaos!
     fixed_exp = Expenses_fixed(
         user_id=test_user.id, name="Caos", value=1000.0, installments_count=10, 
-        start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), 
+        start_date=date(2026, 1, 1), payment_date=date(2026, 1, 1), end_date=date(2026, 10, 1),
         charge=2, category=1, type_expense=False, activated=True, is_deleted=False
     )
     db_session.add(fixed_exp)
     db_session.commit()
 
-    # 2. Cria 7 parcelas pagas (Jan a Julho) de R$ 100 cada
     for i in range(1, 8):
         child = Expense(
             user_id=test_user.id, category=1, value=100.0, date=date(2026, i, 1),
@@ -542,7 +527,7 @@ def setup_chaos_scenario(db_session, test_user):
             name="Caos", description=f"{i}/10"
         )
         db_session.add(child)
-        test_user.balance -= Decimal('100.0') # 🔥 CORREÇÃO: Resolvido conflito Float vs Decimal
+        test_user.balance -= Decimal('100.0') 
 
     db_session.commit()
     return fixed_exp.id
