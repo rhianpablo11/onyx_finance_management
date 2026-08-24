@@ -5,6 +5,7 @@ export interface InputProps {
     isError?: boolean
     onEnterPress?: (info:string) => void;
     placeholder?: string
+    value?: string
 }
 
 export interface ButtonProps {
@@ -217,3 +218,7 @@ export interface ProphetLineChartProps{
     endMonthBalance?: number
 }
 
+export interface ToggleProps {
+    isChecked: boolean;
+    onChange: (checked: boolean) => void;
+}
