@@ -11,6 +11,8 @@ from app.controllers.charge_type_controller import get_charge_type_by_id
 from app.schemas.expense_schema import Expense_response_base, Expense_create, Expense_response_extended
 from app.services.sync_service import sync_user_finances
 from app.utils.utils import get_previous_month_data
+from app.schemas.expense_schema import Expense_create_manual
+from app.controllers.transaction_controller import create_manual_transaction
 
 router = APIRouter()
 
@@ -226,3 +228,8 @@ def get_fixed_expense_details(transaction_id: int, current_user: dict = Depends(
     except Exception as e:
         print(f"Error occurred while fetching fixed expense details: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+
+@router.post("/create-manual")
+def create_transaction_manually(data: Expense_create_manual, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    return create_manual_transaction(db=db, user_id=current_user['user_id'], data=data)

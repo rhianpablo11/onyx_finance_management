@@ -13,6 +13,7 @@ from app.controllers.charge_type_controller import get_charge_type_id
 from app.models.charge_type import Charge_type
 from app.controllers.chat_logs_controller import create_new_chat_log
 from app.utils.utils import get_month_range
+from app.schemas.expense_schema import Expense_create_manual
 
 
 def create_new_expense(user_id: int, text_typed: str, db: Session):
@@ -982,3 +983,129 @@ def get_details_about_fixed_expense(db: Session, user_id: int, fixed_id: int):
         "end_date": fixed_exp.end_date,
         "type_of_charge": type_of_charge.name if type_of_charge else "Desconhecido"
     }
+
+
+
+def create_manual_transaction(db: Session, user_id: int, data: Expense_create_manual):
+    try:
+        today = date.today()
+        is_active = data.date <= today # Se for hoje ou no passado, já ativa e desconta do saldo
+
+        # ==========================================
+        # CENÁRIO 1: DESPESA SIMPLES (NÃO PARCELADA)
+        # ==========================================
+        if not data.is_recurrent:
+            new_expense = Expense(
+                user_id=user_id,
+                category=data.category_id,
+                value=data.value,
+                type_expense=data.type_expense,
+                description=data.description,
+                date=data.date,
+                payment_method=data.payment_method,
+                is_activated=is_active,
+                name=data.name
+            )
+            db.add(new_expense)
+            
+            if is_active:
+                update_balance(db=db, user_id=user_id, value=data.value, type=data.type_expense)
+            
+            db.commit()
+            db.refresh(new_expense)
+            return {"status": "success", "message": "Transação simples criada com sucesso!"}
+
+        # ==========================================
+        # CENÁRIO 2: DESPESA FIXA / PARCELADA
+        # ==========================================
+        else:
+            # Pega todos os tipos de cobrança e descobre o ID
+            stmt_charges = select(Charge_type.name)
+            charge_types_existing = db.execute(stmt_charges).scalars().all()
+            charge_id = get_charge_type_id(data.charge_type, charge_types_existing, db)
+
+            # Define a Data Final e a Quantidade de Parcelas
+            end_date_val = None
+            installments = 1
+
+            if data.is_continuous:
+                end_date_val = data.end_date # Pode ser nulo se for infinita
+                installments = 1 # Assinaturas contínuas sempre tem 1 parcela no modelo do Onyx
+            else:
+                installments = data.installments_count
+                # Calcular data final automaticamente para o Carnê
+                freq_obj = db.query(Charge_type).filter(Charge_type.id == charge_id).first()
+                freq_name = freq_obj.name.lower() if freq_obj else 'mensal'
+                
+                curr_d = data.date
+                count = 1
+                while count < installments:
+                    if 'semanal' in freq_name:
+                        curr_d += timedelta(days=7)
+                    elif 'quinzenal' in freq_name:
+                        curr_d += timedelta(days=15)
+                    elif 'diari' in freq_name:
+                        curr_d += timedelta(days=1)
+                    elif 'anual' in freq_name:
+                        curr_d = curr_d.replace(year=curr_d.year + 1)
+                    else: 
+                        m = curr_d.month + 1
+                        y = curr_d.year
+                        if m > 12:
+                            m = 1
+                            y += 1
+                        
+                        target_day = data.date.day
+                        next_m = date(y, m, 28) + timedelta(days=4)
+                        last_day_m = next_m - timedelta(days=next_m.day)
+                        check_day = min(target_day, last_day_m.day)
+                        curr_d = date(y, m, check_day)
+                    count += 1
+                end_date_val = curr_d
+
+            # Cria a "Mãe"
+            new_expense_fixed = Expenses_fixed(
+                user_id=user_id,
+                name=data.name,
+                value=data.value,
+                start_date=data.date,
+                end_date=end_date_val, 
+                charge=charge_id,
+                category=data.category_id,
+                payment_date=data.date,
+                activated=True,
+                type_expense=data.type_expense,
+                installments_count=installments,
+                description=data.description,
+                payment_method=data.payment_method
+            )
+            db.add(new_expense_fixed)
+            db.commit()
+            db.refresh(new_expense_fixed)
+
+            # Se começar hoje (ou no passado), já cria a primeira parcela real "Filha"
+            if is_active:
+                value_to_add = data.value if data.is_continuous else (data.value / installments)
+                
+                update_balance(db=db, user_id=user_id, value=value_to_add, type=data.type_expense)
+
+                new_expense_realized = Expense(
+                    user_id=user_id,
+                    category=data.category_id,
+                    value=value_to_add,
+                    type_expense=data.type_expense,
+                    description=f"Recorrência (Inicial): {data.description}",
+                    date=data.date,
+                    payment_method=data.payment_method,
+                    is_activated=True,
+                    name=data.name,
+                    fixed_expense_id=new_expense_fixed.id 
+                )
+                db.add(new_expense_realized)
+                db.commit()
+
+            return {"status": "success", "message": "Transação fixa criada com sucesso!"}
+
+    except Exception as e:
+        print(f"Erro ao criar transação manual: {e}")
+        raise HTTPException(status_code=400, detail='Erro ao processar criação manual da transação.')

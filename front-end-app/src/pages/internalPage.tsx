@@ -9,6 +9,7 @@ import { getCookie } from "../services/cookiesService"
 import ConfigsPage from "./configsPage"
 import { getGreting } from "../utils/utils"
 import InsightsPage from "./insightsPage"
+import AddTransaction from "./addTransaction"
 
 
 
@@ -61,6 +62,10 @@ function InternalPage(){
             return(
                 <InsightsPage />
             )
+        } else if(pageSelected == 'addTransaction'){
+            return(
+                <AddTransaction />
+            )
         }
     }
 
@@ -92,6 +97,10 @@ function InternalPage(){
             setTypeToShowHeader('pages-nav')
             setLegendHeader('Detalhes do seu financeiro')
             setTitleHeader('Insights')
+        } else if(pageSelected == 'addTransaction'){
+            setTypeToShowHeader('pages-nav')
+            setLegendHeader('Adicione manualmente uma nova transação')
+            setTitleHeader('Novo Gasto')
         }
     }, [pageSelected])
 

@@ -5,8 +5,8 @@ import type { InputProps } from "../../interfaces/interfacesComponents"
 
 
 function Input(props: InputProps){
-    const {type, onChangeInputChildren, cleanText, isError, onEnterPress, placeholder} = props
-    const [valueInputTyped, setValueInputTyped] = useState('')
+    const {type, onChangeInputChildren, cleanText, isError, onEnterPress, placeholder, value} = props
+    const [valueInputTyped, setValueInputTyped] = useState(value || '')
     const [otp, setOtp] = useState<string[]>(new Array(6).fill(''))
     const inputsRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -15,6 +15,14 @@ function Input(props: InputProps){
         setValueInputTyped(value)
         onChangeInputChildren(value)
     }
+
+
+    useEffect(() => {
+        if (value !== undefined) {
+            setValueInputTyped(value);
+        }
+    }, [value])
+    
 
     useEffect(()=>{
         if(cleanText){
@@ -114,6 +122,37 @@ function Input(props: InputProps){
                             value={valueInputTyped}
                             >
                     </input>
+                </div>
+            </>
+        )
+    } else if(type == 'name-expense'){
+        return(
+            <>
+                <div className='flex h-10 rounded-[14px] bg-[#37363E] justify-center items-center w-full'>
+                    <input className='w-full h-full p-2.5 flex items-center font-normal text-base text-white placeholder:text-white/75 focus:outline-none'
+                            type='name'
+                            placeholder={placeholder}
+                            required
+                            onChange={handleInputChange}
+                            value={valueInputTyped}
+                            maxLength={255}
+                            >
+                    </input>
+                </div>
+            </>
+        )
+    } else if(type == 'description-expense'){
+        return(
+            <>
+                <div className='flex h-16 rounded-[14px] bg-[#37363E] justify-center items-center w-full'>
+                    <textarea 
+                        placeholder={placeholder}
+                        className='text-white rounded-[28px] px-3 py-1 w-full h-full backdrop-blur-2xl text-left font-normal text-base  focus:outline-none resize-none  placeholder:text-white/50 '
+                        onChange={handleInputChange}
+                        value={valueInputTyped}
+                        maxLength={255}
+                        >
+                    </textarea>
                 </div>
             </>
         )
