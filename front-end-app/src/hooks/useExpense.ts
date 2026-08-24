@@ -71,5 +71,32 @@ export function useExpense(){
         }
     }
 
-    return {editExpense, loading, disableExpense, getDetailsAboutFixedExpense}
+    const getUserCategories = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/expense-category/get-categories`)
+            return response.data
+        } catch(err: any) {
+            throw err
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const createManualExpense = async (payload: any) => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/transactions/create-manual`, payload)
+            console.log(response.data)
+            return response.data
+        } catch(err: any) {
+            throw err
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    return {editExpense, loading, disableExpense, getDetailsAboutFixedExpense, getUserCategories, createManualExpense}
 }
