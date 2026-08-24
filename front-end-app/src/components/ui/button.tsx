@@ -260,6 +260,20 @@ function Button(props: ButtonProps){
                 </button>
             </>
         )
+    } else if(type == 'save-or-next-page-of-add-expense'){
+        return(
+            <>
+                <button disabled={false}
+                        onClick={() => onClickButtonChildren('')}
+                        className="bg-[#ffffff] px-3 hover:bg-[#888888] flex justify-center items-center rounded-[40px] h-10 w-full max-w-44">
+                        
+                        <h1 className="font-normal text-sm text-black">
+                            {nameConfig}
+                        </h1>
+                        
+                </button>
+            </>
+        )
     } else{
         return(
                 <>
