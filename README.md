@@ -1,4 +1,3 @@
-
 # 💎 Onyx - Finance Management
 
 <div align="center">
@@ -6,7 +5,7 @@
   
   <p><strong>Gestão financeira inteligente, moderna e segura.</strong></p>
 
-  <p>Para utilizar a aplicação, basta acessar: <strong><a style='color: violet;' href='https://onyxrp11.netlify.app'>Onyx - Finance Management</a></strong></p>
+  <p>Para utilizar a aplicação, basta acessar: <strong><a style='color: violet;' href='https://onyx.rhianpablo.com'>onyx.rhianpablo.com</a></strong></p>
 
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Badge"/>
   <img src="https://img.shields.io/badge/TypeScript-20232A?style=for-the-badge&logo=typescript&logoColor=blue" alt="TypeScript Badge"/>
@@ -14,170 +13,204 @@
   <img src="https://img.shields.io/badge/FastAPI-20232A?style=for-the-badge&logo=FastAPI" alt="FastAPI Badge"/>
   <img src="https://img.shields.io/badge/Python-20232A?style=for-the-badge&logo=python" alt="Python Badge"/>
   <img src="https://img.shields.io/badge/Postgres-20232A?style=for-the-badge&logo=postgresql" alt="Postgres Badge"/>
+  <img src="https://img.shields.io/badge/Docker-20232A?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Badge"/>
 </div>
 
 <br/>
 
 ## 📋 Índice
- - [Sobre o Projeto](#-sobre-o-projeto)
- - [Status do Projeto](#-status-do-projeto)
- - [Principais Funcionalidades](#-principais-funcionalidades)
- - [Objetivo e Motivação](#-objetivo-e-motivação)
- - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
- - [ChatBot Inteligente](#-chatbot-inteligente)
- - [Estrutura do Projeto](#-estrutura-do-projeto)
- - [Hospedagem](#-hospedagem)
+ - [Sobre o Projeto](#sobre-o-projeto)
+ - [Status do Projeto](#status-do-projeto)
+ - [Principais Funcionalidades](#principais-funcionalidades)
+ - [Objetivo e Motivação](#objetivo-e-motivacao)
+ - [Tecnologias Utilizadas](#tecnologias-utilizadas)
+ - [ChatBot Inteligente & Insights](#chatbot-inteligente)
+ - [Estrutura do Projeto](#estrutura-do-projeto)
+ - [Hospedagem e Infraestrutura](#hospedagem)
  - [CI/CD e Imagens Docker](#cicd)
- - [Como Executar Localmente](#-como-executar-localmente)
- - [Screenshots](#-screenshots)
- - [Autor](#-autor)
+ - [Como Executar Localmente](#como-executar-localmente)
+ - [Screenshots](#screenshots)
+ - [Autor](#autor)
 
-## 📖 Sobre o Projeto
+---
 
-O **Onyx - Finance Management** é uma aplicação Full-Stack de gerenciamento financeiro pessoal projetada para oferecer uma experiência de usuário fluida e intuitiva. Combinando um design moderno com uma arquitetura robusta de segurança, o sistema permite a adição de transações sem a necessidade de preencher longos formulários, graças à integração de um ChatBot inteligente.
+## <a id="sobre-o-projeto"></a>📖 Sobre o Projeto
 
-O projeto também inova ao eliminar a fricção das senhas tradicionais, utilizando a tecnologia WebAuthn para logins biométricos (como FaceID e TouchID) através de passkeys.
+O **Onyx - Finance Management** é uma aplicação Full-Stack de gerenciamento financeiro pessoal projetada para oferecer uma experiência ágil, segura e inteligente. Combinando um design moderno a uma arquitetura robusta, o sistema permite registrar transações sem fricção — seja preenchendo rapidamente de forma manual ou utilizando comandos em linguagem natural através do ChatBot inteligente integrado com IA.
 
-## 🚧 Status do Projeto
+O projeto também eleva a segurança ao eliminar a dependência de senhas tradicionais, contando com autenticação biométrica via **WebAuthn (Passkeys, FaceID, TouchID)**, além de suporte a fluxo seguro de recuperação de acesso.
 
-**Em desenvolvimento ativo.** O projeto está em fase de testes contínuos e implementação de novas features em busca de atingir o funcionamento completo do projeto. Atualizações da interface e do backend e refinamentos nos workflows estão sendo realizados.
+---
 
+## <a id="status-do-projeto"></a>🚧 Status do Projeto
 
-## ✨ Principais Funcionalidades
+**Em desenvolvimento ativo e produção.** A aplicação já opera em ambiente de produção sob o domínio [onyx.rhianpablo.com](https://onyx.rhianpablo.com), com melhorias contínuas, novos recursos e refinamentos periódicos na interface e nas integrações de inteligência artificial.
 
-* **🔐 Autenticação Passwordless:** Login seguro via biometria utilizando a API WebAuthn, eliminando necessidade de digitar senhas.
-* **🤖 ChatBot Integrado:** Facilitador conversacional para o registro de gastos e receitas de forma natural e rápida.
-* **📊 Dashboard Dinâmico:** Visão geral e atualizada do saldo, despesas do dia, próximos pagamentos e panorama mensal das entradas.
-* **🧾 Extrato Detalhado:** Filtros inteligentes por período, ordenação customizada e visualização detalhada de transações isoladas.
+---
 
-## 🎯 Objetivo e Motivação
+## <a id="principais-funcionalidades"></a>✨ Principais Funcionalidades
 
-Este projeto nasceu do objetivo de descomplicar o controle de gastos diários. A ideia principal foi eliminar a necessidade de planilhas complexas trazendo o controle financeiro para a palma da mão de forma extremamente acessível.
+* **🔐 Autenticação Passwordless & Biometria:** Login biométrico seguro via WebAuthn (Passkeys / FaceID / TouchID) e autenticação protegida por JWT.
+* **🤖 ChatBot Financeiro com IA:** Interpretação de mensagens em linguagem natural para categorização e registro automático de gastos e receitas via Google Gemini AI.
+* **➕ Lançamento Manual e Categorias:** Criação e gestão customizada de despesas e receitas organizadas por categorias.
+* **📊 Dashboard Dinâmico:** Visualização em tempo real de saldo atual, gastos do dia, receitas, despesas e faturas do mês.
+* **💡 Insights Inteligentes:** Recomendações e análises inteligentes baseadas no comportamento de gastos do usuário.
+* **🧾 Extrato Detalhado:** Histórico financeiro completo com filtros por período e categoria, ordenação e exibição detalhada de cada transação.
+* **📱 Progressive Web App (PWA):** Instalação facilitada no smartphone ou computador com experiência próxima a um app nativo.
 
-A motivação central foi transformar o ato de registrar uma despesa em algo tão simples quanto enviar uma mensagem para um amigo. Com o fluxo simplificado, a visualização da saúde financeira se torna clara, rápida e sem atritos.
+---
 
-## 💻 Tecnologias Utilizadas
+## <a id="objetivo-e-motivacao"></a>🎯 Objetivo e Motivação
 
-### Frontend
-* **React & TypeScript:** Desenvolvimento baseado em componentização dos elementos, com tipagem estática para maior segurança e organização do código.
-* **Tailwind CSS:** Estilização utilitária e responsiva e de fácil desenvolvimento.
-* **Vite PWA:** Configuração que permite a instalação da aplicação (PWA), funcionando como um aplicativo nativo no dispositivo do usuário.
+O Onyx foi concebido para resolver a burocracia e o atrito dos métodos tradicionais de controle de gastos, como planilhas complexas ou formulários extensos. 
 
-### Backend
-* **FastAPI:** Framework Python de alta performance para construção de APIs assíncronas.
-* **SQLAlchemy:** ORM utilizado para a modelagem e interação com o banco de dados.
-* **PostgreSQL:** Banco de dados relacional robusto para armazenamento seguro das transações.
-* **WebAuthn:** Implementação nativa do FIDO2 para biometria.
-* **JWT Token:** Autenticação e controle de sessão nas requisições da API.
-* **Gemini AI:** Inteligência Artificial do Google integrada para processar linguagem natural e categorizar as mensagens do usuário.
+A ideia central é transformar o registro de despesas e receitas em um processo tão simples e instantâneo quanto mandar uma mensagem de texto. Com um fluxo descomplicado e visualizações claras, qualquer pessoa consegue manter a saúde financeira em dia de onde estiver.
 
-## 🤖 ChatBot Inteligente
+---
 
-Seguindo o objetivo central de tornar o controle financeiro fácil e ágil, o Onyx conta com um ChatBot alimentado pela API do **Gemini AI**. Em vez de navegar por menus e preencher valores manualmente, o usuário pode simplesmente enviar uma mensagem como *"Gastei 50 reais com pizza ontem"* e a Inteligência Artificial se encarrega de extrair o valor, a data, categorizar a despesa e salvar no banco de dados automaticamente.
-
-## 🏗 Estrutura do Projeto
+## <a id="tecnologias-utilizadas"></a>💻 Tecnologias Utilizadas
 
 ### Frontend
-A interface foi organizada baseando-se na separação clara de responsabilidades:
-* **Assets:** Arquivos de mídia, imagens e fontes utilizados no projeto.
-* **Components:** Componentes reutilizáveis (botões, inputs, cards) que compõem as interfaces.
-* **Hooks:** Lógicas customizadas do React e comunicação isolada com a API.
-* **Interfaces:** Definições de tipagem (TypeScript) utilizadas pelos componentes.
-* **Layouts:** Componentes estruturais de roteamento (Wrappers) que utilizam o `<Outlet />` para envolver e padronizar as páginas filhas (como Dashboard e Extrato) mantendo a estrutura base.
-* **Pages:** Arquivos principais que representam as telas completas da aplicação.
-* **Routes:** Controle de roteamento, protegendo páginas privadas e liberando rotas públicas.
-* **Services:** Configurações de serviços externos, instâncias do Axios, controle de Cookies e Tokens.
-* **Utils:** Funções auxiliares e genéricas reutilizadas em diferentes partes do código.
+* **React (TypeScript):** Componentização declarativa, tipagem estática e alta escalabilidade.
+* **Tailwind CSS:** Design responsivo, moderno e de alta produtividade.
+* **Vite & Vite PWA:** Build ultrarrápido e suporte completo a instalação como Progressive Web App (PWA).
+* **Axios:** Cliente HTTP para comunicação eficiente com o backend.
 
 ### Backend
-O servidor adota uma arquitetura modular para facilitar a manutenção e escalabilidade:
-* **Controllers:** Lida com a lógica de negócio e regras do CRUD para cada entidade.
-* **Core:** Núcleo de configurações da aplicação (conexão com o banco, variáveis de ambiente).
-* **Models:** Definição das tabelas do banco de dados (SQLAlchemy).
-* **Routers:** Endpoints da API expostos para acesso externo.
-* **Schemas:** Modelos Pydantic para validação de dados de entrada e saída (Tipagem das requisições).
-* **Services:** Integrações com serviços externos, como envio de e-mails ou chamadas à IA.
-* **Utils:** Funções auxiliares de lógicas utilitárias ao longo do código.
+* **FastAPI:** Framework Python assíncrono de altíssimo desempenho para APIs RESTful.
+* **SQLAlchemy & Alembic:** ORM e versionamento seguro de esquemas de banco de dados.
+* **PostgreSQL:** Banco de dados relacional robusto para armazenamento estruturado das transações.
+* **WebAuthn / FIDO2:** Protocolo seguro para autenticação biométrica sem senhas.
+* **JWT & Passlib / Bcrypt:** Criação e validação de tokens de sessão seguros.
+* **Google Gemini AI:** Modelo generativo para processamento de linguagem natural (NLP) e extração de entidades financeiras.
+* **APScheduler:** Agendamento e gerenciamento de rotinas em segundo plano.
 
-## ☁️ Hospedagem
+### DevOps & Infraestrutura
+* **Docker & Docker Compose:** Conteinerização consistente para desenvolvimento e produção.
+* **VPS (Virtual Private Server):** Servidor dedicado onde rodam os contêineres do Frontend e Backend.
+* **Neon PostgreSQL:** Banco de dados serverless em nuvem com alta disponibilidade e backups automáticos.
+* **GitHub Actions:** Pipelines de CI/CD automatizadas (testes, geração de imagens Docker e deploy contínuo via self-hosted runner).
 
-O projeto foi disponibilizado online (deploy) utilizando uma arquitetura em nuvem distribuída e gratuíta:
+---
 
-* **[Netlify](https://www.netlify.com/):** Hospedagem da aplicação Frontend (React/Vite).
-* **[Koyeb](https://www.koyeb.com/):** Hospedagem e execução do container do Backend (FastAPI).
-* **[Neon](https://neon.com/):** Banco de dados PostgreSQL serverless.
+## <a id="chatbot-inteligente"></a>🤖 ChatBot Inteligente & Insights
 
+Com o objetivo de tornar o registro financeiro intuitivo, o Onyx integra a API do **Google Gemini AI**. 
+
+Em vez de preencher múltiplos campos, o usuário pode apenas digitar ou colar:
+> *"Gastei 45 reais na padaria hoje de manhã"* ou *"Recebi um pix de 1200 referente a freela"*
+
+A Inteligência Artificial extrai automaticamente o valor, identifica se é receita ou despesa, infere a data e a categoria adequada, persistindo tudo diretamente no banco de dados. Além disso, a aplicação conta com geração de **Insights Financeiros**, analisando padrões de consumo para sugerir melhorias no orçamento.
+
+---
+
+## <a id="estrutura-do-projeto"></a>🏗 Estrutura do Projeto
+
+### Frontend (`/front-end-app`)
+* **`assets/`:** Imagens, ícones e mídias estáticas.
+* **`components/`:** Componentes reutilizáveis (botões, cards, modais, formulários).
+* **`hooks/`:** Custom hooks para consumo de APIs, ciclo de vida e estado global.
+* **`interfaces/`:** Definições e contratos de tipagem TypeScript.
+* **`layouts/`:** Wrappers estruturais (Dashboard, Extrato, etc.) padronizando navegação via `<Outlet />`.
+* **`pages/`:** Páginas completas da aplicação (Login, Cadastro, Dashboard, Extrato, Chat, Adicionar Transação, etc.).
+* **`routes/`:** Definições de rotas públicas e rotas autenticadas protegidas.
+* **`services/`:** Instâncias Axios, configuração de headers, cookies e armazenamento de tokens.
+* **`utils/`:** Helpers e funções de formatação (datas, moeda BRL, máscaras).
+
+### Backend (`/app`)
+* **`controllers/`:** Regras de negócio centrais e manipulação de entidades.
+* **`core/`:** Configurações da aplicação, conexões com o banco e carregamento de variáveis de ambiente.
+* **`models/`:** Mapeamento de tabelas relacionais do SQLAlchemy.
+* **`routers/`:** Endpoints e rotas da API REST organizados por domínio (usuários, transações, chat, insights, etc.).
+* **`schemas/`:** Modelos Pydantic para validação, serialização e contratos de dados das requisições.
+* **`services/`:** Integrações externas (Google Gemini AI, envio de e-mails, agendadores de tarefas).
+* **`utils/`:** Utilitários de segurança, tratamento de datas e funções auxiliares.
+
+---
+
+## <a id="hospedagem"></a>☁️ Hospedagem e Infraestrutura
+
+A infraestrutura do Onyx foi desenhada para unir estabilidade, baixo custo e facilidade de manutenção:
+
+* **VPS (Virtual Private Server):** Ambiente de produção onde rodam os contêineres Docker do Frontend e Backend, respondendo sob o domínio próprio: **[onyx.rhianpablo.com](https://onyx.rhianpablo.com)**.
+* **[Neon](https://neon.tech/):** Banco de dados PostgreSQL Serverless em nuvem, garantindo alta escalabilidade, persistência confiável e baixa latência.
+
+---
 
 ## <a id="cicd"></a>⚙️ CI/CD e Imagens Docker
 
-A arquitetura do projeto foi pensada para ser escalável e de fácil distribuição. O fluxo de integração e entrega contínua (CI/CD) é automatizado através do **GitHub Actions**. Dessa forma é possível atualizar a imagem do backend e requisitar ao [Koyeb](https://www.koyeb.com/) o deploy da nova imagem. Para o frontend, a propria [Netlify](https://www.netlify.com/) atualiza ao perceber um novo commit na branch master.
+O ciclo de vida de integração e entrega contínua é gerenciado via **GitHub Actions**:
 
 ### Workflows Implementados:
-1. **Smoke Tests (Integração):** Sempre que um Pull Request é aberto para a branch develop, um ambiente Docker temporário é construído. O frontend e o backend são inicializados em background, adjunto o container do banco de dados, conforme especificado no arquivo [docker-compose.yaml](https://github.com/rhianpablo11/onyx_finance_management/blob/master/docker-compose.yaml) e testes de saúde (Health Checks) são executados para garantir que o sistema consegue iniciar sem problemas. Isso impede de realizar um merge de uma branch que contém erros para a branch de deploy. Ademais, ao perceber o erro, é possível, antes de fechar o Pull Request, corrigir e atualizar a branch que será feito o merge.
-2. **Deploy Automático:** Ao realizar o merge na branch `master`, o GitHub Actions constrói as imagens oficiais da aplicação, realiza o push para o Docker Hub e aciona o webhook para atualizar o backend na nuvem automaticamente, enquanto o frontend é atualizado automaticamente pela plataforma [Netlify](https://www.netlify.com/).
+1. **Smoke Tests & Testes Automatizados (Integração):**
+   - Ao abrir um Pull Request para a branch `develop`, um ambiente Docker temporário é instanciado.
+   - O Frontend, Backend e Banco de Dados são inicializados com verificações de integridade (*Health Checks*).
+   - Testes automatizados com `pytest` são disparados no backend. Se houver falhas, o merge é bloqueado.
+
+2. **Deploy Automático na VPS:**
+   - Ao realizar push ou merge na branch `master`, os workflows de build geram as novas imagens Docker e publicam no Docker Hub.
+   - Um runner *self-hosted* conectado diretamente à VPS executa os scripts de deploy (`deploy_frontend.sh` e `deploy_api.sh`), realizando o pull da imagem mais recente e recriando os contêineres sem indisponibilidade.
 
 ### Repositórios no Docker Hub:
-Você pode baixar as imagens prontas e conteinerizadas do Onyx diretamente do Docker Hub:
+Você pode obter as imagens oficiais da aplicação diretamente do Docker Hub:
 * 🌐 **Frontend:** [`docker pull rhianpablo11/finance-management-frontend`](https://hub.docker.com/r/rhianpablo11/finance-management-frontend)
 * ⚙️ **Backend:** [`docker pull rhianpablo11/finance-management-backend`](https://hub.docker.com/r/rhianpablo11/finance-management-backend)
 
+---
 
-## 🚀 Como Executar Localmente
+## <a id="como-executar-localmente"></a>🚀 Como Executar Localmente
 
-Siga os passos abaixo para rodar a aplicação completa na sua máquina utilizando contêineres. O banco de dados utiliza volumes do Docker para persistir as informações entre as execuções.
+Você pode rodar todo o ecossistema na sua máquina utilizando Docker Compose:
 
 ### Pré-requisitos
 * [Docker](https://www.docker.com/) instalado
-* Docker Compose
+* [Docker Compose](https://docs.docker.com/compose/)
 
 ### Passo a Passo
 
 1. **Clone o repositório:**
    ```bash
    git clone https://github.com/rhianpablo11/onyx_finance_management.git
-   ```
-   ```bash
    cd onyx_finance_management
    ```
 
-
 2. **Configure as Variáveis de Ambiente:**
+   No arquivo `docker-compose.yaml`, configure as variáveis de ambiente necessárias:
+   * `GEMINI_API_KEY`: Chave da API do Google Gemini para o ChatBot e Insights.
+   * `ADDRESS_EMAIL` e `PASSWORD_EMAIL`: Credenciais do e-mail remetente para envio de códigos de recuperação/verificação.
+   * `BIOMETRIC_RP_ID` e `BIOMETRIC_ORIGIN`: Configurações de domínio e origem para a API WebAuthn (em desenvolvimento local: `localhost` e `http://localhost:5173`).
+   * `ORIGINS_ALLOWED`: Origens permitidas para requisições CORS.
 
-    No arquivo `docker-compose.yaml` há os campos das variaveis de ambiente, é importante preenche-los para o funcionamento completo localmente. Os campos `GEMINI_API_KEY` e `PASSWORD_EMAIL` se referem a chave da API da Gemini a ser utilizada para o ChatBot, e em sequência a senha do email que será utilizado para envio dos códigos de recuperação e verificação do email. Para isso também é preciso indicar qual o email que será utilizado, para isso preencher a variavel `ADDRESS_EMAIL`.
-    
+3. **Inicie os Contêineres:**
+   ```bash
+   docker compose up --build
+   ```
+   *O backend se encarrega de criar as tabelas e inicializar o banco de dados na primeira execução.*
 
+4. **Acesse no Navegador:**
+   * **Frontend:** [http://localhost:5173](http://localhost:5173)
+   * **Swagger Docs (API):** [http://localhost:8000/docs](http://localhost:8000/docs)
 
-3. **Suba os contêineres com o Docker Compose:**
-    ```bash
-    docker compose up --build
-    ```
+---
 
-
-    *O backend se encarregará de criar as tabelas do banco de dados automaticamente na primeira inicialização.*
-4. **Acesse a aplicação:**
-
-    Abra `http://localhost:5173` no seu navegador para ver o Frontend rodando. A documentação da API (Swagger) estará disponível em `http://localhost:8000/docs`.
-
-
-## 🎨 Screenshots
+## <a id="screenshots"></a>🎨 Screenshots
 
 <div align="center">
-  <img src="./assets/tela_inicial.jpg" alt="Dashboard Preview" width="24%"/>
-  <img src="./assets/tela_login.jpg" alt="Dashboard Preview" width="24%"/>
-  <img src="./assets/tela_cadastro.jpg" alt="Dashboard Preview" width="24%"/>
-
+  <img src="./assets/tela_inicial.jpg" alt="Tela Inicial" width="24%"/>
+  <img src="./assets/tela_login.jpg" alt="Tela de Login" width="24%"/>
+  <img src="./assets/tela_cadastro.jpg" alt="Tela de Cadastro" width="24%"/>
 </div>
 
 <div align="center">
   <img src="./assets/dashboard.jpg" alt="Dashboard Preview" width="24%"/>
-  <img src="./assets/tela_chatbot.jpg" alt="Dashboard Preview" width="24%"/>
-  <img src="./assets/extrato.jpg" alt="Dashboard Preview" width="24%"/>
-  <img src="./assets/detalhes_operacao.jpg" alt="Tela de Login Biométrico" width="24%"/>
+  <img src="./assets/tela_chatbot.jpg" alt="ChatBot Preview" width="24%"/>
+  <img src="./assets/extrato.jpg" alt="Extrato Preview" width="24%"/>
+  <img src="./assets/detalhes_operacao.jpg" alt="Detalhes da Operação" width="24%"/>
 </div>
 
+---
 
+## <a id="autor"></a>👨‍💻 Autor
 
-## 👨‍💻 Autor
-
-Desenvolvido por **[Rhian Pablo](https://www.linkedin.com/in/rhianpablo11/)**, estudante de Engenharia da Computação - Universidade Estadual de Feira de Santana (UEFS).
-
+Desenvolvido por **[Rhian Pablo](https://www.linkedin.com/in/rhianpablo11/)**  
+Estudante de Engenharia da Computação - Universidade Estadual de Feira de Santana (UEFS).
