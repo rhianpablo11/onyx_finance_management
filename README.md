@@ -18,13 +18,26 @@
 
 <br/>
 
+> [!TIP]
+> ### 🧪 Conta Demo para Testes Imediatos
+> Para explorar a aplicação sem a necessidade de criar uma nova conta ou cadastrar biometria, utilize as seguintes credenciais na tela de login tradicional:
+> - **URL de Acesso:** [onyx.rhianpablo.com](https://onyx.rhianpablo.com)
+> - **E-mail:** `example@example.com`
+> - **Senha:** `1`
+
+<br/>
+
 ## 📋 Índice
  - [Sobre o Projeto](#sobre-o-projeto)
+ - [Conta Demo](#conta-demo)
  - [Status do Projeto](#status-do-projeto)
  - [Principais Funcionalidades](#principais-funcionalidades)
- - [Objetivo e Motivação](#objetivo-e-motivacao)
+ - [Fluxo do ChatBot com IA (Demonstração)](#fluxo-do-chatbot)
+ - [Diagrama de Arquitetura](#diagrama-de-arquitetura)
+ - [Decisões Técnicas e Trade-offs](#decisoes-tecnicas)
+ - [Estratégia de Testes Automatizados](#testes-automatizados)
+ - [Limitações e Roadmap](#limitacoes-e-roadmap)
  - [Tecnologias Utilizadas](#tecnologias-utilizadas)
- - [ChatBot Inteligente & Insights](#chatbot-inteligente)
  - [Estrutura do Projeto](#estrutura-do-projeto)
  - [Hospedagem e Infraestrutura](#hospedagem)
  - [CI/CD e Imagens Docker](#cicd)
@@ -36,35 +49,198 @@
 
 ## <a id="sobre-o-projeto"></a>📖 Sobre o Projeto
 
-O **Onyx - Finance Management** é uma aplicação Full-Stack de gerenciamento financeiro pessoal projetada para oferecer uma experiência ágil, segura e inteligente. Combinando um design moderno a uma arquitetura robusta, o sistema permite registrar transações sem fricção — seja preenchendo rapidamente de forma manual ou utilizando comandos em linguagem natural através do ChatBot inteligente integrado com IA.
+O **Onyx - Finance Management** é uma aplicação Full-Stack de gerenciamento financeiro pessoal projetada para oferecer uma experiência ágil, segura e inteligente. Combinando um design moderno a uma arquitetura robusta, o sistema permite registrar transações sem atrito — seja preenchendo rapidamente de forma manual ou utilizando comandos em linguagem natural através do ChatBot inteligente integrado com IA.
 
-O projeto também eleva a segurança ao eliminar a dependência de senhas tradicionais, contando com autenticação biométrica via **WebAuthn (Passkeys, FaceID, TouchID)**, além de suporte a fluxo seguro de recuperação de acesso.
+O projeto também inova ao eliminar a dependência exclusiva de senhas tradicionais, contando com autenticação biométrica nativa via **WebAuthn (Passkeys, FaceID, TouchID)**, além de suporte a fluxo seguro de recuperação de acesso por e-mail e autenticação convencional com JWT.
+
+---
+
+## <a id="conta-demo"></a>🔑 Conta Demo
+
+Para testar todas as funcionalidades do sistema em produção sem precisar realizar um novo cadastro:
+
+| Parâmetro | Valor |
+| :--- | :--- |
+| **Acesso** | [https://onyx.rhianpablo.com](https://onyx.rhianpablo.com) |
+| **E-mail** | `example@example.com` |
+| **Senha** | `1` |
+
+> *Ao entrar, você terá acesso imediato ao Dashboard com dados de movimentações, Extrato, cadastro de transações manuais e ao ChatBot integrado.*
 
 ---
 
 ## <a id="status-do-projeto"></a>🚧 Status do Projeto
 
-**Em desenvolvimento ativo e produção.** A aplicação já opera em ambiente de produção sob o domínio [onyx.rhianpablo.com](https://onyx.rhianpablo.com), com melhorias contínuas, novos recursos e refinamentos periódicos na interface e nas integrações de inteligência artificial.
+**Em produção e evolução ativa.** A aplicação está no ar sob o domínio [onyx.rhianpablo.com](https://onyx.rhianpablo.com), contando com esteira de CI/CD automatizada, banco em nuvem e melhorias contínuas tanto na interface quanto nas integrações de inteligência artificial.
 
 ---
 
 ## <a id="principais-funcionalidades"></a>✨ Principais Funcionalidades
 
-* **🔐 Autenticação Passwordless & Biometria:** Login biométrico seguro via WebAuthn (Passkeys / FaceID / TouchID) e autenticação protegida por JWT.
-* **🤖 ChatBot Financeiro com IA:** Interpretação de mensagens em linguagem natural para categorização e registro automático de gastos e receitas via Google Gemini AI.
-* **➕ Lançamento Manual e Categorias:** Criação e gestão customizada de despesas e receitas organizadas por categorias.
-* **📊 Dashboard Dinâmico:** Visualização em tempo real de saldo atual, gastos do dia, receitas, despesas e faturas do mês.
-* **💡 Insights Inteligentes:** Recomendações e análises inteligentes baseadas no comportamento de gastos do usuário.
-* **🧾 Extrato Detalhado:** Histórico financeiro completo com filtros por período e categoria, ordenação e exibição detalhada de cada transação.
-* **📱 Progressive Web App (PWA):** Instalação facilitada no smartphone ou computador com experiência próxima a um app nativo.
+* **🔐 Autenticação Biométrica (WebAuthn / Passkeys):** Login sem senhas via FaceID/TouchID, reduzindo atrito e aumentando a segurança contra phishing.
+* **🤖 ChatBot Conversacional com IA:** Registro automático de gastos e receitas a partir de mensagens coloquiais em português brasileiro.
+* **➕ Lançamento Manual e Categorias:** Controle completo para criação e edição de despesas/receitas únicas, parceladas ou recorrentes.
+* **📊 Dashboard Dinâmico em Tempo Real:** Resumo do saldo atual, gastos do dia, total de receitas, despesas do mês e faturas pendentes.
+* **💡 Insights Financeiros Inteligentes:** Análise contextual gerada por IA sobre os padrões de consumo do usuário.
+* **🧾 Extrato Detalhado com Filtros:** Filtros por período, tipo de operação e categoria, com busca e detalhes da transação.
+* **📱 Progressive Web App (PWA):** Instalação facilitada em dispositivos móveis e desktops, com interface responsiva e comportamento de app nativo.
 
 ---
 
-## <a id="objetivo-e-motivacao"></a>🎯 Objetivo e Motivação
+## <a id="fluxo-do-chatbot"></a>🤖 Fluxo do ChatBot com IA (Demonstração)
 
-O Onyx foi concebido para resolver a burocracia e o atrito dos métodos tradicionais de controle de gastos, como planilhas complexas ou formulários extensos. 
+Uma das maiores dores no controle financeiro pessoal é a disciplina de preencher formulários extensos. No Onyx, o registro de um gasto pode ser feito com uma simples mensagem:
 
-A ideia central é transformar o registro de despesas e receitas em um processo tão simples e instantâneo quanto mandar uma mensagem de texto. Com um fluxo descomplicado e visualizações claras, qualquer pessoa consegue manter a saúde financeira em dia de onde estiver.
+<div align="center">
+  <img src="./assets/demo_chatbot.gif" alt="Demonstração do ChatBot - Onyx" width="70%" onerror="this.onerror=null; this.src='./assets/tela_chatbot.jpg';"/>
+  <p><em>Exemplo do fluxo conversacional em tempo real: "Gastei 50 com pizza ontem no pix"</em></p>
+</div>
+
+### Como funciona o processamento:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Usuario as 👤 Usuário
+    participant Front as 📱 PWA (Frontend)
+    participant Back as ⚙️ API (FastAPI)
+    participant IA as 🧠 Google Gemini AI
+    participant DB as 🗄️ Neon PostgreSQL
+
+    Usuario->>Front: Envia: "Gastei 50 com pizza ontem no pix"
+    Front->>Back: POST /transactions/create {"message": "..."}
+    Back->>IA: Processa texto com Prompt Estruturado (NLP)
+    IA-->>Back: Retorna JSON { valor: 50.0, tipo: "despesa", categoria: "Alimentação", data: D-1, metodo: "PIX" }
+    Back->>DB: Salva despesa e atualiza saldo do usuário
+    Back-->>Front: HTTP 200 { "text_response": "Despesa de R$ 50,00 registrada com sucesso!" }
+    Front-->>Usuario: Exibe confirmação no chat e atualiza o saldo na tela
+```
+
+### Exemplo Prático de Extração:
+
+* **Entrada do Usuário:** *"Pedi uma pizza no ifood de 45 e 90 no pix ontem"*
+* **Extração Estruturada:**
+  * **Valor:** `R$ 45,90`
+  * **Tipo:** `Despesa`
+  * **Categoria:** `Alimentação`
+  * **Método de Pagamento:** `PIX`
+  * **Data:** Data de ontem calculada com base no fuso horário do servidor
+  * **Descrição:** `Ifood Pizza`
+* **Tratamento de Alucinações / Entradas Inválidas:** Se o usuário digitar algo fora do domínio financeiro (ex.: *"abobrinha voadora"*), a IA é instruída a retornar `None` e o backend responde de forma amigável sem poluir o banco de dados.
+
+---
+
+## <a id="diagrama-de-arquitetura"></a>📐 Diagrama de Arquitetura
+
+O diagrama abaixo ilustra a integração entre o cliente PWA, o servidor em produção na VPS, os serviços em nuvem (Neon e Gemini) e a esteira de CI/CD:
+
+```mermaid
+flowchart TD
+    subgraph Client["📱 Camada do Cliente"]
+        PWA["PWA Mobile / Desktop<br/>(React + TypeScript + Tailwind)"]
+    end
+
+    subgraph VPS["☁️ VPS Própria (onyx.rhianpablo.com)"]
+        direction TB
+        Nginx["Proxy Reverso (Nginx / SSL Let's Encrypt)"]
+        
+        subgraph Docker["Contêineres Docker"]
+            FrontApp["Frontend Container<br/>(Nginx / Vite Build)"]
+            BackApp["Backend Container<br/>(FastAPI / Uvicorn)"]
+            Scheduler["APScheduler<br/>(Rotinas de Faturas e Despesas Fixas)"]
+        end
+    end
+
+    subgraph Cloud["🌐 Serviços em Nuvem & Externos"]
+        Neon[("Neon PostgreSQL<br/>(Serverless Cloud DB)")]
+        Gemini["Google Gemini AI<br/>(NLP, Chat & Insights)"]
+        SMTP["Servidor SMTP<br/>(Recuperação e Verificação)"]
+    end
+
+    subgraph CICD["🚀 CI/CD (GitHub Actions)"]
+        GitHub["GitHub Repository<br/>(Branch master / develop)"]
+        DockerHub["Docker Hub Registry<br/>(Imagens Versionadas)"]
+        Runner["Runner Self-Hosted na VPS<br/>(Scripts deploy_frontend / deploy_api)"]
+    end
+
+    %% Fluxo de Usuário
+    PWA -->|HTTPS| Nginx
+    Nginx -->|Rotas /| FrontApp
+    Nginx -->|Rotas /api| BackApp
+
+    %% Fluxo Backend
+    BackApp -->|SQLAlchemy / Pool| Neon
+    BackApp -->|API REST / Prompt| Gemini
+    BackApp -->|Envio de Tokens| SMTP
+    BackApp --- Scheduler
+
+    %% Fluxo CI/CD
+    GitHub -->|Push / Merge| DockerHub
+    DockerHub -->|Pull Novas Imagens| Runner
+    Runner -->|Restart Contêineres| Docker
+```
+
+---
+
+## <a id="decisoes-tecnicas"></a>🧠 Decisões Técnicas e Trade-offs
+
+| Decisão Arquitetural | Alternativas Consideradas | Motivação & Trade-offs |
+| :--- | :--- | :--- |
+| **FastAPI + Pydantic** | Django, Flask, Express/Node.js | **Escolha:** Alta performance assíncrona (`asyncio`), validação rigorosa de payloads via tipagem Pydantic e geração automática de documentação Swagger. **Trade-off:** Menor ecossistema de "baterias inclusas" que o Django, exigindo arquitetura manual de serviços e controllers. |
+| **WebAuthn (Passkeys) + Fallback JWT** | Autenticação padrão apenas por senha | **Escolha:** Elimina o risco de senhas vazadas e ataques de força bruta/phishing, permitindo login instantâneo com FaceID/TouchID no smartphone. Mantivemos o fallback tradicional por e-mail/senha com Bcrypt para compatibilidade e testes (ex: conta demo). |
+| **Google Gemini AI para NLP** | Expressões Regulares (RegEx), SpaCy, Rasa | **Escolha:** RegEx é extremamente frágil para linguagem coloquial brasileira (*"gastei cinquenta conto no podrão"*). Modelos generativos compreendem contexto temporal ("ontem", "anteontem") e intenção sem demandar treinamento contínuo de datasets próprios. |
+| **Neon PostgreSQL Serverless** | PostgreSQL local no Docker, SQLite, AWS RDS | **Escolha:** Separação entre computação e armazenamento, zero manutenção de infraestrutura de banco, backups contínuos e alta confiabilidade, sem consumir recursos de memória da VPS. |
+| **VPS Própria com Docker** | PaaS (Netlify, Koyeb, Render, Vercel) | **Escolha:** Eliminação dos *cold starts* das instâncias gratuitas, domínio unificado (`onyx.rhianpablo.com`) sem redirecionamentos entre múltiplos provedores, menor custo operacional a longo prazo e total controle sobre redes e proxies. |
+| **PWA (Progressive Web App)** | Aplicativos nativos separados (Swift / Kotlin / React Native) | **Escolha:** Única base de código em React/TypeScript, permitindo que o usuário instale o app direto pelo navegador sem a burocracia, taxas e tempo de aprovação das lojas Apple App Store e Google Play. |
+
+---
+
+## <a id="testes-automatizados"></a>🧪 Estratégia de Testes Automatizados
+
+O projeto conta com uma suíte de testes automatizados com foco em garantir a integridade dos cálculos financeiros, a robustez da inteligência artificial e a segurança das rotas:
+
+### Camadas de Testes Implementadas (`app/tests`):
+
+1. **Testes Unitários & IA (`test_ai.py`):**
+   - **Caminho Feliz:** Garante que mensagens reais (ex: *"Pedi uma pizza no ifood de 45 e 90 no pix"*) gerem payloads válidos e salvem no banco de dados com valores, métodos e datas exatas.
+   - **Resiliência a Falhas & Alucinações:** Verifica se o sistema trata adequadamente respostas nulas ou mensagens sem sentido (*"abobrinha voadora"*), retornando mensagens amigáveis sem corromper o banco.
+2. **Testes de Integração & Segurança (`test_api.py`):**
+   - **Autenticação:** Validação de bloqueio com HTTP 401 para requisições não autenticadas em rotas privadas.
+   - **Cálculo de Extratos:** Uso de `freezegun` para congelar datas e validar se o somatório de despesas, receitas e balanço final do período está matematicamente exato.
+3. **Testes de Criação Manual & Regras de Negócio (`test_create_manual.py`):**
+   - Criação de despesas simples imediatas (verificando o débito no saldo).
+   - Criação de despesas futuras, recorrentes e parceladas.
+4. **Testes de Edição e Exclusão (`test_edit_transactions.py` e `test_delete.py`):**
+   - Recálculo de saldo ao alterar valores ou datas de transações passadas.
+   - Remoção de transações e garantia de integridade referencial.
+5. **Testes de Sincronização (`test_sync.py`):**
+   - Consistência de estados entre chamadas simultâneas.
+6. **Smoke Tests no CI/CD (`test-build.yaml`):**
+   - Inicialização completa dos contêineres Docker via Docker Compose a cada Pull Request para `develop`.
+   - Verificação de disponibilidade dos endpoints de saúde (`/health`, `/docs` e Frontend).
+   - Execução completa da suíte `pytest` dentro do contêiner antes de permitir o merge.
+
+### Como Executar os Testes Localmente:
+
+```bash
+# Executando dentro do contêiner Docker (recomendado):
+docker compose exec backend pytest -v
+
+# Ou diretamente pelo ambiente virtual local:
+pytest app/tests -v
+```
+
+---
+
+## <a id="limitacoes-e-roadmap"></a>⚠️ Limitações Conhecidas e Roadmap
+
+### Limitações Atuais:
+* **Cotas e Latência da API de IA:** O tempo de resposta do ChatBot depende do tempo de inferência e dos rate limits da API do Google Gemini.
+* **Moeda Única:** O sistema foi projetado e calibrado exclusivamente para transações em Real Brasileiro (BRL / R$).
+* **Ausência de Integração Bancária Direta (Open Finance):** O registro de transações depende da inserção manual ou via ChatBot, sem leitura automática de extratos bancários de instituições financeiras via API.
+* **Operação Offline Limitada:** Embora a interface PWA seja instalável e possua cache, o processamento de linguagem natural e a sincronização do banco exigem conexão com a internet.
+
+
 
 ---
 
@@ -73,7 +249,7 @@ A ideia central é transformar o registro de despesas e receitas em um processo 
 ### Frontend
 * **React (TypeScript):** Componentização declarativa, tipagem estática e alta escalabilidade.
 * **Tailwind CSS:** Design responsivo, moderno e de alta produtividade.
-* **Vite & Vite PWA:** Build ultrarrápido e suporte completo a instalação como Progressive Web App (PWA).
+* **Vite & Vite PWA:** Build ultrarrápido e suporte completo a Progressive Web App (PWA).
 * **Axios:** Cliente HTTP para comunicação eficiente com o backend.
 
 ### Backend
@@ -90,17 +266,6 @@ A ideia central é transformar o registro de despesas e receitas em um processo 
 * **VPS (Virtual Private Server):** Servidor dedicado onde rodam os contêineres do Frontend e Backend.
 * **Neon PostgreSQL:** Banco de dados serverless em nuvem com alta disponibilidade e backups automáticos.
 * **GitHub Actions:** Pipelines de CI/CD automatizadas (testes, geração de imagens Docker e deploy contínuo via self-hosted runner).
-
----
-
-## <a id="chatbot-inteligente"></a>🤖 ChatBot Inteligente & Insights
-
-Com o objetivo de tornar o registro financeiro intuitivo, o Onyx integra a API do **Google Gemini AI**. 
-
-Em vez de preencher múltiplos campos, o usuário pode apenas digitar ou colar:
-> *"Gastei 45 reais na padaria hoje de manhã"* ou *"Recebi um pix de 1200 referente a freela"*
-
-A Inteligência Artificial extrai automaticamente o valor, identifica se é receita ou despesa, infere a data e a categoria adequada, persistindo tudo diretamente no banco de dados. Além disso, a aplicação conta com geração de **Insights Financeiros**, analisando padrões de consumo para sugerir melhorias no orçamento.
 
 ---
 
@@ -124,6 +289,7 @@ A Inteligência Artificial extrai automaticamente o valor, identifica se é rece
 * **`routers/`:** Endpoints e rotas da API REST organizados por domínio (usuários, transações, chat, insights, etc.).
 * **`schemas/`:** Modelos Pydantic para validação, serialização e contratos de dados das requisições.
 * **`services/`:** Integrações externas (Google Gemini AI, envio de e-mails, agendadores de tarefas).
+* **`tests/`:** Suíte completa de testes automatizados com `pytest` (unitários, integração e mock de IA).
 * **`utils/`:** Utilitários de segurança, tratamento de datas e funções auxiliares.
 
 ---
@@ -133,7 +299,7 @@ A Inteligência Artificial extrai automaticamente o valor, identifica se é rece
 A infraestrutura do Onyx foi desenhada para unir estabilidade, baixo custo e facilidade de manutenção:
 
 * **VPS (Virtual Private Server):** Ambiente de produção onde rodam os contêineres Docker do Frontend e Backend, respondendo sob o domínio próprio: **[onyx.rhianpablo.com](https://onyx.rhianpablo.com)**.
-* **[Neon](https://neon.tech/):** Banco de dados PostgreSQL Serverless em nuvem, garantindo alta escalabilidade, persistência confiável e baixa latência.
+* **[Neon](https://neon.com/):** Banco de dados PostgreSQL Serverless em nuvem, garantindo alta escalabilidade, persistência confiável e baixa latência.
 
 ---
 
