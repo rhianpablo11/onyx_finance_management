@@ -7,6 +7,11 @@
 
   <p>Para utilizar a aplicação, basta acessar: <strong><a style='color: violet;' href='https://onyx.rhianpablo.com'>onyx.rhianpablo.com</a></strong></p>
 
+  <p>
+    <a href="./README.md"><strong>🇧🇷 Versão em Português</strong></a> •
+    <a href="./README.en.md">🇺🇸 English Version</a>
+  </p>
+
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Badge"/>
   <img src="https://img.shields.io/badge/TypeScript-20232A?style=for-the-badge&logo=typescript&logoColor=blue" alt="TypeScript Badge"/>
   <img src="https://img.shields.io/badge/Tailwind_CSS-20232A?style=for-the-badge&logo=tailwind-css&logoColor=aqua" alt="Tailwind Badge"/>
@@ -239,6 +244,12 @@ pytest app/tests -v
 * **Moeda Única:** O sistema foi projetado e calibrado exclusivamente para transações em Real Brasileiro (BRL / R$).
 * **Ausência de Integração Bancária Direta (Open Finance):** O registro de transações depende da inserção manual ou via ChatBot, sem leitura automática de extratos bancários de instituições financeiras via API.
 * **Operação Offline Limitada:** Embora a interface PWA seja instalável e possua cache, o processamento de linguagem natural e a sincronização do banco exigem conexão com a internet.
+
+### Próximos Passos (Roadmap):
+- [ ] **OCR Multimodal de Comprovantes:** Envio de fotos de notas fiscais e comprovantes PIX para leitura automática via Gemini Vision.
+- [ ] **Integração com Open Finance Brasil:** Conexão para sincronização automática de saldos de contas bancárias e cartões.
+- [ ] **Notificações Push:** Alertas configuráveis no dispositivo sobre vencimento de faturas e metas de orçamento por categoria.
+- [ ] **Exportação de Dados:** Download de relatórios mensais em formatos PDF e CSV/Excel.
 
 
 
